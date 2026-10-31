@@ -82,26 +82,24 @@ fig = plt.figure(figsize=(24, 14), dpi=120)
 fig.patch.set_facecolor(COLORS["bg"])
 
 # 佈局規劃：
-# row 0: Header 資訊與 KPI 卡片 (高度 0.12)
+# row 0: Header 資訊與 3 個 KPI 卡片 (高度比例 0.12)
 # row 1 & 2: 主要視覺化區域 (左 4+1 堆疊，右上 人均榜，右下 年增減)
-# 底部留白放置來源與右下角網址
-gs = fig.add_gridspec(3, 2, width_ratios=[1.25, 0.75], height_ratios=[0.14, 0.43, 0.43],
+# hspace 設為 0.28，垂直間隔充裕乾淨
+gs = fig.add_gridspec(3, 2, width_ratios=[1.25, 0.75], height_ratios=[0.12, 0.44, 0.44],
                        left=0.045, right=0.955, top=0.96, bottom=0.065,
                        wspace=0.15, hspace=0.28)
 
 # 頂部 Header & KPI 卡片區域 (使用 GridSpec 內嵌 subplots，絕不位移或浮動)
 gs_top = gs[0, :].subgridspec(1, 4, width_ratios=[1.3, 0.9, 0.9, 0.9], wspace=0.08)
 
-# 1. 標題區 (ax_title)
+# 1. 主標題區 (ax_title) - 乾淨雙行排版，底部預留充裕空白
 ax_title = fig.add_subplot(gs_top[0, 0])
 ax_title.set_facecolor(COLORS["bg"])
 ax_title.axis('off')
 ax_title.text(0.0, 0.85, "民國 115 年全台 21 縣市預算結構與人均支出比較",
-              fontproperties=prop_bold, fontsize=20, color=COLORS["text_dark"], va="top")
-ax_title.text(0.0, 0.38, "依據行政院主計總處與 OpenFun 預算平臺公開資料 · CIELAB 4色認知優化版",
+              fontproperties=prop_bold, fontsize=20.5, color=COLORS["text_dark"], va="top")
+ax_title.text(0.0, 0.35, "資料來源：行政院主計總處 與 OpenFun 預算平臺 · CIELAB 4色認知優化版",
               fontproperties=prop, fontsize=11.5, color=COLORS["text_muted"], va="top")
-ax_title.text(0.0, 0.05, "特色：智慧 4+1 支柱聚合 · 均一明度 72% · 對稱 9 階發散色階",
-              fontproperties=prop_bold, fontsize=10.5, color="#D97706", va="top")
 
 # 2. KPI 卡片 1: 地方總預算規模
 ax_kpi1 = fig.add_subplot(gs_top[0, 1])
@@ -154,7 +152,7 @@ county_names = [x["county"] for x in county_stats]
 
 left_accum = np.zeros(len(county_stats))
 bar_height = 0.62
-labels = [top4_cats[0], top4_cats[1], top4_cats[2], top4_cats[3], "其他項目合計"]
+labels = [top4_cats[0], top4_cats[1], top4_cats[2], top4_cats[3], "其他合計"]
 cols = [COLORS["c1"], COLORS["c2"], COLORS["c3"], COLORS["c4"], COLORS["other"]]
 
 for cat_idx in range(4):
@@ -180,14 +178,12 @@ ax_main.set_yticklabels(county_names, fontproperties=prop_bold, fontsize=11.5, c
 ax_main.invert_yaxis()
 ax_main.set_xlabel("預算總額（新臺幣億元）", fontproperties=prop, fontsize=11, color=COLORS["text_muted"], labelpad=8)
 
-# 1. 標題置於最上方 (y=1.075)，層級分明
-ax_main.text(0.0, 1.075, "【核心結構視角】各縣市預算堆疊比較（前四大核心支柱 ＋ 其他項目合計）",
-             fontproperties=prop_bold, fontsize=13.5, color=COLORS["text_dark"],
-             transform=ax_main.transAxes, va='bottom', ha='left')
+# 標題與圖例並列於同一個頂部水平線：左側為標題，右側為圖例，垂直對齊完美！
+ax_main.set_title("【核心結構視角】各縣市預算堆疊比較（前四大核心支柱 ＋ 其他項目合計）",
+                  fontproperties=prop_bold, fontsize=12.5, color=COLORS["text_dark"], pad=14, loc='left')
 
-# 2. 圖例置於標題下方 (y=1.015)，與標題保持充足舒適的間距
-ax_main.legend(loc='lower left', bbox_to_anchor=(0.0, 1.012), ncol=5, frameon=False,
-               prop=prop, fontsize=10.5, handlelength=1.3, handletextpad=0.5, columnspacing=1.4)
+ax_main.legend(loc='lower right', bbox_to_anchor=(1.0, 1.015), ncol=5, frameon=False,
+               prop=prop, fontsize=10.5, handlelength=1.2, handletextpad=0.4, columnspacing=1.1)
 
 
 # ==========================================
@@ -226,7 +222,7 @@ ax_percap.set_yticklabels(p_names, fontproperties=prop, fontsize=10.5, color=COL
 ax_percap.invert_yaxis()
 ax_percap.set_xlabel("每人人均預算（新臺幣元 / 人）", fontproperties=prop, fontsize=10, color=COLORS["text_muted"], labelpad=6)
 ax_percap.set_title("【人均視角】各縣市每人人均預算（前 10 高 · 循序色階）",
-                    fontproperties=prop_bold, fontsize=12, color=COLORS["text_dark"], pad=10, loc='left')
+                    fontproperties=prop_bold, fontsize=12, color=COLORS["text_dark"], pad=14, loc='left')
 
 
 # ==========================================
@@ -279,7 +275,7 @@ website_url = "https://markyang20040112-source.github.io/20261031_-/"
 fig.text(0.955, 0.02, f"線上即時互動儀表板：{website_url}",
          fontproperties=prop_bold, fontsize=10.5, color="#475569", ha="right", va="bottom")
 
-# 輸出圖檔 (不使用破壞排版的 bbox_inches='tight'，直接完整渲染整個畫布)
+# 輸出圖檔
 out_png = "reading_sessions/20261031_全國預算比較儀表板/全台預算比較儀表板_視覺化圖表.png"
 plt.savefig(out_png, dpi=200, facecolor=fig.get_facecolor())
 print(f"Refined chart successfully saved to {out_png}")
