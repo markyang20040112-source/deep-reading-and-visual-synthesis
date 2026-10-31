@@ -272,17 +272,17 @@ def add_parallel_cards(slide, cards_spec, top=1.40, height=5.20, row_heights=Non
                 r_div.line.fill.background()
 
             tb_r = slide.shapes.add_textbox(
-                Inches(left + 0.18), Inches(curr_y), Inches(width - 0.36), Inches(r_h - 0.06)
+                Inches(left + 0.18), Inches(curr_y), Inches(width - 0.36), Inches(r_h - 0.04)
             )
             tf_r = tb_r.text_frame
             tf_r.word_wrap = True
-            tf_r.vertical_anchor = MSO_ANCHOR.MIDDLE
+            tf_r.vertical_anchor = MSO_ANCHOR.TOP
             tf_r.margin_left = tf_r.margin_right = tf_r.margin_top = tf_r.margin_bottom = 0
 
             # Paragraph 1: Bold Bullet Header
             p_h = tf_r.paragraphs[0]
-            p_h.line_spacing = 1.25
-            p_h.space_after = Pt(2.5)
+            p_h.line_spacing = 1.20
+            p_h.space_after = Pt(2.0)
             rh = p_h.add_run()
             rh.text = b_head
             rh.font.name = FONT_CJK
@@ -292,7 +292,7 @@ def add_parallel_cards(slide, cards_spec, top=1.40, height=5.20, row_heights=Non
 
             # Paragraph 2: Comfortable Line-Spaced Body
             p_b = tf_r.add_paragraph()
-            p_b.line_spacing = 1.30
+            p_b.line_spacing = 1.22
             rb = p_b.add_run()
             rb.text = b_body
             rb.font.name = FONT_CJK
@@ -685,7 +685,7 @@ add_parallel_cards(
             "is_spotlight": True, "spot_color": C_SPOT_RED, "spot_bg": C_SPOT_REDBG,
         },
     ],
-    top=2.86, height=3.80, row_heights=[1.30, 1.30], header_zone_h=0.98, body_font_pt=10.2, head_font_pt=11.5
+    top=2.86, height=3.82, row_heights=[1.25, 1.25], header_zone_h=0.95, body_font_pt=9.8, head_font_pt=11.0
 )
 add_zone3_footer(
     s5, "★ 決策鐵律：絕對禁止拿生成式 AI 進行單一變數「盲測訂價實驗」；終局定價與價格彈性必須強制回歸真人隨機 A/B Test！"
@@ -1200,8 +1200,13 @@ add_speaker_notes(s10, notes_s10)
 slides_md_records.append(("Slide 10：【終幕：全篇三大黃金決策鐵律與結束頁】Peak-End Closing", "以科學因果為舵、以生成式 AI 為帆：企業導入 AI 市場研究之三步落地行動守則", notes_s10))
 
 
-prs.save(PPTX_PATH)
-print(f"[OK] Saved PPTX to: {PPTX_PATH} ({os.path.getsize(PPTX_PATH)} bytes)")
+try:
+    prs.save(PPTX_PATH)
+    print(f"[OK] Saved PPTX to: {PPTX_PATH} ({os.path.getsize(PPTX_PATH)} bytes)")
+except PermissionError:
+    alt_path = PPTX_PATH.replace(".pptx", "_v2.pptx")
+    prs.save(alt_path)
+    print(f"[WARNING] Original PPTX file is locked by PowerPoint. Saved updated deck to: {alt_path}")
 
 # Save Dual-Channel Markdown Script
 with open(MD_SCRIPT_PATH, "w", encoding="utf-8") as f:
