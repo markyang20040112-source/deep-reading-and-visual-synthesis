@@ -166,25 +166,25 @@ def add_zone3_footer(slide, takeaway_text):
     run.font.color.rgb = C_WHITE
 
 
-def add_parallel_cards(slide, cards_spec, top=1.40, height=5.20, row_heights=None):
+def add_parallel_cards(slide, cards_spec, top=1.40, height=5.20, row_heights=None,
+                       header_zone_h=1.12, body_font_pt=11.2, head_font_pt=12.0):
     """
-    Fixes User Point 9 (Müller-Brockmann Horizontal Parallel Row Alignment & 1.35x Line Spacing):
+    Fixes User Point 9 (Müller-Brockmann Horizontal Parallel Row Alignment & 1.35x Line Spacing)
+    and Anti-Overflow Safeguard:
     Draws multiple side-by-side cards where each bullet item (head, body) is placed in its own
-    horizontally aligned row slot across all cards, ensuring Bullet 1, Bullet 2, Bullet 3
-    start at the EXACT same vertical Y coordinate across columns!
-    cards_spec: list of dicts:
-      {
-        "left": float, "width": float,
-        "tag": str, "title": str,
-        "rows": [(bullet_head_str, bullet_body_str), ...],
-        "is_spotlight": bool, "spot_color": RGBColor, "spot_bg": RGBColor
-      }
+    horizontally aligned row slot across all cards.
+    Guarantees that sum(row_heights) + header_zone_h <= height so text NEVER overflows the card border!
     """
-    header_zone_h = 1.12
     num_rows = max(len(c["rows"]) for c in cards_spec)
-    avail_rows_h = height - header_zone_h - 0.12
+    avail_rows_h = height - header_zone_h - 0.08
     if row_heights is None:
         row_heights = [avail_rows_h / num_rows] * num_rows
+    else:
+        # Anti-overflow safeguard: if requested row_heights exceed available space, scale proportionally!
+        sum_rows = sum(row_heights)
+        if sum_rows > avail_rows_h:
+            scale = avail_rows_h / sum_rows
+            row_heights = [rh * scale for rh in row_heights]
 
     for c in cards_spec:
         left = c["left"]
@@ -281,22 +281,22 @@ def add_parallel_cards(slide, cards_spec, top=1.40, height=5.20, row_heights=Non
 
             # Paragraph 1: Bold Bullet Header
             p_h = tf_r.paragraphs[0]
-            p_h.line_spacing = 1.30
-            p_h.space_after = Pt(3)
+            p_h.line_spacing = 1.25
+            p_h.space_after = Pt(2.5)
             rh = p_h.add_run()
             rh.text = b_head
             rh.font.name = FONT_CJK
-            rh.font.size = Pt(12)
+            rh.font.size = Pt(head_font_pt)
             rh.font.bold = True
             rh.font.color.rgb = spot_color if is_spot else C_NAVY_DARK
 
-            # Paragraph 2: Comfortable 1.35x Line-Spaced Body
+            # Paragraph 2: Comfortable Line-Spaced Body
             p_b = tf_r.add_paragraph()
-            p_b.line_spacing = 1.35
+            p_b.line_spacing = 1.30
             rb = p_b.add_run()
             rb.text = b_body
             rb.font.name = FONT_CJK
-            rb.font.size = Pt(11.2)
+            rb.font.size = Pt(body_font_pt)
             rb.font.bold = False
             rb.font.color.rgb = C_SLATE_TXT
 
@@ -617,7 +617,7 @@ add_zone1_header(
     "生成式 AI 在盲測訂價中會自動腦補競品與歷史價同步變貴，導致需求曲線平坦失真"
 )
 
-eq_box = s5.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.40), Inches(1.36), Inches(12.53), Inches(1.75))
+eq_box = s5.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.40), Inches(1.30), Inches(12.53), Inches(1.42))
 eq_box.adjustments[0] = 0.04
 eq_box.fill.solid()
 eq_box.fill.fore_color.rgb = C_SPOT_GOLDBG
@@ -626,44 +626,45 @@ eq_box.line.width = Pt(2.2)
 
 tf_eq = eq_box.text_frame
 tf_eq.word_wrap = True
-tf_eq.margin_left = tf_eq.margin_right = Inches(0.25)
-tf_eq.margin_top = Inches(0.12)
+tf_eq.margin_left = tf_eq.margin_right = Inches(0.22)
+tf_eq.margin_top = Inches(0.08)
+tf_eq.margin_bottom = Inches(0.08)
 
 pe1 = tf_eq.paragraphs[0]
 pe1.alignment = PP_ALIGN.CENTER
 re1 = pe1.add_run()
 re1.text = "【真人隨機盲測：獨立因果干預】 P(Y | do(X = x)) = ∑z P(Y | X = x, Z = z) · P(Z = z)"
 re1.font.name = FONT_CJK
-re1.font.size = Pt(15)
+re1.font.size = Pt(14)
 re1.font.bold = True
 re1.font.color.rgb = C_NAVY_DARK
 
 pe2 = tf_eq.add_paragraph()
 pe2.alignment = PP_ALIGN.CENTER
-pe2.space_before = Pt(5)
+pe2.space_before = Pt(3)
 re2 = pe2.add_run()
 re2.text = "≠   【生成式 AI 盲測：語境條件聯想混淆】 P_LLM(Y | X = x) = ∑z P(Y | X = x, Z = z) · P_LLM(Z = z | X = x)"
 re2.font.name = FONT_CJK
-re2.font.size = Pt(15)
+re2.font.size = Pt(14)
 re2.font.bold = True
 re2.font.color.rgb = C_SPOT_RED
 
 pe3 = tf_eq.add_paragraph()
 pe3.alignment = PP_ALIGN.CENTER
-pe3.space_before = Pt(5)
+pe3.space_before = Pt(3)
 re3 = pe3.add_run()
 re3.text = "▲ 關鍵差異項：真人盲測中 P(Z | X) = P(Z) 恆定不變；但 AI 的 P_LLM(Z = z | X = x) 會隨測試價格 X 升高而同步調高背景價格 Z！"
 re3.font.name = FONT_CJK
-re3.font.size = Pt(11.5)
+re3.font.size = Pt(11)
 re3.font.bold = True
 re3.font.color.rgb = C_SPOT_GOLD
 
 # Dynamic Tri-Axial Visual Decision Engine: Embed Live Demand Curve Chart next to cards!
 chart_curve_path = os.path.join(OUT_DIR, "chart_demand_curve_confounding.png")
 if os.path.exists(chart_curve_path):
-    s5.shapes.add_picture(chart_curve_path, Inches(0.40), Inches(3.18), Inches(5.15), Inches(3.48))
+    s5.shapes.add_picture(chart_curve_path, Inches(0.40), Inches(2.86), Inches(5.15), Inches(3.80))
 
-# Right Column: 2 Parallel Explanatory Cards
+# Right Column: 2 Parallel Explanatory Cards (Zero-overflow calibrated)
 add_parallel_cards(
     s5,
     [
@@ -684,7 +685,7 @@ add_parallel_cards(
             "is_spotlight": True, "spot_color": C_SPOT_RED, "spot_bg": C_SPOT_REDBG,
         },
     ],
-    top=3.18, height=3.48, row_heights=[1.55, 1.55]
+    top=2.86, height=3.80, row_heights=[1.30, 1.30], header_zone_h=0.98, body_font_pt=10.2, head_font_pt=11.5
 )
 add_zone3_footer(
     s5, "★ 決策鐵律：絕對禁止拿生成式 AI 進行單一變數「盲測訂價實驗」；終局定價與價格彈性必須強制回歸真人隨機 A/B Test！"
