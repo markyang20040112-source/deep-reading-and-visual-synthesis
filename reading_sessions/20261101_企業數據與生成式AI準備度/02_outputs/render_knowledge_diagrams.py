@@ -187,10 +187,7 @@ def render_master_structure_map():
     draw_labeled_bezier(ax, (hub_x + hub_w, hub_y + 4.0), (66.0, 26.0), "組織落地", theme=theme, accent_key="primary")
 
     out_png = os.path.join(output_dir, "01_article_master_structure_map.png")
-    out_jpg = os.path.join(output_dir, "01_article_master_structure_map.jpg")
     save_publication_figure(fig, out_png, theme, dpi=240)
-    # Also save JPG
-    fig.savefig(out_jpg, dpi=240, bbox_inches="tight", pad_inches=0.3, facecolor=theme["canvas_bg"], pil_kwargs={"quality": 98, "subsampling": 0})
     print(f"[OK] Diagram 1 generated at {out_png}")
 
 
@@ -324,9 +321,7 @@ def render_bicameral_architecture_map():
     draw_labeled_bezier(ax, (50.0, 43.5), (50.0, 36.5), "成功經驗沉澱", theme=theme, accent_key="primary")
 
     out_png = os.path.join(output_dir, "02_bicameral_data_architecture.png")
-    out_jpg = os.path.join(output_dir, "02_bicameral_data_architecture.jpg")
     save_publication_figure(fig, out_png, theme, dpi=240)
-    fig.savefig(out_jpg, dpi=240, bbox_inches="tight", pad_inches=0.3, facecolor=theme["canvas_bg"], pil_kwargs={"quality": 98, "subsampling": 0})
     print(f"[OK] Diagram 2 generated at {out_png}")
 
 
