@@ -179,12 +179,15 @@ ax_main.set_yticks(y_pos)
 ax_main.set_yticklabels(county_names, fontproperties=prop_bold, fontsize=11.5, color=COLORS["text_dark"])
 ax_main.invert_yaxis()
 ax_main.set_xlabel("預算總額（新臺幣億元）", fontproperties=prop, fontsize=11, color=COLORS["text_muted"], labelpad=8)
-ax_main.set_title("【核心結構視角】各縣市預算堆疊比較（前四大核心支柱 ＋ 其他項目合計）",
-                  fontproperties=prop_bold, fontsize=13.5, color=COLORS["text_dark"], pad=14, loc='left')
 
-# 圖例放置在上方 (不壓到底部座標軸文字)
-ax_main.legend(loc='lower left', bbox_to_anchor=(0.0, 1.02), ncol=5, frameon=False,
-               prop=prop, fontsize=11, handlelength=1.4, handletextpad=0.5, columnspacing=1.2)
+# 1. 標題置於最上方 (y=1.075)，層級分明
+ax_main.text(0.0, 1.075, "【核心結構視角】各縣市預算堆疊比較（前四大核心支柱 ＋ 其他項目合計）",
+             fontproperties=prop_bold, fontsize=13.5, color=COLORS["text_dark"],
+             transform=ax_main.transAxes, va='bottom', ha='left')
+
+# 2. 圖例置於標題下方 (y=1.015)，與標題保持充足舒適的間距
+ax_main.legend(loc='lower left', bbox_to_anchor=(0.0, 1.012), ncol=5, frameon=False,
+               prop=prop, fontsize=10.5, handlelength=1.3, handletextpad=0.5, columnspacing=1.4)
 
 
 # ==========================================
