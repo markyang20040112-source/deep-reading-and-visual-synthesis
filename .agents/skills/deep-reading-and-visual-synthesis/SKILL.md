@@ -35,7 +35,7 @@ description: >-
 | 當前狀態 | 唯一應開啟之檔案 | 職責說明 |
 | :--- | :--- | :--- |
 | **狀態 1：進入第一階段**<br>*(預設閱讀與思辨互動)* | **[phase1_socratic_reading_guide.md](./phase1_reading/phase1_socratic_reading_guide.md)** | 建立 `00` 原文檔與 `01` 紀錄檔，執行五步漸進式認知推進流程（Step 0 ~ Step 5）。 |
-| **狀態 2：進入第二階段**<br>*(Step 5 完成 或 顯式要求直接生成)* | **[phase2_output_router.md](./phase2_output/phase2_output_router.md)** | 讀取共通視覺科學規範與單一指定格式規範（圖譜 / 報告 / 簡報），輸出至 `02_outputs/`。 |
+| **狀態 2：進入第二階段**<br>*(Step 5 完成 或 顯式要求直接生成)* | **[phase2_output_router.md](./phase2_output/phase2_output_router.md)** | 讀取共通視覺科學規範與指定格式規範（圖譜 / 報告 / 簡報 / 量化圖表），啟動動態三維視覺決策引擎，輸出至 `02_outputs/`。 |
 | **狀態 3：詢問學術依據 或 執行技能進化**<br>*(僅查詢理論出處 或 Step E3 更新文獻)* | **[THEORY_ARCHIVE.md](./THEORY_ARCHIVE.md)** | 查閱或擴充本技能背後之認知心理學與設計科學實證文獻庫（日常執行嚴禁讀取以省流量）。 |
 
 ---
