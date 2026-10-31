@@ -1,0 +1,88 @@
+/* 全國預算比較儀表板 - 自訂樣式與配色規範 */
+:root {
+  /* 類別色 (Categorical Colors - CIELAB 均衡版) */
+  --color-primary: #ECA072;     /* 1. 主色: 暖杏蜜橘 */
+  --color-secondary: #5DBACD;   /* 2. 次色: 霧靄青藍 */
+  --color-tertiary: #E89BB6;    /* 3. 第三色: 落櫻粉黛 */
+  --color-quaternary: #8FBA88;  /* 4. 第四色: 鼠尾草綠 */
+  --color-other: #CBD5E1;       /* 5. 其他/合併項目: 典雅淺灰 */
+
+  /* 循序色階 (暖杏橘系) */
+  --seq-orange-0: #FFF3EA;
+  --seq-orange-1: #FBD8C0;
+  --seq-orange-2: #ECA072;
+  --seq-orange-3: #CA6F35;
+  --seq-orange-4: #97481B;
+
+  /* 循序色階 (霧靄藍系) */
+  --seq-blue-0: #EBF7F9;
+  --seq-blue-1: #BCE2EB;
+  --seq-blue-2: #5DBACD;
+  --seq-blue-3: #2C8B9F;
+  --seq-blue-4: #0E5B6B;
+
+  /* 發散色階 (9 階) */
+  --div-neg-4: #0E5B6B; /* -100% 墨青 */
+  --div-neg-3: #257F92; /* -75% */
+  --div-neg-2: #5DBACD; /* -50% */
+  --div-neg-1: #B2DFE9; /* -25% */
+  --div-zero:  #F5F6F7; /* 0% 中立灰 */
+  --div-pos-1: #FBD9C2; /* +25% */
+  --div-pos-2: #ECA072; /* +50% */
+  --div-pos-3: #B4693A; /* +75% */
+  --div-pos-4: #884725; /* +100% 深栗橘 */
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Noto Sans TC", "Helvetica Neue", Arial, sans-serif;
+  background-color: #F8FAFC;
+  color: #1E293B;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 卡片與陰影 */
+.card-glass {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  border-radius: 1rem;
+}
+
+.card-kpi {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+}
+
+/* 自訂捲軸 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* 篩選標籤按鈕 Active 狀態 */
+.filter-btn-active {
+  background-color: #1E293B !important;
+  color: #FFFFFF !important;
+  font-weight: 600;
+}
+
+/* Tab 按鈕 Active */
+.tab-btn-active {
+  border-bottom: 2px solid #ECA072 !important;
+  color: #ECA072 !important;
+  font-weight: 600;
+}

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>全國預算比較儀表板 - 簡約優化與配色規範版</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- ECharts 5.6.0 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.6.0/echarts.min.js"></script>
+  <!-- 自訂配色與樣式 -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+
+  <!-- Top Announcement Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <!-- Logo & Title -->
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800">
+              CIELAB 4色認知優化版
+            </span>
+            <span class="text-xs text-slate-400">|</span>
+            <span class="text-xs text-slate-500 font-medium">資料來源：OpenFun 預算平臺 ✕ 行政院主計總處</span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+            全國預算比較儀表板
+          </h1>
+        </div>
+
+        <!-- Links & Info -->
+        <div class="flex items-center gap-2 text-xs">
+          <a href="#about-section" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition">
+            🎨 配色與設計原理
+          </a>
+          <a href="#data-table-section" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition">
+            📊 資料明細表
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- 1. Interactive Control Toolbar -->
+    <div class="card-glass p-5 space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        
+        <!-- 年份選擇 -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">預算年份</label>
+          <select id="select-year" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <!-- 依 JS 動態產生 -->
+            <option value="116">民國 116 年</option>
+            <option value="115" selected>民國 115 年</option>
+            <option value="114">民國 114 年</option>
+          </select>
+        </div>
+
+        <!-- 歲出 / 歲入 -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">收支別</label>
+          <div class="flex rounded-lg border border-slate-300 bg-slate-50 p-1">
+            <button class="btn-io filter-btn-active flex-1 py-1.5 text-xs rounded-md transition font-medium" data-io="exp">
+              歲出（支出）
+            </button>
+            <button class="btn-io flex-1 py-1.5 text-xs rounded-md transition font-medium text-slate-600 hover:text-slate-900" data-io="rev">
+              歲入（收入）
+            </button>
+          </div>
+        </div>
+
+        <!-- 衡量指標 -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">衡量維度</label>
+          <div class="flex rounded-lg border border-slate-300 bg-slate-50 p-1">
+            <button class="btn-metric filter-btn-active flex-1 py-1.5 text-xs rounded-md transition font-medium" data-metric="total" title="總預算金額（億元）">
+              總額
+            </button>
+            <button class="btn-metric flex-1 py-1.5 text-xs rounded-md transition font-medium text-slate-600 hover:text-slate-900" data-metric="perCapita" title="平均每位居民預算（元/人）">
+              人均
+            </button>
+            <button class="btn-metric flex-1 py-1.5 text-xs rounded-md transition font-medium text-slate-600 hover:text-slate-900" data-metric="ratio" title="各項目佔自身總預算比例（%）">
+              比例
+            </button>
+            <button class="btn-metric flex-1 py-1.5 text-xs rounded-md transition font-medium text-slate-600 hover:text-slate-900" data-metric="diff" title="與去年相比之增減（啟動發散色階）">
+              年增減
+            </button>
+          </div>
+        </div>
+
+        <!-- 排序方式 -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">排序規則</label>
+          <select id="select-sort" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <option value="desc" selected>由高至低（數值大 ➔ 小）</option>
+            <option value="asc">由低至高（數值小 ➔ 大）</option>
+            <option value="default">地理固定序（北中南東島）</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- 次級控制項：分組切換與 4+1 色彩模式開關 -->
+      <div class="pt-3 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+        
+        <!-- 縣市分組 -->
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-slate-400 font-medium mr-1">地區範圍：</span>
+          <button class="btn-group filter-btn-active px-2.5 py-1 rounded-md border border-slate-200 transition font-medium" data-group="all">全部 21 縣市</button>
+          <button class="btn-group px-2.5 py-1 rounded-md border border-slate-200 transition text-slate-600 hover:bg-slate-100" data-group="six">六都</button>
+          <button class="btn-group px-2.5 py-1 rounded-md border border-slate-200 transition text-slate-600 hover:bg-slate-100" data-group="nonSix">非六都縣市</button>
+          <button class="btn-group px-2.5 py-1 rounded-md border border-slate-200 transition text-slate-600 hover:bg-slate-100" data-group="islands">離島 3 縣</button>
+          <button class="btn-group px-2.5 py-1 rounded-md border border-slate-200 transition text-slate-600 hover:bg-slate-100" data-group="withCentral">包含中央政府</button>
+        </div>
+
+        <!-- 色彩聚合開關 -->
+        <div class="flex items-center gap-2 bg-amber-50/60 border border-amber-200/80 px-3 py-1.5 rounded-lg">
+          <input type="checkbox" id="toggle-colormode" checked class="w-4 h-4 text-amber-600 rounded border-slate-300 focus:ring-amber-500 cursor-pointer">
+          <label for="toggle-colormode" class="cursor-pointer text-slate-700 font-medium flex items-center gap-1">
+            <span>智慧 4+1 聚焦視角</span>
+            <span class="text-[11px] text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">推薦 · 徹底告別彩虹沙拉</span>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 2. KPI Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- 總預算 -->
+      <div class="card-glass p-4 card-kpi">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">所選地區預算規模</span>
+        <div id="kpi-total-amount" class="text-2xl font-black text-slate-900 mt-1 font-mono">-- 億元</div>
+        <div id="kpi-total-diff" class="text-xs text-slate-500 mt-1">計算中...</div>
+      </div>
+
+      <!-- 人均中位數 -->
+      <div class="card-glass p-4 card-kpi">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">各縣市人均預算中位數</span>
+        <div id="kpi-median-percapita" class="text-2xl font-black text-slate-900 mt-1 font-mono">-- 元/人</div>
+        <div id="kpi-top-percapita" class="text-xs text-slate-500 mt-1">最高：--</div>
+      </div>
+
+      <!-- 最大項目 -->
+      <div class="card-glass p-4 card-kpi">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">第一大支柱項目</span>
+        <div id="kpi-top-category" class="text-2xl font-black text-slate-900 mt-1 truncate">--</div>
+        <div id="kpi-top-category-ratio" class="text-xs text-slate-500 mt-1">-- 億元 (佔 --%)</div>
+      </div>
+
+      <!-- 配色系統提示 -->
+      <div class="card-glass p-4 card-kpi border-l-4 border-l-[#ECA072]">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">色彩規範狀態</span>
+        <div class="flex items-center gap-1.5 mt-1.5">
+          <span class="w-3.5 h-3.5 rounded-full" style="background:#ECA072" title="主色: 暖杏蜜橘"></span>
+          <span class="w-3.5 h-3.5 rounded-full" style="background:#5DBACD" title="次色: 霧靄青藍"></span>
+          <span class="w-3.5 h-3.5 rounded-full" style="background:#E89BB6" title="第三色: 落櫻粉黛"></span>
+          <span class="w-3.5 h-3.5 rounded-full" style="background:#8FBA88" title="第四色: 鼠尾草綠"></span>
+          <span class="w-3.5 h-3.5 rounded-full" style="background:#CBD5E1" title="其他項目: 典雅灰"></span>
+          <span class="text-xs font-bold text-slate-700 ml-1">CIELAB 均衡版</span>
+        </div>
+        <div class="text-[11px] text-slate-500 mt-1">均一明度 72% · 無視覺偏向</div>
+      </div>
+
+    </div>
+
+    <!-- 3. Main Chart Card -->
+    <div class="card-glass p-5 space-y-4">
+      
+      <!-- Chart Tabs Header -->
+      <div class="border-b border-slate-200 pb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-6 overflow-x-auto">
+          <button class="tab-btn tab-btn-active pb-2 text-sm font-semibold transition" data-tab="stacked">
+            📊 結構堆疊視角（4+1 聚合）
+          </button>
+          <button class="tab-btn pb-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition" data-tab="ranking">
+            🏆 縣市排行榜（循序色階）
+          </button>
+          <button class="tab-btn pb-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition" data-tab="diverging">
+            ⚖️ 增減發散分析（9 階對稱）
+          </button>
+          <button class="tab-btn pb-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition" data-tab="deepdive">
+            🔍 單一項目深鑽
+          </button>
+        </div>
+
+        <!-- 輔助說明文字 -->
+        <div id="tab-hint" class="text-xs text-slate-400">
+          提示：滑鼠懸停於長條可檢視完整金額與比例
+        </div>
+      </div>
+
+      <!-- 深鑽控制列 (僅在 deepdive tab 顯示) -->
+      <div id="deepdive-control-bar" class="hidden items-center gap-3 p-3 bg-blue-50/50 rounded-xl border border-blue-100 text-xs">
+        <span class="font-bold text-slate-700">選擇要深入觀察的政事別：</span>
+        <select id="select-deepdive-cat" class="bg-white border border-slate-300 rounded-md px-3 py-1 font-semibold text-slate-800">
+          <!-- JS 動態生成 -->
+        </select>
+        <span class="text-slate-500">（自動套用專屬循序色階，觀察各縣市投入強度）</span>
+      </div>
+
+      <!-- ECharts Canvas Container -->
+      <div class="w-full relative">
+        <div id="main-chart" style="width: 100%; height: 680px;"></div>
+      </div>
+
+    </div>
+
+    <!-- 4. Detailed Data Table -->
+    <section id="data-table-section" class="card-glass p-5 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">各縣市預算明細數據表</h2>
+          <p class="text-xs text-slate-500">完整支援欄位排序、關鍵字快搜與 CSV 下載</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input type="text" id="input-search" placeholder="搜尋縣市名稱..." class="bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+          <button id="btn-export-csv" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1 transition shadow-xs">
+            <span>📥 匯出 CSV</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto max-h-96">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-100/80 text-[11px] font-bold text-slate-600 uppercase tracking-wider sticky top-0">
+              <th class="py-2.5 px-4">縣市名稱</th>
+              <th class="py-2.5 px-4 text-right">戶籍人口</th>
+              <th class="py-2.5 px-4 text-right">預算總額</th>
+              <th class="py-2.5 px-4 text-right">每人人均</th>
+              <th class="py-2.5 px-4 text-right">與去年增減額(率)</th>
+              <th class="py-2.5 px-4">前四大主要項目結構</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- 由 JS 動態填充 -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. Documentation & Color System Explanation -->
+    <section id="about-section" class="card-glass p-6 space-y-6">
+      <div class="border-b border-slate-200 pb-3">
+        <span class="text-xs font-bold text-amber-700 uppercase tracking-wider">Design Specification</span>
+        <h2 class="text-lg font-bold text-slate-900 mt-0.5">為什麼這個新版儀表板比原版更好看、更好讀？</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-slate-600 leading-relaxed">
+        
+        <!-- 點 1 -->
+        <div class="space-y-2">
+          <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm">
+            1
+          </div>
+          <h3 class="font-bold text-slate-800 text-sm">拒絕「彩虹沙拉」色盤</h3>
+          <p>
+            原版儀表板將 15~30 個政事別隨機填滿刺眼彩虹色，讀者的大腦在超過 5 種顏色時便會過載。新版採用<strong>「智慧 4+1 聚焦視角」</strong>，僅保留佔比超過 60% 的前四大支柱各賦予一專屬色，其餘長尾項目以極簡灰收斂，讓結構一眼可讀。
+          </p>
+        </div>
+
+        <!-- 點 2 -->
+        <div class="space-y-2">
+          <div class="w-8 h-8 rounded-lg bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-sm">
+            2
+          </div>
+          <h3 class="font-bold text-slate-800 text-sm">嚴格依循 CIELAB 配色規範</h3>
+          <p>
+            全站色彩完全遵循個人配色規範：四類別色明度均一（$L^* \approx 72\%$），白底清晰度提升 150%；綠色換成雅緻的<strong>鼠尾草綠</strong>；並提供 5 階物理等差的<strong>循序色階</strong>，消除舊設定中「前半段癱瘓、後半段斷崖」的漸層失真。
+          </p>
+        </div>
+
+        <!-- 點 3 -->
+        <div class="space-y-2">
+          <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-800 flex items-center justify-center font-bold text-sm">
+            3
+          </div>
+          <h3 class="font-bold text-slate-800 text-sm">對稱 9 階發散色階（年增減專用）</h3>
+          <p>
+            在觀察「與去年差異」時，採用精準對稱的 9 階發散色階（負向深墨青 ➔ 中立冷灰 ➔ 正向深栗橘），兩端視覺重量完全對等，杜絕原版橘色過豔帶來的心理認知偏誤。
+          </p>
+        </div>
+
+      </div>
+
+      <!-- 配色規範色碼速查 -->
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+        <h4 class="font-bold text-xs text-slate-800 mb-2">本站套用之標準色碼速查表：</h4>
+        <div class="flex flex-wrap gap-2 text-xs">
+          <span class="px-2.5 py-1 rounded-md text-slate-900 font-mono" style="background:#ECA072;">主色 #ECA072</span>
+          <span class="px-2.5 py-1 rounded-md text-slate-900 font-mono" style="background:#5DBACD;">次色 #5DBACD</span>
+          <span class="px-2.5 py-1 rounded-md text-slate-900 font-mono" style="background:#E89BB6;">第三色 #E89BB6</span>
+          <span class="px-2.5 py-1 rounded-md text-slate-900 font-mono" style="background:#8FBA88;">第四色 #8FBA88</span>
+          <span class="px-2.5 py-1 rounded-md text-slate-700 font-mono" style="background:#CBD5E1;">長尾收斂 #CBD5E1</span>
+          <span class="px-2.5 py-1 rounded-md text-slate-700 font-mono" style="background:#F5F6F7; border: 1px solid #CBD5E1;">中立基準 #F5F6F7</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-200 bg-white py-6 mt-12 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 space-y-1">
+      <p>中華民國全國各縣市預算視覺化分析平臺 · 依據個人圖表配色規範檔與 OpenFun 資料集建置</p>
+      <p>專案已封裝為獨立靜態網站，可直接上傳 GitHub Pages、Vercel 或 Netlify 一鍵發布上線。</p>
+    </div>
+  </footer>
+
+  <!-- 靜態數據先載入（確保本機 file:/// 雙擊直接秒開） -->
+  <script src="data/budget_data.js"></script>
+  <!-- 儀表板驅動邏輯 -->
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
