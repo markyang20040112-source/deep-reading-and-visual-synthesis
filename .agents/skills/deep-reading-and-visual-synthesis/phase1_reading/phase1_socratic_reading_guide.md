@@ -14,7 +14,9 @@
 1. **初始化建檔（收到文章第一時間）**：
    - 建立 `00_source_article.md`：完整保存原始文章全文、標題與日期。
    - 建立 `01_phase1_socratic_log.md`：建立下方標準紀錄結構（純粹記錄本文知識，不混雜系統靈感）。
-2. **每輪對話後即時更新**：在 Step 1 ～ Step 5 每輪互動後，同步更新 `01_phase1_socratic_log.md`。
+2. **每輪對話後即時更新與跨裝置中繼同步**：
+   - 在 Step 1 ～ Step 5 每輪互動後，同步更新 `01_phase1_socratic_log.md`。
+   - **隨時換裝置同步（Checkpoint Sync）**：若使用者於第一階段中途要求「先同步到 Git／我要換裝置」，AI 確保當前進度與最新提問已寫入 `01_phase1_socratic_log.md` 後，立即執行 `git add -A && git commit -m "wip(phase1): checkpoint at Step X" && git push origin main`，支援跨裝置 `git pull` 無縫接續！
 
 ```markdown
 # 【第一階段思辨紀錄】<文章主題名稱>

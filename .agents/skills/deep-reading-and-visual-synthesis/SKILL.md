@@ -24,7 +24,9 @@ description: >-
 - `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`：即時同步更新該篇文章之思辨紀錄。
 - `reading_sessions/<YYYYMMDD_主題簡稱>/02_outputs/`：存放第二階段生成之圖譜、腳本、報告或簡報。
 - `reading_sessions/_pending_skill_inspirations.md`：**【跨階段靈感暫存檔】**（僅在過程中出現優化靈感時動態建立，處理完畢後**立即刪除**，不污染文章知識庫）。
-- **Git 自動同步規則（Git Auto-Sync）**：每當完成一篇閱讀專案之第二階段資料生成（`reading_sessions/<YYYYMMDD_主題簡稱>/`），或完成技能檔案之進化更新（Step E3）後，AI 必須自動於工作區根目錄執行 `git add -A`、`git commit -m "<清晰的更新摘要>"` 與 `git push origin main`，將最新生成的閱讀資產與技能改動同步推送至遠端 GitHub 倉庫（`https://github.com/markyang20040112-source/deep-reading-and-visual-synthesis.git`）。
+- **Git 雙模同步與跨裝置接續規則（Git Auto & On-Demand Sync）**：
+  1. **階段完成自動同步**：每當完成第二階段成果產出，或完成技能進化更新（Step E3）後，自動執行 `git add -A && git commit -m "..." && git push origin main`。
+  2. **跨裝置隨時同步（On-Demand Checkpoint Sync）**：在**第一階段或第二階段任何時刻**，只要使用者要求「先同步到 Git／我要換裝置」，AI 必須立即將當前進度寫入 `01_phase1_socratic_log.md`（標明目前停在哪個 Step），並立刻執行 `git add -A && git commit -m "wip(session): checkpoint sync for device handoff" && git push origin main`；在另一台裝置接續時，先執行 `git pull` 並讀取 `01_phase1_socratic_log.md` 即可無縫從斷點繼續！
 
 ---
 
