@@ -15,11 +15,26 @@ Grounded in 15+ empirical design & cognitive science studies:
 """
 
 import argparse
+import re
 import unicodedata
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 from matplotlib.path import Path
+
+NO_START_CHARS = set("），。、；：！？）」』】〉》. , ; : ! ? ) ] }")
+TOKEN_RE = re.compile(r"\d+(?:,\d+)+\+?|[A-Za-z0-9_.\-+%/]+|.")
+
+
+def sanitize_cjk_glyphs(text):
+    """Replaces glyphs missing in Windows Microsoft JhengHei (e.g. U+2794, U+2194) with safe equivalents."""
+    if not text:
+        return text
+    return (
+        text.replace("➔", "→")
+            .replace("➜", "→")
+            .replace("↔", "⇄")
+    )
 
 
 # ==============================================================================
@@ -145,55 +160,77 @@ def configure_cjk_fonts():
 
 
 def char_visual_width(ch):
-    """Returns approximate visual width in CJK em-units (Hanzi=1.0, ASCII=0.55)."""
+    """Returns approximate visual width in CJK em-units (Hanzi=1.0, ASCII=0.53)."""
     eaw = unicodedata.east_asian_width(ch)
-    return 1.0 if eaw in ("W", "F") else 0.55
+    return 1.0 if eaw in ("W", "F") else 0.53
 
 
-def wrap_cjk_text(text, max_em_width=20.0, hanging_indent="   "):
+def token_visual_width(tok):
+    return sum(char_visual_width(c) for c in tok)
+
+
+def compute_dynamic_max_em(card_width, fig_width_in=28.0, font_pt=9.6, pad_units=2.1):
     """
-    Wraps a single bullet string according to W3C CLREQ visual measure limits.
-    Returns a list of wrapped lines with clean hanging indentation.
+    Dynamically computes max_em_width from the card's actual physical width on the figure
+    so wrapped text fills 88%–92% of the card width with zero right-side empty gap.
     """
+    usable_width_units = max(8.0, card_width - pad_units)
+    usable_points = (usable_width_units / 100.0) * fig_width_in * 72.0
+    return usable_points / (font_pt * 1.03)
+
+
+def wrap_cjk_text(text, max_em_width=None, hanging_indent="   ", card_width=28.0, fig_width_in=28.0, font_pt=9.6):
+    """
+    Wraps a single bullet string according to W3C CLREQ visual measure limits,
+    keeping English words/numbers intact and enforcing Kinsoku Shori (no closing punctuation at line start).
+    """
+    text = sanitize_cjk_glyphs(text)
+    if max_em_width is None:
+        max_em_width = compute_dynamic_max_em(card_width, fig_width_in=fig_width_in, font_pt=font_pt)
+
+    indent_w = token_visual_width(hanging_indent)
     lines = []
-    current_line = ""
-    current_w = 0.0
-
-    for ch in text:
-        if ch == "\n":
+    for raw_seg in text.split("\n"):
+        tokens = TOKEN_RE.findall(raw_seg)
+        current_line = ""
+        current_w = 0.0
+        for tok in tokens:
+            w = token_visual_width(tok)
+            if current_w + w > max_em_width and current_line.strip():
+                if tok in NO_START_CHARS:
+                    current_line += tok
+                    lines.append(current_line)
+                    current_line = hanging_indent
+                    current_w = indent_w
+                else:
+                    lines.append(current_line)
+                    tok_clean = tok.lstrip(" ")
+                    current_line = hanging_indent + tok_clean
+                    current_w = indent_w + token_visual_width(tok_clean)
+            else:
+                current_line += tok
+                current_w += w
+        if current_line.strip():
             lines.append(current_line)
-            current_line = hanging_indent
-            current_w = sum(char_visual_width(c) for c in hanging_indent)
-            continue
-        w = char_visual_width(ch)
-        if current_w + w > max_em_width and current_line.strip():
-            lines.append(current_line)
-            current_line = hanging_indent + ch
-            current_w = sum(char_visual_width(c) for c in current_line)
-        else:
-            current_line += ch
-            current_w += w
-
-    if current_line.strip():
-        lines.append(current_line)
     return lines
 
 
-def prepare_card_lines(bullets, max_em_width=20.0):
+def prepare_card_lines(bullets, max_em_width=None, card_width=28.0, fig_width_in=28.0, font_pt=9.6):
     """Expands a list of bullet strings into wrapped visual lines."""
     all_lines = []
     for b in bullets:
-        wrapped = wrap_cjk_text(b, max_em_width=max_em_width)
+        wrapped = wrap_cjk_text(b, max_em_width=max_em_width, card_width=card_width, fig_width_in=fig_width_in, font_pt=font_pt)
         all_lines.extend(wrapped)
     return all_lines
 
 
-def compute_card_height(bullets, max_em_width=20.0, line_Step=1.72, header_pad=4.2, bottom_pad=1.5):
+def compute_card_height(bullets, max_em_width=None, line_Step=1.72, header_pad=4.2, bottom_pad=1.5,
+                        card_width=28.0, fig_width_in=28.0, font_pt=9.6):
     """
     Mathematically computes the exact card height in 0-100 canvas coordinates
-    so text NEVER overflows or collides with borders.
+    so text NEVER overflows or leaves awkward right-side whitespace.
     """
-    wrapped_lines = prepare_card_lines(bullets, max_em_width=max_em_width)
+    wrapped_lines = prepare_card_lines(bullets, max_em_width=max_em_width, card_width=card_width, fig_width_in=fig_width_in, font_pt=font_pt)
     return header_pad + len(wrapped_lines) * line_Step + bottom_pad, wrapped_lines
 
 
@@ -226,20 +263,25 @@ def draw_macro_zone(ax, x, y, width, height, zone_title, theme, is_dashed=False)
 
 def draw_modern_card(ax, x, y, width, title, bullets, theme,
                      accent_key="primary", badge_text=None,
-                     max_em_width=20.5, is_dashed=False, fixed_height=None):
+                     max_em_width=None, is_dashed=False, fixed_height=None,
+                     fig_width_in=28.0, font_pt=9.6):
     """
     Z-Order 3-4: Draws a Tufte-layered, Swiss-grid aligned card with:
     - Subtle drop shadow (figure-ground separation)
     - Pure neutral card surface (75% receding base)
     - 4pt Left Semantic Accent Strip & optional Badge Pill (5% preattentive focal cue)
-    - Auto-wrapped CJK typography (W3C CLREQ 1.65x leading)
+    - Dynamic width-calibrated CJK typography (fills 88%-92% of card width, zero right-side gap)
     Returns (x, y, width, height) for exact connector anchoring.
     """
+    title = sanitize_cjk_glyphs(title)
+    badge_text = sanitize_cjk_glyphs(badge_text)
     accent = theme["accents"].get(accent_key, theme["accents"]["primary"])
     accent_color = accent["main"]
     pill_bg = accent["pill_bg"]
 
-    calc_h, wrapped_lines = compute_card_height(bullets, max_em_width=max_em_width)
+    calc_h, wrapped_lines = compute_card_height(
+        bullets, max_em_width=max_em_width, card_width=width, fig_width_in=fig_width_in, font_pt=font_pt
+    )
     height = max(fixed_height, calc_h) if fixed_height else calc_h
 
     # 1. Subtle Elevation Shadow (zorder=2.5)

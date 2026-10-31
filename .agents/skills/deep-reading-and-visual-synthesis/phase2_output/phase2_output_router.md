@@ -6,7 +6,7 @@
 ---
 
 ## 一、 啟動條件與輸入準備
-1. **標準交接模式**：第一階段已完成 Step 5 收斂，直接讀取 `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`。
+1. **標準交接模式**：第一階段已完成 Step 5 收斂，直接讀取 `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`，**並優先檢視頂部「使用者輸出格式偏好與排除項」**（凡使用者曾表示不需生成某格式，嚴禁擅自生成）。
 2. **顯式跳關快速通道（Fast-Track Override）**：當使用者**明確要求跳過引導直接生成**時，先將原文存入 `00_source_article.md`，由 AI 自行提煉 3～5 個核心知識分支簡要寫入 `01_phase1_socratic_log.md`，隨即依下方流程產出檔案。
 
 ---
@@ -14,13 +14,13 @@
 ## 二、 按需載入與閉環進化四步驟（嚴禁一次載入所有格式規範）
 
 1. **Step 1（必讀共通規範）**：先讀取 **[visual_cognition_principles.md](./visual_cognition_principles.md)**，依文章屬性選擇 4 套科學主題色板之一（`Swiss Editorial` / `McKinsey Executive` / `Nature Academic` / `Warm Humanist`）。
-2. **Step 2（擇一讀取指定格式規範）**：
+2. **Step 2（擇一讀取指定格式規範，嚴守跨媒介圖表分流鐵律 `[ISO 9241 & Shneiderman 1996]`）**：
 
 | 使用者指定格式 | 唯一應開啟之特化規範檔 | 核心產出動作 |
 | :--- | :--- | :--- |
-| **格式 A：知識圖譜 / 概念圖**<br>*(.jpg / .png)* | **[visual_diagram_matplotlib_spec.md](./visual_diagram_matplotlib_spec.md)**<br>＋ 參考 [generate_mindmap.py](../scripts/generate_mindmap.py) | 依知識結構選配 `T1`～`T5` 拓撲版型，以 Python `matplotlib` 繪製並使用 `read_file` 驗收圖片。 |
-| **格式 B：深度報告 / 讀書筆記**<br>*(.md / .docx / .pdf)* | **[document_report_spec.md](./document_report_spec.md)** | 依需求選配 `B1`～`B4` 報告體裁與篇幅配額，搭配千層蛋糕標題、Ehrenberg 科學表格與公式三明治。 |
-| **格式 C：高階簡報 / 投影片**<br>*(.pptx / 簡報稿)* | **[presentation_slide_spec.md](./presentation_slide_spec.md)** | 執行 Alley 斷言—證據三區架構、選配 `S1`～`S6` 視覺證據版型、80/20 聚光燈與講者備忘稿分離。 |
+| **格式 A：知識圖譜 / 概念圖**<br>*(.jpg / .png)* | **[visual_diagram_matplotlib_spec.md](./visual_diagram_matplotlib_spec.md)**<br>＋ 參考 [generate_mindmap.py](../scripts/generate_mindmap.py) | • **Ausubel-Sweller 分圖鐵律**：若內容涵蓋原文脈絡、深度方法論思辨與跨篇整合，強制拆分為多張獨立圖譜，且**第 1 張必為「本篇文章整體內容架構主圖（Article Master Structure Map）」**。<br>• 以 `matplotlib` 動態換算卡片像素行寬（填滿 `88%~92%` 寬度，零右側留白），生成後用 `read_file` 驗收。 |
+| **格式 B：深度報告 / 讀書筆記**<br>*(.md / .docx / .pdf)* | **[document_report_spec.md](./document_report_spec.md)** | • 選配 `B1`～`B4` 體裁，執行 W3C CSS 章節連續性鎖定（防止標題孤立頁尾與異常空白）與峰終定律收束頁。<br>• **禁止將格式 A 的高密度小字心智圖 `.jpg` 縮小塞入 PDF**！報告內嵌圖表一律採用「免放大即可清晰閱讀的 HTML/SVG 原生大字級結構圖（字級 $\ge 10\text{pt}$）」。 |
+| **格式 C：高階簡報 / 投影片**<br>*(.pptx / 簡報稿)* | **[presentation_slide_spec.md](./presentation_slide_spec.md)** | • 執行 Alley 斷言—證據三區架構、頂部導航防溢框、並排卡片「水平平行對齊網格（Parallel Row Alignment）」、舒適行距（`1.35x`）與峰終定律結束頁（Closing Slide）。<br>• **禁止在 PPT 內塞入字極小的心智圖 `.jpg`**，一律以原生大字向量圖表（$\ge 13.5\text{pt}$）呈現。 |
 
 3. **Step 3（統一輸出、交付與 Git 同步）**：所有生成之圖片、Python 繪圖腳本、報告或簡報，一律儲存於 **`reading_sessions/<YYYYMMDD_主題簡稱>/02_outputs/`** 並向使用者交付；交付同時執行 `git add -A && git commit -m "docs(session): add reading session and outputs for <主題>" && git push origin main` 同步至 GitHub。
 4. **Step 4（整套流程結束後：靈感運用與刪除閉環）**：

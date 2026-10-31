@@ -21,6 +21,7 @@
 ```markdown
 # 【第一階段思辨紀錄】<文章主題名稱>
 - **建立時間**：YYYY-MM-DD | **原文路徑**：`./00_source_article.md` | **狀態**：Step X
+- **使用者輸出格式偏好與排除項（User Format Preferences & Exclusions）**：（即時記錄使用者於對話中提及之指定格式或明確表示「不需生成」之格式，Phase 2 嚴格遵守）
 
 ## 1. 問題意識錨點 (Step 0)
 - **核心挑戰之傳統認知 / 結構矛盾**：...
