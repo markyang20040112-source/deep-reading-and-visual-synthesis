@@ -180,10 +180,11 @@ def compute_dynamic_max_em(card_width, fig_width_in=28.0, font_pt=9.6, pad_units
     return usable_points / (font_pt * 1.03)
 
 
-def wrap_cjk_text(text, max_em_width=None, hanging_indent="   ", card_width=28.0, fig_width_in=28.0, font_pt=9.6):
+def wrap_cjk_text(text, max_em_width=None, hanging_indent="　 ", card_width=28.0, fig_width_in=28.0, font_pt=9.6):
     """
     Wraps a single bullet string according to W3C CLREQ visual measure limits,
-    keeping English words/numbers intact and enforcing Kinsoku Shori (no closing punctuation at line start).
+    keeping English words/numbers intact, using full-width hanging indent ('\\u3000 ')
+    to match the exact width of '● ', and enforcing Kinsoku Shori.
     """
     text = sanitize_cjk_glyphs(text)
     if max_em_width is None:
@@ -216,12 +217,20 @@ def wrap_cjk_text(text, max_em_width=None, hanging_indent="   ", card_width=28.0
     return lines
 
 
+def prepare_card_slots(bullets, max_em_width=None, card_width=28.0, fig_width_in=28.0, font_pt=9.6):
+    """Expands each bullet string into its own list of wrapped lines (1 slot per bullet)."""
+    slots = []
+    for b in bullets:
+        wrapped = wrap_cjk_text(b, max_em_width=max_em_width, card_width=card_width, fig_width_in=fig_width_in, font_pt=font_pt)
+        slots.append(wrapped)
+    return slots
+
+
 def prepare_card_lines(bullets, max_em_width=None, card_width=28.0, fig_width_in=28.0, font_pt=9.6):
     """Expands a list of bullet strings into wrapped visual lines."""
     all_lines = []
-    for b in bullets:
-        wrapped = wrap_cjk_text(b, max_em_width=max_em_width, card_width=card_width, fig_width_in=fig_width_in, font_pt=font_pt)
-        all_lines.extend(wrapped)
+    for slot in prepare_card_slots(bullets, max_em_width=max_em_width, card_width=card_width, fig_width_in=fig_width_in, font_pt=font_pt):
+        all_lines.extend(slot)
     return all_lines
 
 
@@ -343,18 +352,43 @@ def draw_modern_card(ax, x, y, width, title, bullets, theme,
     divider_y = y + height - 3.1
     ax.plot(
         [text_x, x + width - 0.8], [divider_y, divider_y],
-        color=theme["card_border"], linewidth=0.7, alpha=0.7, zorder=3.5
+        color=theme["card_border"], linewidth=0.8, alpha=0.8, zorder=3.5
     )
 
-    # 5. Wrapped Body Lines (W3C CLREQ Leading)
-    line_y = y + height - 3.85
-    for line in wrapped_lines:
-        ax.text(
-            text_x, line_y, line,
-            fontsize=9.6, color=theme["text_body"],
-            va="top", ha="left", zorder=4
-        )
-        line_y -= 1.72
+    # 5. Modular Horizontal Row Slots (Müller-Brockmann 1981 & W3C Box Alignment)
+    # Divides the card's vertical body space into N equal horizontal slots so that:
+    # (a) Across side-by-side cards, Bullet 1, Bullet 2, Bullet 3 start at identical Y coordinates!
+    # (b) Vertical space is evenly filled with zero bottom blank void!
+    slots = prepare_card_slots(
+        bullets, max_em_width=max_em_width, card_width=width, fig_width_in=fig_width_in, font_pt=font_pt
+    )
+    num_slots = len(slots)
+    if num_slots > 0:
+        body_top = divider_y - 0.20
+        body_bot = y + 0.45
+        avail_h = max(2.0, body_top - body_bot)
+        slot_h = avail_h / num_slots
+
+        for s_idx, slot_lines in enumerate(slots):
+            slot_top = body_top - s_idx * slot_h
+            if s_idx > 0:
+                ax.plot(
+                    [text_x, x + width - 0.8], [slot_top, slot_top],
+                    color=theme["card_border"], linewidth=0.55, alpha=0.55, linestyle="-", zorder=3.5
+                )
+            m_lines = max(1, len(slot_lines))
+            # Distribute lines comfortably within the slot while anchoring Line 1 at a fixed offset below slot_top
+            top_offset = 0.55
+            usable_slot_h = max(1.2, slot_h - top_offset - 0.35)
+            step = min(2.35, max(1.68, usable_slot_h / m_lines))
+            line_y = slot_top - top_offset
+            for line in slot_lines:
+                ax.text(
+                    text_x, line_y, line,
+                    fontsize=font_pt, color=theme["text_body"],
+                    va="top", ha="left", zorder=4
+                )
+                line_y -= step
 
     return (x, y, width, height)
 

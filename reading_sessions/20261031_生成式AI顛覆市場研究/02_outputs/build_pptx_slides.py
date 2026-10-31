@@ -45,12 +45,17 @@ C_WHITE       = RGBColor(255, 255, 255)
 FONT_CJK = "Microsoft JhengHei"
 
 
-def calc_pill_width(text_str, font_pt=9.5, pad_in=0.42):
-    """Calculates dynamic width in inches so text never overflows a rounded pill."""
+def calc_pill_width(text_str, font_pt=9.5, pad_in=0.22):
+    """
+    Fixes [I-13] (Tschichold Exact Text-Hug Sizing):
+    Calculates exact width in inches for Microsoft JhengHei Bold so the rounded pill
+    hugs the text snugly and symmetrically with zero excess empty bar on the right.
+    """
+    space_count = text_str.count(" ")
     cjk_count = sum(1 for ch in text_str if ord(ch) > 127)
-    ascii_count = len(text_str) - cjk_count
-    char_in = (font_pt / 72.0) * (cjk_count * 1.08 + ascii_count * 0.60)
-    return max(2.2, min(11.8, char_in + pad_in))
+    ascii_nonspace = len(text_str) - cjk_count - space_count
+    char_in = (font_pt / 72.0) * (cjk_count * 1.00 + ascii_nonspace * 0.52 + space_count * 0.30)
+    return max(1.6, min(11.8, char_in + pad_in))
 
 
 def set_slide_bg(slide, color):
@@ -69,8 +74,13 @@ def add_speaker_notes(slide, notes_text):
 def add_zone1_header(slide, slide_num_str, act_tag, assertion_headline):
     """
     Zone 1: Top 15% Height (0.0" to 1.18") - Sentence Assertion Headline
-    Fixes User Point 7: Dynamically sizes the top-left pill width to fit the full string
-    with comfortable left/right padding so text NEVER spills outside the badge!
+    Fixes [I-13] & [I-14]:
+    1. Top-left dark navy pill hugs the text length snugly (`pad_in=0.22`, `PP_ALIGN.CENTER`).
+    2. Three-stage equal vertical rhythm inside the 1.18" header bar:
+       - Top gap: 0.15"
+       - Dark pill: top = 0.15", height = 0.28" (bottom = 0.43")
+       - Middle breathing gap: 0.15" (eliminates text crowding against the pill!)
+       - Headline box: top = 0.58", height = 0.44" (`MSO_ANCHOR.MIDDLE`), bottom gap = 0.16"!
     """
     header_bg = slide.shapes.add_shape(
         MSO_SHAPE.RECTANGLE, Inches(0), Inches(0), Inches(13.333), Inches(1.18)
@@ -87,10 +97,10 @@ def add_zone1_header(slide, slide_num_str, act_tag, assertion_headline):
     accent.fill.fore_color.rgb = C_NAVY_MED
     accent.line.fill.background()
 
-    full_tag_str = f"{slide_num_str}  |  {act_tag}"
-    pill_w = calc_pill_width(full_tag_str, font_pt=9.5, pad_in=0.48)
+    full_tag_str = f"{slide_num_str} | {act_tag}"
+    pill_w = calc_pill_width(full_tag_str, font_pt=9.5, pad_in=0.22)
     pill = slide.shapes.add_shape(
-        MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.35), Inches(0.11), Inches(pill_w), Inches(0.30)
+        MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.35), Inches(0.15), Inches(pill_w), Inches(0.28)
     )
     pill.adjustments[0] = 0.5
     pill.fill.solid()
@@ -99,11 +109,11 @@ def add_zone1_header(slide, slide_num_str, act_tag, assertion_headline):
     tf_p = pill.text_frame
     tf_p.word_wrap = False
     tf_p.vertical_anchor = MSO_ANCHOR.MIDDLE
-    tf_p.margin_left = Inches(0.18)
-    tf_p.margin_right = Inches(0.18)
+    tf_p.margin_left = Inches(0.08)
+    tf_p.margin_right = Inches(0.08)
     tf_p.margin_top = tf_p.margin_bottom = 0
     p = tf_p.paragraphs[0]
-    p.alignment = PP_ALIGN.LEFT
+    p.alignment = PP_ALIGN.CENTER
     run = p.add_run()
     run.text = full_tag_str
     run.font.name = FONT_CJK
@@ -111,9 +121,10 @@ def add_zone1_header(slide, slide_num_str, act_tag, assertion_headline):
     run.font.bold = True
     run.font.color.rgb = C_SKY_LIGHT
 
-    tb = slide.shapes.add_textbox(Inches(0.35), Inches(0.45), Inches(12.6), Inches(0.68))
+    tb = slide.shapes.add_textbox(Inches(0.35), Inches(0.58), Inches(12.6), Inches(0.44))
     tf = tb.text_frame
     tf.word_wrap = True
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE
     tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
     p = tf.paragraphs[0]
     run = p.add_run()
@@ -198,9 +209,9 @@ def add_parallel_cards(slide, cards_spec, top=1.40, height=5.20, row_heights=Non
         bar.fill.fore_color.rgb = spot_color if is_spot else RGBColor(100, 116, 139)
         bar.line.fill.background()
 
-        # Dynamic Tag Pill inside card
+        # Dynamic Tag Pill inside card (snug text-hug sizing)
         tag_text = c["tag"]
-        pill_w = min(width - 0.36, calc_pill_width(tag_text, font_pt=9.5, pad_in=0.36))
+        pill_w = min(width - 0.36, calc_pill_width(tag_text, font_pt=9.5, pad_in=0.22))
         pill = slide.shapes.add_shape(
             MSO_SHAPE.ROUNDED_RECTANGLE, Inches(left + 0.18), Inches(top + 0.18), Inches(pill_w), Inches(0.28)
         )
@@ -211,11 +222,11 @@ def add_parallel_cards(slide, cards_spec, top=1.40, height=5.20, row_heights=Non
         tf_p = pill.text_frame
         tf_p.word_wrap = False
         tf_p.vertical_anchor = MSO_ANCHOR.MIDDLE
-        tf_p.margin_left = Inches(0.12)
-        tf_p.margin_right = Inches(0.12)
+        tf_p.margin_left = Inches(0.08)
+        tf_p.margin_right = Inches(0.08)
         tf_p.margin_top = tf_p.margin_bottom = 0
         p = tf_p.paragraphs[0]
-        p.alignment = PP_ALIGN.LEFT
+        p.alignment = PP_ALIGN.CENTER
         r = p.add_run()
         r.text = tag_text
         r.font.name = FONT_CJK
@@ -224,9 +235,10 @@ def add_parallel_cards(slide, cards_spec, top=1.40, height=5.20, row_heights=Non
         r.font.color.rgb = C_WHITE if is_spot else C_SLATE_TXT
 
         # Card Title
-        tb_t = slide.shapes.add_textbox(Inches(left + 0.18), Inches(top + 0.52), Inches(width - 0.36), Inches(0.50))
+        tb_t = slide.shapes.add_textbox(Inches(left + 0.18), Inches(top + 0.52), Inches(width - 0.36), Inches(0.48))
         tf_t = tb_t.text_frame
         tf_t.word_wrap = True
+        tf_t.vertical_anchor = MSO_ANCHOR.MIDDLE
         tf_t.margin_left = tf_t.margin_right = tf_t.margin_top = tf_t.margin_bottom = 0
         p_t = tf_t.paragraphs[0]
         r_t = p_t.add_run()
@@ -262,6 +274,7 @@ def add_parallel_cards(slide, cards_spec, top=1.40, height=5.20, row_heights=Non
             )
             tf_r = tb_r.text_frame
             tf_r.word_wrap = True
+            tf_r.vertical_anchor = MSO_ANCHOR.MIDDLE
             tf_r.margin_left = tf_r.margin_right = tf_r.margin_top = tf_r.margin_bottom = 0
 
             # Paragraph 1: Bold Bullet Header
@@ -306,9 +319,9 @@ top_bar.fill.solid()
 top_bar.fill.fore_color.rgb = C_SKY_LIGHT
 top_bar.line.fill.background()
 
-cover_tag = "HBR 深度閱讀與視覺化綜合產出  |  斷言—證據高階簡報 (Assertion-Evidence Deck)"
-pill0_w = calc_pill_width(cover_tag, font_pt=11, pad_in=0.55)
-pill0 = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.7), Inches(0.60), Inches(pill0_w), Inches(0.38))
+cover_tag = "HBR 深度閱讀與視覺化綜合產出 | 斷言—證據高階簡報 (Assertion-Evidence Deck)"
+pill0_w = calc_pill_width(cover_tag, font_pt=11, pad_in=0.24)
+pill0 = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.7), Inches(0.55), Inches(pill0_w), Inches(0.36))
 pill0.adjustments[0] = 0.5
 pill0.fill.solid()
 pill0.fill.fore_color.rgb = C_NAVY_MED
@@ -317,9 +330,9 @@ pill0.line.width = Pt(1.2)
 tf0 = pill0.text_frame
 tf0.word_wrap = False
 tf0.vertical_anchor = MSO_ANCHOR.MIDDLE
-tf0.margin_left = Inches(0.20)
+tf0.margin_left = tf0.margin_right = Inches(0.08)
 p0 = tf0.paragraphs[0]
-p0.alignment = PP_ALIGN.LEFT
+p0.alignment = PP_ALIGN.CENTER
 r0 = p0.add_run()
 r0.text = cover_tag
 r0.font.name = FONT_CJK
@@ -327,7 +340,7 @@ r0.font.size = Pt(11)
 r0.font.bold = True
 r0.font.color.rgb = C_SKY_LIGHT
 
-tb_title = s1.shapes.add_textbox(Inches(0.7), Inches(1.18), Inches(11.9), Inches(1.55))
+tb_title = s1.shapes.add_textbox(Inches(0.7), Inches(1.12), Inches(11.9), Inches(1.55))
 tf_title = tb_title.text_frame
 tf_title.word_wrap = True
 p_t1 = tf_title.paragraphs[0]
@@ -1015,9 +1028,9 @@ end_top.fill.fore_color.rgb = C_SKY_LIGHT
 end_top.line.fill.background()
 
 # End Badge Pill
-end_tag = "Slide 10  |  終幕：決策收束與立即行動檢核 (Executive Closing & Next Steps)"
-end_pill_w = calc_pill_width(end_tag, font_pt=10.5, pad_in=0.50)
-end_pill = s10.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.60), Inches(0.42), Inches(end_pill_w), Inches(0.36))
+end_tag = "Slide 10 | 終幕：決策收束與立即行動檢核 (Executive Closing & Next Steps)"
+end_pill_w = calc_pill_width(end_tag, font_pt=10.5, pad_in=0.24)
+end_pill = s10.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.60), Inches(0.38), Inches(end_pill_w), Inches(0.34))
 end_pill.adjustments[0] = 0.5
 end_pill.fill.solid()
 end_pill.fill.fore_color.rgb = C_NAVY_MED
@@ -1026,9 +1039,9 @@ end_pill.line.width = Pt(1.2)
 tf_ep = end_pill.text_frame
 tf_ep.word_wrap = False
 tf_ep.vertical_anchor = MSO_ANCHOR.MIDDLE
-tf_ep.margin_left = Inches(0.18)
+tf_ep.margin_left = tf_ep.margin_right = Inches(0.08)
 p_ep = tf_ep.paragraphs[0]
-p_ep.alignment = PP_ALIGN.LEFT
+p_ep.alignment = PP_ALIGN.CENTER
 r_ep = p_ep.add_run()
 r_ep.text = end_tag
 r_ep.font.name = FONT_CJK
@@ -1037,9 +1050,10 @@ r_ep.font.bold = True
 r_ep.font.color.rgb = C_SKY_LIGHT
 
 # Closing Headline
-tb_end_t = s10.shapes.add_textbox(Inches(0.60), Inches(0.90), Inches(12.1), Inches(0.95))
+tb_end_t = s10.shapes.add_textbox(Inches(0.60), Inches(0.88), Inches(12.1), Inches(0.80))
 tf_et = tb_end_t.text_frame
 tf_et.word_wrap = True
+tf_et.vertical_anchor = MSO_ANCHOR.MIDDLE
 p_et = tf_et.paragraphs[0]
 r_et = p_et.add_run()
 r_et.text = "以科學因果為舵、以生成式 AI 為帆：企業導入 AI 市場研究之三步落地行動守則"
