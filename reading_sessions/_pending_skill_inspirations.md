@@ -1,5 +1,0 @@
-# 技能優化靈感暫存檔 (_pending_skill_inspirations)
-
-- `[I-01] | [來源：使用者] | [靈感類別：視覺設計 / 功能流程] | [目標檔案：phase2_output/phase2_output_router.md, phase2_output/visual_diagram_matplotlib_spec.md] | [觀察痛點與具體改良構想：當第一階段思辨收斂出的內容密度極高（同時包含原文核心架構、多輪深度技術問答拆解、以及跨篇文章整合）時，若硬塞入單張圖譜會導致資訊過載與字體縮小；應建立「認知負荷自動分圖機制（Multi-Diagram Splitting Protocol）」，自動拆分為「核心文意圖」、「深度思辨/方法論專題圖」與「跨篇系統整合圖」等多張獨立高解析度圖譜。]`
-- `[I-02] | [來源：AI] | [靈感類別：視覺設計 / 技能腳本工程] | [目標檔案：scripts/generate_mindmap.py, phase2_output/visual_diagram_matplotlib_spec.md] | [觀察痛點與具體改良構想：(1) Windows 微軟正黑體 (Microsoft JhengHei) 缺字元 U+2794 (➔) 與 U+2194 (↔)，會產生缺字方框 (Tofu box)，應在 generate_mindmap.py 加入字元自動淨化映射（統一轉為安全字元 → 與 <->/⇄）；(2) wrap_cjk_text 逐字元斷行時會把英文單字從中間切斷（如 WeightWatch-ers）或讓右括號「）」「」」落於行首，應升級為符合 W3C CLREQ「避頭點（Kinsoku Shori）」與「英文單字不拆字」的智慧斷行演算法。]`
-- `[I-03] | [來源：AI] | [靈感類別：視覺設計 / 報告排版規範] | [目標檔案：phase2_output/document_report_spec.md] | [觀察痛點與具體改良構想：在 A4 直式（Portrait）PDF 深度報告中嵌入 16:10 寬幅高密度知識圖譜時，若維持直式頁面會導致圖譜縮得太小難以閱讀；若切換為 `@page landscape_diagram { size: A4 landscape; margin: 10mm 14mm; }` 橫式跨頁展示，則必須限制圖片高度 `max-height: 150mm; width: auto; max-width: 100%;` 並設定 `.diagram-page { page-break-inside: avoid; }`，以防圖譜與上方標題因超過 190mm 可印高度而被迫拆成兩頁。]`

@@ -5,6 +5,15 @@
 
 ---
 
+## 零、 Ausubel-Sweller 認知負荷自動分圖與「宏觀主圖優先」鐵律 `[依據：Ausubel 1968; Sweller 2019]`
+
+1. **禁止將全篇架構、深度技術問答與跨篇整合硬塞入單張圖譜**：當第一階段收斂之知識同時涵蓋「原文完整脈絡」、「深層方法論／數學推導批判」與「跨多篇文章系統合體」時，必須執行 **分段原則（Segmenting Principle）** 自動拆分為 2～4 張獨立高解析度圖譜。
+2. **第 1 張圖強制為「本篇文章整體內容架構主圖（Article Master Structure Map）」**：
+   - 根據 **Ausubel 前導組織體與宏觀結構理論（Macrostructure Subsumption Theory）**，**編號 `01` 的首張圖譜永遠必須 100% 聚焦於「本篇文章本身的完整內容脈絡與章節邏輯骨架」**（從問題背景／調查現況 $\rightarrow$ 核心分析矩陣 $\rightarrow$ 各大主軸論點與案例 $\rightarrow$ 風險與結論建議），先為讀者建立完整的單篇認知地圖。
+   - **編號 `02` 以後的圖譜**，才依序展開「核心概念與機制深度拆解圖」、「方法論限制與破局批判專題圖」以及「跨篇合體終極架構圖」。
+
+---
+
 ## 一、 五大動態拓撲版型選型矩陣 `[依據：Eppler 2006; Novak 2008; Tversky 2011]`
 
 繪圖前必須先根據文章知識結構，從以下 5 種拓撲版型中挑選最匹配的一種（嚴禁將所有文章都畫成單一放射狀心智圖）：
@@ -19,24 +28,28 @@
 
 ---
 
-## 二、 程式級渲染與抗破版硬性規則 `[依據：Purchase 1997; Tufte 1990; W3C CLREQ]`
+## 二、 程式級渲染、動態像素行寬與抗破版硬性規則 `[依據：Purchase 1997; Tufte 1990; W3C CLREQ; Bringhurst 2012]`
 
 直接匯入或擴充 [generate_mindmap.py](../scripts/generate_mindmap.py) 內建函數執行：
 
 1. **畫布與無損銳利度參數**：
-   - `figsize=(28, 18.5)`、`dpi=240`、`pil_kwargs={'quality': 98, 'subsampling': 0}`（強制關閉色度抽樣，消除中文字毛邊）。
-   - 字型安全：僅使用基本幾何符號（`→`, `←`, `↔`, `●`, `★`），**嚴禁使用 Emoji** 以防缺字方框（Tofu box）。
-2. **自動斷行與動態框高計算（100% 根絕文字出框與重疊）**：
-   - 呼叫 `compute_card_height(bullets, max_em_width=20.5)`：依全形漢字 `1.0`、英數 `0.55` 自動斷行並加上懸掛縮排，精算出每張卡片所需高度 $H$，再依垂直間距 $\ge 2.5$ 排定 $Y$ 座標。
-3. **Tufte 四層 Z-Order 深度分離**：
+   - `figsize=(28, 18.5)`（或寬幅 `24x15`）、`dpi=240`、`pil_kwargs={'quality': 98, 'subsampling': 0}`（強制關閉色度抽樣，消除中文字毛邊）。
+   - **字型安全與自動淨化（Glyph Sanitization）**：微軟正黑體缺 `U+2794` (`➔`) 與 `U+2194` (`↔`)，繪圖前必須透過 `sanitize_cjk_glyphs()` 自動映射為安全字元 `→` 與 `⇄` / `<->`，**嚴禁出現缺字方框（Tofu box）**。
+2. **動態像素行寬換算公式（100% 根絕「框內右側大片空白」與「文字出框」）`[W3C CLREQ & Palmer 1992]`**：
+   - **嚴禁寫死過小的固定字數上限（如把寬卡設為 `max_em_width=20` 導致右側空出 40% 白邊）**！
+   - 必須呼叫 `compute_dynamic_max_em(card_width, fig_width_in, body_fontsize)`，依卡片在畫布上的實際物理寬度（Points）扣除左右對稱內距後，動態算出精確的 `max_em_width`：
+     $$\text{Max\_Em\_Width} = \frac{\left(\frac{W_{\text{card}}}{100} \times \text{Fig\_Width\_In} \times 72\right) - \text{Left\_Right\_Padding\_Pt}}{\text{Font\_Size\_Pt} \times 1.03}$$
+     確保每一行文字自然延伸並填滿卡片寬度的 **`88%～92%`**！
+   - **CJK 避頭尾點與英文單字不拆字分詞（Token-Aware Wrapping）**：使用正規表達式將英文單字、網址、帶逗號數字（如 `Outset.ai`, `1,000+`）視為不可分割之整體 Token，並遵守 W3C CLREQ 避頭點規則（禁止 `）`、`」`、`】`、`、`、`。` 落於行首）。
+3. **Tufte 四層 Z-Order 深度分離與連線膠囊走廊定位 `[Purchase 1997]`**：
    - `zorder = 1`：`draw_macro_zone()` 繪製 Palmer 共同區域極淺底色容器框。
-   - `zorder = 2`：`draw_labeled_bezier()` 繪製 **零交叉（Zero Edge Crossings, Purchase 1997）** 平滑連線。
+   - `zorder = 2`：`draw_labeled_bezier()` 繪製 **零交叉（Zero Edge Crossings）** 平滑連線。
    - `zorder = 3~4`：`draw_modern_card()` 繪製微陰影、純白/暖白卡面、左側 4pt 語意強調色條、標題膠囊與內文。
-   - `zorder = 5`：連接線中點自動繪製 **Novak 關係謂詞膠囊標籤**（如 `導致權重失真`、`L1 懲罰收斂`），嚴禁無意義空白連線。
+   - `zorder = 5`：連接線關係謂詞膠囊標籤**必須精確落於兩張卡片之間的空白走廊中央（或獨立停靠於卡片頂部/底部邊緣外），嚴禁壓在卡片左右側邊框線上造成文字重疊**。
 
 ---
 
 ## 三、 產出後強制驗收 (Visual Quality Gate)
 執行 Python 腳本生成圖片後，**必須呼叫 `read_file` 檢視生成的圖片檔**，確認：
-- [ ] **0 文字穿框或截斷**、**0 卡片重疊**、**0 連線交叉打結**。
-- [ ] 主要連接線皆具備清晰的 **Novak 關係謂詞膠囊標籤**，且整體留白率 $\ge 35\%$。
+- [ ] **0 文字穿框或截斷**、**0 框內右側異常大片空白（文字須填滿卡片寬度 88%~92%）**。
+- [ ] **0 卡片或連線膠囊壓框重疊**、**0 英文單字被腰斬斷行**、**0 連線交叉打結**。

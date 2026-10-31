@@ -35,6 +35,15 @@
 - **(中) 獨立置中標準 LaTeX 公式**：如 $$\min_{\beta} \left\{ \frac{1}{2N} \sum_{i=1}^N (y_i - X_i\beta)^2 + \lambda \sum_{j=1}^p |\beta_j| \right\}$$
 - **(下) 參數物理意義與極端邊界推演**：解釋各變數之真實商業/系統意義，並推演參數趨近極端值（如 $\lambda \to 0$ vs. $\lambda$ 適中）時的系統行為。
 
-### 4. W3C CLREQ 出版級長文樣式（輸出 HTML / PDF / DOCX 時）
-- 單欄最大行寬 `36em`（每行 34～38 漢字），正文字級 `11pt`，行高 `1.72`，段距 `1.2em`。
-- 語意提示框（Callout Boxes）採用左側 `4px` 強調色條搭配極淺底色，突顯歷史反面警示與落地守則。
+### 4. W3C CLREQ 出版級長文樣式與分頁連續性規範 `[依據：W3C CLREQ; W3C CSS Fragmentation Level 3; Müller-Brockmann 1981; ISO 9241-303; Kahneman 1993]`
+1. **章節連續性鎖定與防無故換頁留白（Section Continuity & Pagination Control）**：
+   - **嚴禁「章節標題與導言留在頁尾、子內容全部跳到下一頁」的斷裂排版**！在 HTML/PDF 中，必須將每個章節的「`h2`/`h3` 標題 ＋ 前導段落 ＋ 第一個內容區塊（如第一張卡片或表格前段）」包入同一個 `.section-anchor-group { break-inside: avoid-page; }` 容器中；若頁尾空間不足以同時容納標題與第一個內容塊，則整組標題與內容一起換頁。
+   - **解除過度鎖定（Avoid Over-Constrained Blocks）**：切勿對高度超過半頁的大型複合容器設死 `break-inside: avoid`（這會導致頁面下半部留白 40% 以上）；應緊湊化區塊內外距（Margin/Padding），讓子卡片與段落自然流式銜接（單頁填充率須達 `85%～92%`），並設定 `p { orphans: 3; widows: 3; }`。
+2. **ISO 9241 跨媒介圖表分流鐵律（嚴禁塞入字極小的高密度心智圖 `.jpg`）**：
+   - **報告內嵌圖表必須「不須放大即可 100% 清晰閱讀」**！**絕對禁止將格式 A 的高資訊密度心智圖 `.jpg` 縮小塞入 PDF 報告頁面中**（縮小後字級低於 `5pt`，違反 ISO 9241 最小視角 20 角分標準）。
+   - 報告中若需呈現架構圖或流程圖，**必須使用「HTML/CSS/SVG 原生渲染之大字級結構圖（Native Structural Diagrams，圖內最小字級 $\ge 9.5\text{pt}\sim 10.5\text{pt}$）」**，至於高密度全景 `.jpg` 心智圖則以獨立檔案交付並於文末附錄提供索引說明。
+3. **列點呼吸感行距與並排平行對齊網格（Parallel Row Alignment）**：
+   - 條列項禁止將長文擠在同一行或使用過密行距；必須將「`● 【核心概念標題】`」加粗突顯，內文維持 `line-height: 1.72`、列點間距 `margin-bottom: 9px`。
+   - 當使用雙欄或三欄並排呈現對照列點時（如「東牆 vs. 西牆」或「道・法・術」），**必須使用 CSS Grid / Table-Row 對齊機制，確保左右並排卡片的第 1 個列點、第 2 個列點在水平方向上嚴格平行對齊（Horizontal Baseline Alignment）**！
+4. **Kahneman 峰終定律「終章總結與行動封底（Executive Closing Block）」**：
+   - 報告文末**嚴禁在講完最後一節後突兀結束**！必須配置正式的「**終章收束與立即行動檢核區（Executive Closing & Action Seal）**」，收斂全篇 3 大黃金守則、下一步行動清單與文件簽署資訊，達成有頭有尾的完整閱讀體驗。
