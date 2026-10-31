@@ -1,0 +1,30 @@
+# 第二階段：科學化視覺統整與模組化輸出總控台 (Phase 2 Router)
+
+> [!CAUTION]
+> **全方位靈感暫存與防私改鐵律**：在生成與微調成果期間，若使用者或 AI 產生**任何有關本技能的優化靈感（不限於功能或視覺設計，亦包含技能 `.md` 檔案本身的寫法、格式編排、目錄結構或 Token 讀取效率等一切層面）**，**當下僅寫入獨立暫存檔 `reading_sessions/_pending_skill_inspirations.md`**，等下方 Step 3 成果正式交付完畢後，才於 Step 4 啟動「技能實證進化與清理流程」，**絕對禁止私自在背後偷改技能檔案**！
+
+---
+
+## 一、 啟動條件與輸入準備
+1. **標準交接模式**：第一階段已完成 Step 5 收斂，直接讀取 `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`。
+2. **顯式跳關快速通道（Fast-Track Override）**：當使用者**明確要求跳過引導直接生成**時，先將原文存入 `00_source_article.md`，由 AI 自行提煉 3～5 個核心知識分支簡要寫入 `01_phase1_socratic_log.md`，隨即依下方流程產出檔案。
+
+---
+
+## 二、 按需載入與閉環進化四步驟（嚴禁一次載入所有格式規範）
+
+1. **Step 1（必讀共通規範）**：先讀取 **[visual_cognition_principles.md](./visual_cognition_principles.md)**，依文章屬性選擇 4 套科學主題色板之一（`Swiss Editorial` / `McKinsey Executive` / `Nature Academic` / `Warm Humanist`）。
+2. **Step 2（擇一讀取指定格式規範）**：
+
+| 使用者指定格式 | 唯一應開啟之特化規範檔 | 核心產出動作 |
+| :--- | :--- | :--- |
+| **格式 A：知識圖譜 / 概念圖**<br>*(.jpg / .png)* | **[visual_diagram_matplotlib_spec.md](./visual_diagram_matplotlib_spec.md)**<br>＋ 參考 [generate_mindmap.py](../scripts/generate_mindmap.py) | 依知識結構選配 `T1`～`T5` 拓撲版型，以 Python `matplotlib` 繪製並使用 `read_file` 驗收圖片。 |
+| **格式 B：深度報告 / 讀書筆記**<br>*(.md / .docx / .pdf)* | **[document_report_spec.md](./document_report_spec.md)** | 依需求選配 `B1`～`B4` 報告體裁與篇幅配額，搭配千層蛋糕標題、Ehrenberg 科學表格與公式三明治。 |
+| **格式 C：高階簡報 / 投影片**<br>*(.pptx / 簡報稿)* | **[presentation_slide_spec.md](./presentation_slide_spec.md)** | 執行 Alley 斷言—證據三區架構、選配 `S1`～`S6` 視覺證據版型、80/20 聚光燈與講者備忘稿分離。 |
+
+3. **Step 3（統一輸出、交付與 Git 同步）**：所有生成之圖片、Python 繪圖腳本、報告或簡報，一律儲存於 **`reading_sessions/<YYYYMMDD_主題簡稱>/02_outputs/`** 並向使用者交付；交付同時執行 `git add -A && git commit -m "docs(session): add reading session and outputs for <主題>" && git push origin main` 同步至 GitHub。
+4. **Step 4（整套流程結束後：靈感運用與刪除閉環）**：
+   - 成果交付完畢後，檢查 `reading_sessions/_pending_skill_inspirations.md` 是否存在（或 AI 自身對本次流程是否有反思靈感）。若有待處理靈感，依序執行：
+     - **Step E1（提議與徵求同意）**：列出暫存靈感，詢問使用者是否同意檢索相關學術研究來升級技能（若使用者選擇不採用，**當下立即刪除該條靈感或暫存檔**）。
+     - **Step E2（查證文獻與修改方案確認）**：獲同意後檢索權威文獻論證，向使用者回報「查證依據 ＋ 預計修改之檔案與具體規則」，請使用者確認。
+     - **Step E3（寫入技能庫、刪除暫存檔並 Git 同步）**：獲使用者確認後，將文獻補入 `../THEORY_ARCHIVE.md`，將精煉規則更新至對應規範檔，**隨即立即刪除 `reading_sessions/_pending_skill_inspirations.md` 暫存檔**，並執行 `git add -A && git commit -m "feat(skill): <進化更新摘要>" && git push origin main` 推送至遠端倉庫！
