@@ -658,50 +658,43 @@ re3.font.size = Pt(11.5)
 re3.font.bold = True
 re3.font.color.rgb = C_SPOT_GOLD
 
+# Dynamic Tri-Axial Visual Decision Engine: Embed Live Demand Curve Chart next to cards!
+chart_curve_path = os.path.join(OUT_DIR, "chart_demand_curve_confounding.png")
+if os.path.exists(chart_curve_path):
+    s5.shapes.add_picture(chart_curve_path, Inches(0.40), Inches(3.18), Inches(5.15), Inches(3.48))
+
+# Right Column: 2 Parallel Explanatory Cards
 add_parallel_cards(
     s5,
     [
         {
-            "left": 0.40, "width": 3.95,
-            "tag": "公式項拆解 (1)：X 與 Y",
-            "title": "測試價格 (X) → 購買意願 (Y)",
+            "left": 5.75, "width": 7.18,
+            "tag": "公式項拆解：真人 do(X) vs. AI 語境混淆 P_LLM(Z|X)",
+            "title": "因果機制失靈與平坦曲線實證分析",
             "rows": [
-                ("● 【盲測實驗設計目的】", "將受試者隨機分組（A 組看 1,000 元、B 組看 5,000 元），測量單純調高價格 X 對購買率 Y 的獨立因果斜率。"),
-                ("● 【真實人類反應】", "看到 5,000 元時，依據日常物價基準果斷拒買，需求曲線正常向右下傾斜。"),
-            ],
-            "is_spotlight": False,
-        },
-        {
-            "left": 4.68, "width": 3.95,
-            "tag": "公式項拆解 (2)：混淆變數 Z",
-            "title": "歷史價格與店內競品價格 (Z)",
-            "rows": [
-                ("● 【隱藏的背景物價錨點 Z】", "顧客心中的參考價格錨點（過往買過的歷史價格、貨架旁競爭對手的售價 1,200 元）。"),
-                ("● 【隨機分派獨立性 P(Z|X)=P(Z)】", "在真人實驗中，研究員改動標價 X，不會改變受試者腦中對競品價格 Z 的既有記憶。"),
-            ],
-            "is_spotlight": False,
-        },
-        {
-            "left": 8.96, "width": 3.97,
-            "tag": "★ 聚光燈拆解 (3)：P_LLM(Z | X)",
-            "title": "AI 自動腦補語境共現 (Confounding)",
-            "rows": [
-                ("● ★ 【語境條件聯想本能】", "LLM 本質是根據上下文猜測合理語境，無法將測試價格 X 視為獨立的「隨機抽樣」。"),
-                ("● ★ 【致命腦補效應】", "看到 X=5,000 元時自動調高 P_LLM(Z|X)，腦補「店內競品與歷史價 Z 也全是 5,000 元」，誤判高價合理而照買不誤！"),
+                (
+                    "● 【左圖藍線：真人隨機盲測 (do(X))】",
+                    "真人受試者活在真實世界，心中競品價格 Z（1,200 元）獨立於測試價格 X。當標價從 1,000 調高至 5,000 元時，購買意願自 82% 陡降至 14%，呈現正常的向下傾斜價格彈性曲線。"
+                ),
+                (
+                    "● ★ 【左圖紅虛線：AI 語境腦補平坦失真】",
+                    "生成式 AI 缺乏物理世界實體錨點，看到 X=5,000 元時自動調高 P_LLM(Z|X)，腦補「店內其他競品或歷史價格也全是 5,000 元」，導致高價照買不誤（維持 65%~62% 平坦曲線），嚴重低估顧客對漲價的抗拒！"
+                ),
             ],
             "is_spotlight": True, "spot_color": C_SPOT_RED, "spot_bg": C_SPOT_REDBG,
         },
     ],
-    top=3.26, height=3.38, row_heights=[1.08, 1.08]
+    top=3.18, height=3.48, row_heights=[1.55, 1.55]
 )
 add_zone3_footer(
-    s5, "絕對禁止直接拿未經統計校準的生成式 AI 進行「單一變數盲測訂價實驗」，否則將嚴重低估顧客對漲價的抗拒度！"
+    s5, "★ 決策鐵律：絕對禁止拿生成式 AI 進行單一變數「盲測訂價實驗」；終局定價與價格彈性必須強制回歸真人隨機 A/B Test！"
 )
 notes_s5 = (
-    "【講者備忘稿 Slide 05】這頁公式三明治揭開了盲測訂價失靈的數學本質：真人盲測是獨立因果干預 do(X)，而 LLM 是語境條件機率 P(Z|X)。"
+    "【講者備忘稿 Slide 05】動態三維視覺決策引擎在此頁主動判定：本頁公式涉及連續變數函數對抗，因此左側自動繪製『因果推論實證對照曲線圖』，"
+    "直觀呈現真人正常需求曲線 vs. AI 平坦失真曲線；右側精準拆解數學公式背後的語境腦補機制。"
 )
 add_speaker_notes(s5, notes_s5)
-slides_md_records.append(("Slide 05：【第二幕：盲測訂價失靈之因果公式拆解】版型 S6", "生成式 AI 在盲測訂價中會自動腦補競品與歷史價同步變貴，導致需求曲線平坦失真", notes_s5))
+slides_md_records.append(("Slide 05：【第二幕：盲測訂價失靈之因果公式拆解】版型 S6 (公式 ＋ 實體曲線圖)", "生成式 AI 在盲測訂價中會自動腦補競品與歷史價同步變貴，導致需求曲線平坦失真", notes_s5))
 
 
 # ==============================================================================

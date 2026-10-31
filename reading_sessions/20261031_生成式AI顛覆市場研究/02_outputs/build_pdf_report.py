@@ -592,6 +592,13 @@ HTML_CONTENT = """<!DOCTYPE html>
     </tbody>
   </table>
 
+  <div style="text-align: center; margin: 9px 0 12px 0; break-inside: avoid; page-break-inside: avoid;">
+    <img src="chart_gbk_ai_adoption.png" style="width: 78%; max-width: 540px; border-radius: 6px; border: 1px solid #CBD5E1;" alt="GBK 實證調查：生成式 AI 市調任務滲透與價值認同">
+    <div style="font-size: 8.4pt; color: #64748B; margin-top: 4px; font-weight: bold;">
+      ▲ 圖 1：GBK Collective 170 位市調專家調查：各核心任務滲透率與 Knaflic 80/20 策略時間釋放聚光燈
+    </div>
+  </div>
+
   <!-- SECTION 2 -->
   <h2>貳、【概念拆解一】資料結構光譜與「私有小型模型 vs. 公開大型模型」之取捨機制</h2>
   <p>在導入客製化合成數據時，企業首當其衝面臨<strong>「數據機密隱私」與「模型語意理解深度」的兩難權衡</strong>（見原文第 10 頁）。要理解為何小型私有模型（如美國陸軍與國土安全部採用的 Rockfish Data）大多只能處理結構化與半結構化數據，而公開大型模型才能處理非結構化質化數據，必須從資料科學的三階結構光譜拆解：</p>
@@ -645,6 +652,13 @@ HTML_CONTENT = """<!DOCTYPE html>
       <strong>(下) 參數物理意義與極端邊界推演：</strong><br>
       • <strong>自變數 X（測試價格）與應變數 Y（購買決策）</strong>：研究員欲測量單純調高 X（如 1,000 元 → 5,000 元）對 Y 的獨立因果效應。<br>
       • <strong>混淆變數 Z（Confounder：歷史價格／店內競品價格）</strong>：在真人盲測中，受試者活在真實物價世界，看到測試商品標價 5,000 元時，心中對其他競品價格 Z（1,200 元）的認知不變，故果斷拒買。但生成式 AI 難以將價格 X 視為隨機抽樣，看到 5,000 元時會自動在隱空間調高 Z（腦補「店內其他產品或歷史價格也都是 5,000 元」），使高價購買顯得合理，徹底打亂 X 與 Y 的真實關係！
+    </div>
+  </div>
+
+  <div style="text-align: center; margin: 9px 0 12px 0; break-inside: avoid; page-break-inside: avoid;">
+    <img src="chart_demand_curve_confounding.png" style="width: 78%; max-width: 540px; border-radius: 6px; border: 1px solid #CBD5E1;" alt="因果推論實證對照：定價需求曲線失靈機制">
+    <div style="font-size: 8.4pt; color: #64748B; margin-top: 4px; font-weight: bold;">
+      ▲ 圖 2：真人隨機盲測 P(Y|do(X)) 向下傾斜需求曲線 vs. AI 語境腦補混淆 P_LLM(Y|X) 平坦失真曲線實證對照（HCL 科學色尺對照）
     </div>
   </div>
 
