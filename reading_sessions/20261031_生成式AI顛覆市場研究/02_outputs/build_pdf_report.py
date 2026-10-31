@@ -196,7 +196,7 @@ HTML_CONTENT = """<!DOCTYPE html>
     width: 33.33%;
     background-color: #FFFFFF;
     border: 1px solid #CBD5E1;
-    border-top: 3.5px solid #1E40AF;
+    border-top: 3.5px solid #425A80;
     border-bottom: none;
     border-radius: 5px 5px 0 0;
     padding: 6px 9px;
@@ -206,11 +206,14 @@ HTML_CONTENT = """<!DOCTYPE html>
     color: #0F172A;
     vertical-align: top;
   }
-  table.schematic-parallel-table th.col-success {
-    border-top-color: #047857;
+  table.schematic-parallel-table th.col-dao {
+    border-top-color: #425A80; /* Blue H=250 */
   }
-  table.schematic-parallel-table th.col-danger {
-    border-top-color: #BE123C;
+  table.schematic-parallel-table th.col-fa {
+    border-top-color: #8C581E; /* Ochre H=35 */
+  }
+  table.schematic-parallel-table th.col-shu {
+    border-top-color: #1D6E58; /* Teal H=165 */
   }
   table.schematic-parallel-table td {
     width: 33.33%;
@@ -243,19 +246,19 @@ HTML_CONTENT = """<!DOCTYPE html>
     vertical-align: top;
     background-color: #FFFFFF;
     border: 1px solid #CBD5E1;
-    border-left: 4.5px solid #1E40AF;
+    border-left: 4.5px solid #425A80;
     border-radius: 5px;
     padding: 8px 11px;
     font-size: 9.4pt;
     line-height: 1.64;
   }
   .parallel-bullet-table td.east-wall {
-    border-left-color: #BE123C;
-    background-color: #FFF1F2;
+    border-left-color: #8C581E; /* Ochre H=35 */
+    background-color: #FFF8EE;
   }
   .parallel-bullet-table td.west-wall {
-    border-left-color: #B45309;
-    background-color: #FFFBEB;
+    border-left-color: #8A3E56; /* Rose H=345 */
+    background-color: #FFF1F4;
   }
   .bullet-hook {
     display: block;
@@ -265,10 +268,10 @@ HTML_CONTENT = """<!DOCTYPE html>
     margin-bottom: 3px;
   }
   .east-wall .bullet-hook {
-    color: #9F1239;
+    color: #78350F;
   }
   .west-wall .bullet-hook {
-    color: #92400E;
+    color: #881337;
   }
 
   /* Structured Single-Column Bullet Cards */
@@ -276,9 +279,9 @@ HTML_CONTENT = """<!DOCTYPE html>
     margin: 5px 0 10px 0;
   }
   .structured-item {
-    background-color: #F8FAFC;
+    background-color: #F1F5FF;
     border: 1px solid #CBD5E1;
-    border-left: 4px solid #1E40AF;
+    border-left: 4px solid #425A80;
     border-radius: 5px;
     padding: 7px 11px;
     margin-bottom: 6px;
@@ -288,12 +291,12 @@ HTML_CONTENT = """<!DOCTYPE html>
     page-break-inside: avoid;
   }
   .structured-item.item-purple {
-    border-left-color: #5B21B6;
-    background-color: #FAF5FF;
+    border-left-color: #8C581E;
+    background-color: #FFF8EE;
   }
   .structured-item.item-teal {
-    border-left-color: #047857;
-    background-color: #ECFDF5;
+    border-left-color: #1D6E58;
+    background-color: #EEFBF6;
   }
 
   /* Callout Boxes */
@@ -307,10 +310,10 @@ HTML_CONTENT = """<!DOCTYPE html>
     page-break-inside: avoid;
   }
   .callout-synth {
-    background-color: #F5F3FF;
-    border: 1px solid #DDD6FE;
-    border-left: 4.5px solid #5B21B6;
-    color: #2E1065;
+    background-color: #FBF5FD;
+    border: 1px solid #EADCF0;
+    border-left: 4.5px solid #704882;
+    color: #3B1E48;
   }
   .callout-title {
     font-weight: 800;
@@ -627,14 +630,14 @@ HTML_CONTENT = """<!DOCTYPE html>
     </div>
     <div class="formula-mid">
       <div class="math-row">
-        <div class="math-box">
-          <strong>P(Y | do(X = x)) = ∑<sub>z</sub> P(Y | X = x, Z = z) · P(Z = z)</strong>
-          <span class="math-caption">【真人隨機盲測】背景物價與競品價格 Z 獨立於測試價格 X（P(Z|X) = P(Z)）</span>
+        <div class="math-box" style="border-color: #425A80; background-color: #F1F5FF;">
+          <strong style="color: #0F172A;">P(Y | do(X = x)) = ∑<sub>z</sub> P(Y | X = x, Z = z) · P(Z = z)</strong>
+          <span class="math-caption" style="color: #345B8C;">【真人隨機盲測】背景物價與競品價格 Z 獨立於測試價格 X（P(Z|X) = P(Z)）</span>
         </div>
-        <div style="font-size: 15pt; font-weight: bold; color: #BE123C; align-self: center;">≠</div>
-        <div class="math-box" style="border-color: #BE123C;">
-          <strong>P<sub>LLM</sub>(Y | X = x) = ∑<sub>z</sub> P(Y | X = x, Z = z) · P<sub>LLM</sub>(Z = z | X = x)</strong>
-          <span class="math-caption" style="color: #BE123C;">【AI 語境腦補混淆】看到高價 X 時自動調高 P<sub>LLM</sub>(Z|X)，腦補競品與歷史價也同步變貴！</span>
+        <div style="font-size: 16pt; font-weight: 800; color: #8A3E56; align-self: center;">≠</div>
+        <div class="math-box" style="border-color: #8A3E56; background-color: #FFF1F4;">
+          <strong style="color: #0F172A;">P<sub>LLM</sub>(Y | X = x) = ∑<sub>z</sub> P(Y | X = x, Z = z) · P<sub>LLM</sub>(Z = z | X = x)</strong>
+          <span class="math-caption" style="color: #881337;">【AI 語境腦補混淆】看到高價 X 時自動調高 P<sub>LLM</sub>(Z|X)，腦補競品與歷史價也同步變貴！</span>
         </div>
       </div>
     </div>
@@ -721,9 +724,9 @@ HTML_CONTENT = """<!DOCTYPE html>
       <table class="schematic-parallel-table">
         <thead>
           <tr>
-            <th class="col-danger">第一階【道：界定問題與方向】<br>《顧客需求不靠猜！統計模型找正解》</th>
-            <th>第二階【法：能力與情境底座】<br>《AI 能強化你的數據分析能力》</th>
-            <th class="col-success">第三階【術：前線市調與權變】<br>《生成式 AI 正在顛覆市場研究》</th>
+            <th class="col-dao">第一階【道：界定問題與方向】<br>《顧客需求不靠猜！統計模型找正解》</th>
+            <th class="col-fa">第二階【法：能力與情境底座】<br>《AI 能強化你的數據分析能力》</th>
+            <th class="col-shu">第三階【術：前線市調與權變】<br>《生成式 AI 正在顛覆市場研究》</th>
           </tr>
         </thead>
         <tbody>

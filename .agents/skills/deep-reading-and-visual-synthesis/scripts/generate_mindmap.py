@@ -22,6 +22,9 @@ import matplotlib.patches as patches
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 from matplotlib.path import Path
 
+import hcl_color_engine as hcl_engine
+from hcl_color_engine import GLOBAL_COLOR_CONTRACT, AreaScaledHCL, ink, wcag_contrast
+
 NO_START_CHARS = set("），。、；：！？）」』】〉》. , ; : ! ? ) ] }")
 TOKEN_RE = re.compile(r"\d+(?:,\d+)+\+?|[A-Za-z0-9_.\-+%/]+|.")
 

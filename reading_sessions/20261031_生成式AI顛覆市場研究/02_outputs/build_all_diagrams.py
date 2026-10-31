@@ -36,6 +36,41 @@ from generate_mindmap import (
     draw_canvas_header_and_footer,
     save_publication_figure,
 )
+from hcl_color_engine import GLOBAL_COLOR_CONTRACT, ink
+
+# [I-15]~[I-20] HCL Equalized Luminance & Chroma Accents
+HCL_ACCENTS = {
+    "primary": {
+        "main": GLOBAL_COLOR_CONTRACT.blue.accent_dark,
+        "pill_bg": GLOBAL_COLOR_CONTRACT.blue.surface_tint,
+        "badge_fill": GLOBAL_COLOR_CONTRACT.blue.badge_fill,
+        "ink": GLOBAL_COLOR_CONTRACT.blue.badge_ink
+    },
+    "warn": {
+        "main": GLOBAL_COLOR_CONTRACT.ochre.accent_dark,
+        "pill_bg": GLOBAL_COLOR_CONTRACT.ochre.surface_tint,
+        "badge_fill": GLOBAL_COLOR_CONTRACT.ochre.badge_fill,
+        "ink": GLOBAL_COLOR_CONTRACT.ochre.badge_ink
+    },
+    "success": {
+        "main": GLOBAL_COLOR_CONTRACT.teal.accent_dark,
+        "pill_bg": GLOBAL_COLOR_CONTRACT.teal.surface_tint,
+        "badge_fill": GLOBAL_COLOR_CONTRACT.teal.badge_fill,
+        "ink": GLOBAL_COLOR_CONTRACT.teal.badge_ink
+    },
+    "danger": {
+        "main": GLOBAL_COLOR_CONTRACT.rose.accent_dark,
+        "pill_bg": GLOBAL_COLOR_CONTRACT.rose.surface_tint,
+        "badge_fill": GLOBAL_COLOR_CONTRACT.rose.badge_fill,
+        "ink": GLOBAL_COLOR_CONTRACT.rose.badge_ink
+    },
+    "synth": {
+        "main": GLOBAL_COLOR_CONTRACT.purple.accent_dark,
+        "pill_bg": GLOBAL_COLOR_CONTRACT.purple.surface_tint,
+        "badge_fill": GLOBAL_COLOR_CONTRACT.purple.badge_fill,
+        "ink": GLOBAL_COLOR_CONTRACT.purple.badge_ink
+    },
+}
 
 OUT_DIR = r"c:\Users\User\.gemini\antigravity\scratch\deep-reading-and-visual-synthesis\reading_sessions\20261031_生成式AI顛覆市場研究\02_outputs"
 os.makedirs(OUT_DIR, exist_ok=True)
@@ -96,9 +131,11 @@ def draw_calibrated_card(ax, x, y, width, title, bullets, theme,
     """
     title = sanitize_cjk_glyphs(title)
     badge_text = sanitize_cjk_glyphs(badge_text)
-    accent = theme["accents"].get(accent_key, theme["accents"]["primary"])
+    accent = HCL_ACCENTS.get(accent_key, HCL_ACCENTS["primary"])
     accent_color = accent["main"]
     pill_bg = accent["pill_bg"]
+    badge_fill = accent.get("badge_fill", accent_color)
+    badge_ink = accent.get("ink", ink(badge_fill))
     height = fixed_height
 
     # Shadow
@@ -133,10 +170,10 @@ def draw_calibrated_card(ax, x, y, width, title, bullets, theme,
     if badge_text:
         ax.text(
             text_x, header_y, f" {badge_text} ",
-            fontsize=9.6, fontweight="bold", color=accent_color,
+            fontsize=9.6, fontweight="bold", color=badge_ink,
             va="top", ha="left", zorder=4,
-            bbox=dict(boxstyle="round,pad=0.20,rounding_size=0.38",
-                      facecolor=pill_bg, edgecolor=accent_color, lw=0.9)
+            bbox=dict(boxstyle="round,pad=0.22,rounding_size=0.38",
+                      facecolor=badge_fill, edgecolor=accent_color, lw=0.9)
         )
         title_offset_x = text_x + sum(char_em(c) for c in badge_text) * 0.80 + 1.45
         ax.text(
@@ -632,11 +669,12 @@ def build_diagram_3():
     draw_macro_zone(ax, 67.5, 12.0, 29.0, 76.5, "【第三階：術】前線市調實操與權變\n《生成式 AI 正在顛覆市場研究》", theme)
 
     # Top Row of 3 Cards (All N=3 parallel slots, y=49.0, height=33.5)
+    # [I-17] Category-Color Binding: Col 1 (道) = primary (Blue), Col 2 (法) = warn (Ochre), Col 3 (術) = success (Teal)
     draw_calibrated_card(
         ax, x=4.6, y=49.0, width=26.8,
         title="破除高層直覺偏誤與對齊目標 Y",
         badge_text="Step 1 定錨",
-        accent_key="danger",
+        accent_key="primary",
         font_pt=11.4, fixed_height=33.5,
         bullets=[
             "● 診斷高層兩大盲點：72% 上市 B2B 高層認知與顧客真實重視呈零或負相關；85.5% 每兩年大改優先順序（受顯眼少數客訴之可得性偏誤與盲從競爭對手所誤導）。",
@@ -649,7 +687,7 @@ def build_diagram_3():
         ax, x=36.6, y=49.0, width=26.8,
         title="內嵌 ERP / CRM 跨部門「背景情境」",
         badge_text="Step 3 基建",
-        accent_key="primary",
+        accent_key="warn",
         font_pt=11.4, fixed_height=33.5,
         bullets=[
             "● 打破企業數據孤島：真實商業問題皆跨職能，必須將數據分析工具直接內嵌於 ERP（財務/庫存/供應鏈）與 CRM（銷售/客戶互動）日常交易系統中，實現跨部門數據同源。",
@@ -690,7 +728,7 @@ def build_diagram_3():
         ax, x=36.6, y=13.5, width=26.8,
         title="擴增分析賦能與數學懲罰過濾雜訊",
         badge_text="Step 4 賦能",
-        accent_key="synth",
+        accent_key="warn",
         font_pt=11.4, fixed_height=33.5,
         bullets=[
             "● 擴增分析（Augmented Analytics）：結合 ML（自動找趨勢變異）+ NLP（口說自然語言提問）+ NLG（自動生成白話摘要），賦能第一線「平民數據分析師」日常決策。",
@@ -703,7 +741,7 @@ def build_diagram_3():
         ax, x=68.6, y=13.5, width=26.8,
         title="情境權變防線與真人隨機實驗終審閉環",
         badge_text="Step 6 終審",
-        accent_key="warn",
+        accent_key="success",
         font_pt=11.4, fixed_height=33.5,
         bullets=[
             "● 嚴守 AI 三大禁區：高度警覺「盲測訂價混淆現象（AI 自動腦補競品與歷史價同步變貴）」、「多感官失靈（高砂香料香氣測試失敗）」與「未來行為劇變外推失靈」。",

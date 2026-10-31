@@ -20,7 +20,7 @@ OUT_DIR = r"c:\Users\User\.gemini\antigravity\scratch\deep-reading-and-visual-sy
 PPTX_PATH = os.path.join(OUT_DIR, "生成式AI顛覆市場研究_深度思辨與三篇合體簡報.pptx")
 MD_SCRIPT_PATH = os.path.join(OUT_DIR, "生成式AI顛覆市場研究_斷言證據簡報腳本.md")
 
-# Color Palette (McKinsey Executive + Knaflic 80/20 Preattentive Spotlight)
+# Color Palette (CIELUV HCL Equalized Luminance & Chroma Accents - Post-E3)
 C_NAVY_DARK  = RGBColor(15, 23, 42)      # #0F172A Deep Slate Navy
 C_NAVY_MED   = RGBColor(30, 58, 138)     # #1E3A8A Executive Blue
 C_SLATE_TXT  = RGBColor(30, 41, 59)      # #1E293B Body Ink
@@ -30,15 +30,17 @@ C_CARD_BG    = RGBColor(255, 255, 255)   # #FFFFFF Pure Card Surface
 C_ROW_ALT    = RGBColor(248, 250, 252)   # #F8FAFC Subtle Row Fill
 C_BORDER_MUT = RGBColor(203, 213, 225)   # #CBD5E1 Neutral Context Border
 
-# Spotlight Accent Colors (10% Preattentive Quota)
-C_SPOT_BLUE   = RGBColor(30, 64, 175)    # #1E40AF Spotlight Primary
-C_SPOT_BG     = RGBColor(239, 246, 255)  # #EFF6FF Spotlight Soft Blue Fill
-C_SPOT_RED    = RGBColor(190, 18, 60)    # #BE123C Spotlight Alert / Critique
-C_SPOT_REDBG  = RGBColor(255, 241, 242)  # #FFF1F2 Spotlight Soft Rose Fill
-C_SPOT_GOLD   = RGBColor(180, 83, 9)     # #B45309 Spotlight Amber / Math
-C_SPOT_GOLDBG = RGBColor(255, 251, 235)  # #FFFBEB Spotlight Soft Amber Fill
-C_SPOT_TEAL   = RGBColor(4, 120, 87)     # #047857 Spotlight Emerald
-C_SPOT_TEALBG = RGBColor(236, 253, 245)  # #ECFDF5 Spotlight Soft Emerald Fill
+# HCL Tri-Tier Calibrated Accent Colors (L=38, C=56 & Solid Surface Tints L=96.5, C=8.5)
+C_SPOT_BLUE   = RGBColor(66, 90, 128)    # #425A80 Blue H=250 (道 / Opportunity 1 / do(X))
+C_SPOT_BG     = RGBColor(241, 245, 255)  # #F1F5FF Blue Solid Tint (Zero Alpha)
+C_SPOT_RED    = RGBColor(138, 62, 86)    # #8A3E56 Rose H=345 (Danger / Confounding / Western Wall)
+C_SPOT_REDBG  = RGBColor(255, 241, 244)  # #FFF1F4 Rose Solid Tint
+C_SPOT_GOLD   = RGBColor(140, 88, 30)    # #8C581E Ochre H=35 (法 / Opportunity 2&3 / Eastern Wall)
+C_SPOT_GOLDBG = RGBColor(255, 248, 238)  # #FFF8EE Ochre Solid Tint
+C_SPOT_TEAL   = RGBColor(29, 110, 88)    # #1D6E58 Teal H=165 (術 / Opportunity 4 / Action)
+C_SPOT_TEALBG = RGBColor(238, 251, 246)  # #EEFBF6 Teal Solid Tint
+C_SPOT_PURPLE = RGBColor(112, 72, 130)   # #704882 Purple H=290 (Synthesis / Schema)
+C_SPOT_PURPLEBG = RGBColor(251, 245, 253)# #FBF5FD Purple Solid Tint
 C_SKY_LIGHT   = RGBColor(56, 189, 248)   # #38BDF8 Cover Accent
 C_WHITE       = RGBColor(255, 255, 255)
 
@@ -978,7 +980,7 @@ add_parallel_cards(
                 ("● 【道斯線性模型鎖定 X*】", "量化各因素對真實財報毛利 Y 之「提升潛力（Lift）」，嚴格鎖定 1~2 個關鍵因素 X*（ITI 股價漲 162%、S-SET 銷售增 52%）。"),
                 ("● 【跨篇交棒任務（道 → 法）】", "砍除零價值口號（如表面重視卻零購買力的 ESG），為後續 AI 分析與市調指明唯一高價值靶心 X*！"),
             ],
-            "is_spotlight": False,
+            "is_spotlight": True, "spot_color": C_SPOT_BLUE, "spot_bg": C_SPOT_BG,
         },
         {
             "left": 4.68, "width": 3.95,
@@ -989,7 +991,7 @@ add_parallel_cards(
                 ("● 【擴增分析與 L1 正則化過濾】", "以 ML + NLP 口說提問 + NLG 自動摘要賦能第一線平民分析師（挽回數十萬美元折扣），並用 Adjusted R² 與 Lasso 砍除雜訊。"),
                 ("● 【跨篇交棒任務（法 → 術）】", "提供乾淨、結構化與半結構化的企業內部歷史交易底座，作為生成式 AI 微調與 RAG 檢索的基準事實錨點！"),
             ],
-            "is_spotlight": False,
+            "is_spotlight": True, "spot_color": C_SPOT_GOLD, "spot_bg": C_SPOT_GOLDBG,
         },
         {
             "left": 8.96, "width": 3.97,
