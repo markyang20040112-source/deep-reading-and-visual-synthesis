@@ -276,7 +276,7 @@ add_zone1_header(
     s1,
     pill_text="MIS CASE STUDY ｜ 資訊管理課程個案分析簡報（Laudon 第 6 章）",
     headline_text="巨量資料分析有多可靠？從每日 2,500 萬億位元組看商業決策效益與模型盲點",
-    speaker_badge="上半場講者：楊亞恩 (01 / 12)",
+    speaker_badge="上半場講者：楊亞恩 (01 / 11)",
     is_dark=True
 )
 
@@ -358,9 +358,9 @@ s2 = prs.slides.add_slide(blank_layout)
 set_slide_bg(s2, BG_LIGHT)
 add_zone1_header(
     s2,
-    pill_text="REPORT ROADMAP ｜ 簡報五章架構與 20–25 分鐘雙講者配當",
-    headline_text="遵循課程規範五大必備章節與五道問題，由淺入深拆解大數據可靠度條件",
-    speaker_badge="上半場講者：楊亞恩 (02 / 12)"
+    pill_text="REPORT ROADMAP ｜ 簡報架構導覽與 20–25 分鐘雙講者配當",
+    headline_text="遵循課程規範必備章節與五道問題，由淺入深拆解大數據可靠度條件",
+    speaker_badge="上半場講者：楊亞恩 (02 / 11)"
 )
 
 steps_info = [
@@ -376,9 +376,9 @@ steps_info = [
         ("● 【(4) 問題 2 兩個失敗決策】", "深挖某大企業 Twitter 銷售 KPI 錯置案，與 2016 柯林頓競選模型盲信舊資料庫翻車案。（Slide 07）"),
         ("● 【(4) 問題 3 大數據五大限制】", "拆解測量迷思、混亂資料、IE 與謀殺率假性相關、模型缺脈絡及帕金森氏症推論隱私。（Slide 08）")
     ]),
-    ("STAGE 04｜第 4–5 章 Q4–5", "MIS 鐵三角 ＆ 貢獻表", COLOR_PRIMARY, TINT_BLUE, True, [
+    ("STAGE 04｜第 4 章 Q4–5", "MIS 鐵三角 ＆ 進階建模總結", COLOR_PRIMARY, TINT_BLUE, True, [
         ("● 【(4) 問題 4 MIS ＆ 問題 5】", "管理×組織×科技三維整備，與結合 GFT 及美選教訓之「動態樣本＋脈絡調節」建模公式。（Slide 09–10）"),
-        ("● 【(5) 成員貢獻表 ＆ Q&A】", "呈現組員貢獻明細表（楊亞恩 60%、黃宥丞 40%）、雙人配當與四大 Q&A 防禦題庫。（Slide 11–12）")
+        ("● 【總結三大定律 ＆ Q&A 討論】", "收斂數據規模、因果脈絡與推論隱私三大黃金定律，並開啟 25 分鐘 Q&A 深度討論。（Slide 11）")
     ])
 ]
 
@@ -421,7 +421,7 @@ p_ho1.font.color.rgb = COLOR_PRIMARY
 p_ho1.space_after = Pt(4)
 
 p_ho2 = tf_ho.add_paragraph()
-p_ho2.text = "● 【下半場報告（Slide 07–12，預計 11.5 分鐘）— 講者：黃宥丞（311357109）】：負責 (4) 問題 2（兩個失敗決策）、問題 3（五大限制）、問題 4（MIS 鐵三角）、問題 5（進階建模對策）與 (5) 成員貢獻表＆ Q&A。"
+p_ho2.text = "● 【下半場報告（Slide 07–11，預計 11.5 分鐘）— 講者：黃宥丞（311357109）】：負責 (4) 問題 2（兩個失敗決策）、問題 3（五大限制）、問題 4（MIS 鐵三角）、問題 5（進階建模對策）與總結 Q&A。"
 p_ho2.font.name = "Microsoft JhengHei"
 p_ho2.font.size = Pt(11.2)
 p_ho2.font.bold = True
@@ -444,7 +444,7 @@ add_zone1_header(
     s3,
     pill_text="CHAPTER 01 ｜ (1) 個案國別及產業簡介（四大地理板塊 × 多元產業）",
     headline_text="個案橫跨英、美、紐澳與全球四大板塊，涵蓋醫療、警政、能源與競選六大產業",
-    speaker_badge="上半場講者：楊亞恩 (03 / 12)"
+    speaker_badge="上半場講者：楊亞恩 (03 / 11)"
 )
 
 quads_s3 = [
@@ -493,11 +493,11 @@ add_zone1_header(
     s4,
     pill_text="CHAPTER 02 ｜ (2) 問題識別：該公司／組織發生什麼事？（含雙柱落差實證圖）",
     headline_text="當組織缺乏目標、忽略脈絡或盲信舊資料，高達 95% 的表象信心會崩跌至 12%–32%",
-    speaker_badge="上半場講者：楊亞恩 (04 / 12)"
+    speaker_badge="上半場講者：楊亞恩 (04 / 11)"
 )
 
-# Left Chart Container (63% width)
-chart_frame = s4.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.65), Inches(1.22), Inches(7.55), Inches(5.30))
+# Left Chart Container (Expanded leftwards to 0.50" and rightwards to 8.23" = 7.73" width without compressing right cards at 8.35")
+chart_frame = s4.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.50), Inches(1.22), Inches(7.73), Inches(5.30))
 chart_frame.adjustments[0] = 0.02
 chart_frame.fill.solid()
 chart_frame.fill.fore_color.rgb = CARD_BG
@@ -506,15 +506,36 @@ chart_frame.line.width = Pt(1.5)
 
 chart_path = os.path.join(output_dir, "03_bigdata_empirical_metrics_chart.png")
 if os.path.exists(chart_path):
-    s4.shapes.add_picture(chart_path, Inches(0.73), Inches(1.68), width=Inches(7.39))
+    # Image placed at top of frame and enlarged to 7.61" wide (height ~3.90", spanning y=1.28" to 5.18")
+    s4.shapes.add_picture(chart_path, Inches(0.56), Inches(1.28), width=Inches(7.61))
 
-tb_cf = s4.shapes.add_textbox(Inches(0.80), Inches(1.28), Inches(7.25), Inches(0.35))
-p_cf = tb_cf.text_frame.paragraphs[0]
-p_cf.text = "▲ 圖表實證：左圖對比四大失敗案例「表象信心（藍柱）vs. 實際效用（紅柱）」剪刀差；右圖對比六組織可靠度"
-p_cf.font.name = "Microsoft JhengHei"
-p_cf.font.size = Pt(10.2)
-p_cf.font.bold = True
-p_cf.font.color.rgb = COLOR_PRIMARY
+# Caption Box placed BELOW the image (y=5.26" to 6.42") inside chart_frame
+cap_box = s4.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.60), Inches(5.26), Inches(7.53), Inches(1.16))
+cap_box.adjustments[0] = 0.06
+cap_box.fill.solid()
+cap_box.fill.fore_color.rgb = TINT_BLUE
+cap_box.line.color.rgb = RGBColor(147, 197, 253)
+cap_box.line.width = Pt(1.0)
+tf_cf = cap_box.text_frame
+tf_cf.word_wrap = True
+tf_cf.vertical_anchor = MSO_ANCHOR.MIDDLE
+tf_cf.margin_left = tf_cf.margin_right = Inches(0.14)
+tf_cf.margin_top = tf_cf.margin_bottom = Inches(0.06)
+
+p_cf1 = tf_cf.paragraphs[0]
+p_cf1.text = "▲ 圖表註解（面板 A 左圖 — 雙柱剪刀差）：每組並排「藍柱（模型表象預測信心／指標熱度 88%～95%）」與「紅柱（真實世界實際效用 12%～32%）」，直觀呈現四大失敗案例高達 -60% 至 -78% 的眼高手低落差。"
+p_cf1.font.name = "Microsoft JhengHei"
+p_cf1.font.size = Pt(9.6)
+p_cf1.font.bold = True
+p_cf1.font.color.rgb = COLOR_PRIMARY
+p_cf1.space_after = Pt(3)
+
+p_cf2 = tf_cf.add_paragraph()
+p_cf2.text = "● 圖表註解（面板 B 右圖 — 六組織可靠度對照）：英國 NHS（94%）、紐約警局（91%）與 Meridian 換裝 IBM 後（84%）因具備清晰目標、資料清理與即時脈絡而穩居高可靠度區；反之 GFT、美選與假 KPI 案則雙雙崩跌。"
+p_cf2.font.name = "Microsoft JhengHei"
+p_cf2.font.size = Pt(9.2)
+p_cf2.font.bold = False
+p_cf2.font.color.rgb = TEXT_BODY
 
 # Right 3 Vertically Stacked Problem Cards (37% width)
 r_cards_s4 = [
@@ -559,7 +580,7 @@ add_zone1_header(
     s5,
     pill_text="CHAPTER 03 ｜ (3) 個案簡介：全文脈絡與四大核心構面系統圖",
     headline_text="本個案以「正反辯證架構」展開：從海量數據商業價值，深挖至預測盲點與隱私紅線",
-    speaker_badge="上半場講者：楊亞恩 (05 / 12)"
+    speaker_badge="上半場講者：楊亞恩 (05 / 11)"
 )
 
 # Left Source Hub Box (Data Deluge)
@@ -666,7 +687,7 @@ add_zone1_header(
     s6,
     pill_text="CHAPTER 04 (Q1 & Q2 成功) ｜ (4) 問題 1 企業效益 ＆ 問題 2 兩個改善決策",
     headline_text="當目標清晰且平台強大，大數據能創造精準行銷，更助英國 NHS 與紐約警局改善重大決策",
-    speaker_badge="上半場講者：楊亞恩 (06 / 12)"
+    speaker_badge="上半場講者：楊亞恩 (06 / 11)"
 )
 
 s6_slots = [(Inches(2.12), Inches(1.38)), (Inches(3.58), Inches(1.42)), (Inches(5.08), Inches(1.38))]
@@ -726,7 +747,7 @@ add_zone1_header(
     s7,
     pill_text="CHAPTER 04 (Q2 失敗決策) ｜ (4) 問題 2 找出沒有改善（或失敗）的兩個決策",
     headline_text="當指標脫離核心業務或模型盲信過時歷史資料庫，巨量資料反而導致決策徹底失敗",
-    speaker_badge="下半場講者：黃宥丞 (07 / 12)"
+    speaker_badge="下半場講者：黃宥丞 (07 / 11)"
 )
 
 s7_slots = [(Inches(2.12), Inches(1.38)), (Inches(3.58), Inches(1.42)), (Inches(5.08), Inches(1.38))]
@@ -776,7 +797,7 @@ add_zone1_header(
     s8,
     pill_text="CHAPTER 04 (Q3 分析限制) ｜ (4) 問題 3 詳細說明使用巨量資料的五大限制",
     headline_text="大數據並非萬靈丹：從目標迷思、假性相關、脈絡缺失到「推論隱私」共五大限制",
-    speaker_badge="下半場講者：黃宥丞 (08 / 12)"
+    speaker_badge="下半場講者：黃宥丞 (08 / 11)"
 )
 
 q3_quads = [
@@ -836,7 +857,7 @@ add_zone1_header(
     s9,
     pill_text="CHAPTER 04 (Q4 MIS 策略框架) ｜ (4) 問題 4 所有組織都該投入嗎？管理、組織與科技議題",
     headline_text="並非所有組織都應盲目投入！決定投入前須先完成「管理×組織×科技」鐵三角整備",
-    speaker_badge="下半場講者：黃宥丞 (09 / 12)"
+    speaker_badge="下半場講者：黃宥丞 (09 / 11)"
 )
 
 # Top Gate Banner Answering Part 1 of Question 4
@@ -914,7 +935,7 @@ add_zone1_header(
     s10,
     pill_text="CHAPTER 04 (Q5 延伸進階題) ｜ (4) 問題 5 避免「資料偏見」與「缺乏上下文脈絡」陷阱",
     headline_text="借鏡 Google 流感與 2016 美選翻車教訓：以「動態樣本＋脈絡調節＋專家審查」建構可靠模型",
-    speaker_badge="下半場講者：黃宥丞 (10 / 12)"
+    speaker_badge="下半場講者：黃宥丞 (10 / 11)"
 )
 
 # Top Dark Equation / Formula Anatomy Box
@@ -1003,69 +1024,7 @@ set_notes(s10, """【講者：黃宥丞｜預計時間：2.5 分鐘】
 
 
 # ==============================================================================
-# SLIDE 11 [Layout S1: Asymmetric Contrast — Chapter 5: Team Contribution & Q&A Playbook]
-# ==============================================================================
-s11 = prs.slides.add_slide(blank_layout)
-set_slide_bg(s11, BG_LIGHT)
-add_zone1_header(
-    s11,
-    pill_text="CHAPTER 05 ｜ (5) 成員貢獻表（姓名、學號、負責內容、百分比）＆ Q&A 預備",
-    headline_text="小組成員密切分工協作（100% 全員上台報告），並備妥四大核心議題供 25 分鐘 Q&A 研討",
-    speaker_badge="下半場講者：黃宥丞 (11 / 12)"
-)
-
-s11_slots_left = [(Inches(2.05), Inches(1.42)), (Inches(3.55), Inches(1.42)), (Inches(5.05), Inches(1.38))]
-create_structured_card(
-    s11, Inches(0.65), Inches(1.22), Inches(5.65), Inches(5.32),
-    title="第五章：小組成員貢獻明細表",
-    subtitle="指導老師：何政勳 老師 ｜ 20–25 分鐘報告全員上台",
-    rows_data=[
-        ("● 【楊亞恩｜學號：311157139｜貢獻度：60%】",
-         "主要負責內容：撰寫個案分析及報告、跨國案例與問題診斷表格統整、繪製視覺圖譜與簡報排版、擔任上半場上台報告主講人（Slide 01–06）與 Q&A 答詢。"),
-        ("● 【黃宥丞｜學號：311357109｜貢獻度：40%】",
-         "主要負責內容：課本個案與跨國背景資料收集（NHS、NYPD、Meridian、GFT、2016 美選）、參與五題個案問題深度討論、擔任下半場主講人（Slide 07–12）與 Q&A 答詢。"),
-        ("● 【小組總計貢獻度：100%（共 2 位成員全員上台）】",
-         "共同完成：7 頁印刷級個案分析報告 PDF、3 張高解析度知識圖譜與雙柱量化圖表、12 頁原生向量簡報 PPTX，以及 25 分鐘 Q&A 深度應答準備。")
-    ],
-    accent_color=COLOR_PRIMARY, header_tint=TINT_BLUE, is_spotlight=False,
-    row_y_slots=s11_slots_left, hdr_h=Inches(0.72), tag_pt=11.0, desc_pt=10.0
-)
-
-s11_slots_right = [
-    (Inches(2.05), Inches(1.04)),
-    (Inches(3.15), Inches(1.04)),
-    (Inches(4.25), Inches(1.04)),
-    (Inches(5.35), Inches(1.08))
-]
-create_structured_card(
-    s11, Inches(6.48), Inches(1.22), Inches(6.20), Inches(5.32),
-    title="★ 25 分鐘 Q&A 深度討論預備：四大核心思辨題",
-    subtitle="聚焦課本第 6 章大數據可靠度、推論隱私與 MIS 治理之延伸探討",
-    rows_data=[
-        ("● 【思辨 Q1：為何 2016 美選柯林頓與川普都用大數據，結果卻相反？】",
-         "柯林頓將大數據用於「靜態選情預測（盲信歐巴馬舊資料庫）」；川普則聚焦於「針對選民群體量身打造精準廣告訊息」，主動影響最後轉向者。"),
-        ("● 【思辨 Q2：「推論隱私（Inferential Privacy）」為何比一般個資外洩更棘手？】",
-         "結合購物、收入與手機 GPS 後，演算法能推論出當事人自身未知的「帕金森氏症早期徵兆」或無意識藍綠偏好，且毫無法律保護與反擊機制。"),
-        ("● 【思辨 Q3：仰賴實體貿易展的傳統 B2B 企業，該如何正確使用數據？】",
-         "不該盲目監測無關的 Twitter 聲量，而應清理並分析「歷年實體展會洽談名單、客戶產業屬性與後續實際簽約轉化率」，對齊真正核心營收。"),
-        ("● 【思辨 Q4：同為醫療健康大數據，為何英國 NHS 大勝、Google 流感卻失準？】",
-         "NHS 分析的是醫院真實處方籤與臨床結果（實體 Ground Truth＋醫師領域知識）；Google 分析的則是易受媒體恐慌干擾的表象搜尋字。")
-    ],
-    accent_color=COLOR_SUCCESS, header_tint=TINT_GREEN, is_spotlight=True,
-    row_y_slots=s11_slots_right, hdr_h=Inches(0.72), tag_pt=10.4, desc_pt=9.4
-)
-
-add_zone3_footer(s11, "★ 第五章結論：本組透過嚴密分工完成全套新版 PDF 與 PPTX，並準備好隨時與老師及全班進行 25 分鐘深度 Q&A 交流")
-set_notes(s11, """【講者：黃宥丞｜預計時間：1.5 分鐘】
-進入第五章「成員貢獻表與 Q&A 深度討論預備」。
-請看左邊卡片，這是我們小組的成員貢獻明細表：
-楊亞恩同學（學號 311157139，貢獻百分比 60%），主要負責撰寫個案分析及報告內文、統整跨國案例與問題診斷表格、繪製視覺化圖表與簡報排版，並擔任今天上半場的主講人；
-我本人黃宥丞（學號 311357109，貢獻百分比 40%），主要負責前期英國 NHS、紐約 CompStat、紐澳 Meridian、Google 流感與 2016 美選等背景資料收集、參與五道個案問題深度討論，並擔任下半場主講人，我們兩位成員總計貢獻度 100%，且全員上台報告。
-右邊卡片則是我們為待會 25 分鐘 Q&A 預先準備的四個深度延伸思辨題，包含川普與柯林頓運用大數據的差異、推論隱私的法規困境、傳統展銷企業如何轉型，以及 NHS 與 Google 流感的本質對比。""")
-
-
-# ==============================================================================
-# SLIDE 12 [Layout S0: Dark Bookend Closing Slide — Peak-End Takeaways & Q&A]
+# SLIDE 11 [Layout S0: Dark Bookend Closing Slide — Peak-End Takeaways & Q&A]
 # ==============================================================================
 s12 = prs.slides.add_slide(blank_layout)
 set_slide_bg(s12, DARK_BG)
@@ -1073,7 +1032,7 @@ add_zone1_header(
     s12,
     pill_text="KEY TAKEAWAYS & Q&A ｜ 總結洞察：巨量資料分析有多可靠？",
     headline_text="巨量資料本身不會自動產生智慧——唯有「目標對齊、脈絡校準與倫理護欄」才真正可靠",
-    speaker_badge="共同答詢：楊亞恩 ＆ 黃宥丞 (12 / 12)",
+    speaker_badge="共同答詢：楊亞恩 ＆ 黃宥丞 (11 / 11)",
     is_dark=True
 )
 
