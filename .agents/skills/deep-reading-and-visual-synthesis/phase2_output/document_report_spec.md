@@ -42,7 +42,10 @@
   - 表格與卡片內文（`td`, `.card-body`）：**`9.8pt ~ 10.5pt`**，行高 `1.55 ~ 1.62`。
   - 膠囊標籤與圖說（`.badge`, `figcaption`）：**`9.2pt ~ 9.8pt`**。
 
-### 2. 防範「跨頁裁切」與「渲染高度溢位斷框」雙重鐵律
+### 2. 「大章節起始換頁」與「防跨頁裁切／防溢位斷框」三重鐵律
+- **大章節起始強制換頁（Chapter-Boundary Page-Break Rule）**：
+  - **換頁點必須設於一級大章節（`<h2>`：貳、參、肆、伍、陸）起始處**（使用 `<div class="page-break"></div>` 置於 `<h2>` 之前，或設定 `h2.chapter-start { break-before: page; page-break-before: always; }`），確保每個核心大章節皆從新頁面頂部乾淨展開！
+  - **嚴禁在章節半途插換頁符**：絕對禁止將 `.page-break` 插在同一個章節的「導讀文字／表格」與「對應配圖／矩陣」正中間，導致前一個章節的尾巴掛在下一頁頂部、而新章節標題卻被迫卡在頁面半途！同一章節的論述文字、三線表與視覺圖譜必須聚合於同一章節頁面內完整收束。
 - **防跨頁腰斬**：所有視覺容器（`.card`, `.matrix-box`, `figure`, `.equation-box`, `tr`, `.callout`）必須強制加上 CSS：
   ```css
   break-inside: avoid;
