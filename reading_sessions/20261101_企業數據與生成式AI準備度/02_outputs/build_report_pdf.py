@@ -2,14 +2,16 @@
 build_report_pdf.py
 Compiles 01_executive_strategy_report.md into a publication-grade PDF document
 (01_executive_strategy_report.pdf) in 100% compliance with:
-- document_report_spec.md (B1 1:3:25 Executive Strategy Whitepaper)
+- document_report_spec.md (B1 1:3:25 Executive Strategy Whitepaper & Chapter-Boundary Page Breaks)
 - visual_cognition_principles.md (CIELUV HCL Tri-Tier Solid Colors, W3C CLREQ Typography)
-- [INS-09] Zero Single-Character Widows in Table Cells (text-wrap: pretty, nowrap locks, column capacity alignment)
-- [INS-10] W3C CLREQ Golden Leading (1.72x), Spacious Cell Padding (7px 9px), and >=30% Active Breathing Room
+- [INS-09] Zero Single-Character Widows in Table Cells (text-wrap: pretty, nowrap locks)
+- [INS-11] Closed 4-Sided Solid Borders on Parallel Cards
 """
 
 import os
 import subprocess
+import shutil
+import tempfile
 
 html_content = """<!DOCTYPE html>
 <html lang="zh-TW">
@@ -19,7 +21,7 @@ html_content = """<!DOCTYPE html>
 <style>
   @page {
     size: A4 portrait;
-    margin: 12.5mm 10.5mm 14mm 10.5mm;
+    margin: 11.5mm 10.5mm 13mm 10.5mm;
     @bottom-center {
       content: "— " counter(page) " / " counter(pages) " —";
       font-size: 8.5pt;
@@ -38,8 +40,8 @@ html_content = """<!DOCTYPE html>
     font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
     color: #0F172A;
     background-color: #FFFFFF;
-    line-height: 1.72;
-    font-size: 10.2pt;
+    line-height: 1.66;
+    font-size: 10.0pt;
     margin: 0;
     padding: 0;
     text-wrap: pretty;
@@ -51,7 +53,8 @@ html_content = """<!DOCTYPE html>
     text-wrap: nowrap !important;
   }
 
-  .page-break {
+  /* Strict Chapter-Boundary Page Break */
+  .chapter-break {
     page-break-before: always;
     break-before: page;
   }
@@ -63,14 +66,14 @@ html_content = """<!DOCTYPE html>
     border-top: 5px solid #1A48A0;
     border-bottom: 3px solid #38BDF8;
     border-radius: 6px;
-    padding: 12px 16px;
-    margin-bottom: 11px;
+    padding: 11px 16px;
+    margin-bottom: 10px;
   }
   .badge-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
   }
   .doc-badge {
     display: inline-block;
@@ -91,74 +94,74 @@ html_content = """<!DOCTYPE html>
   }
   h1 {
     color: #FFFFFF;
-    font-size: 15.5pt;
-    margin: 3px 0 3px 0;
-    line-height: 1.3;
+    font-size: 15.2pt;
+    margin: 2px 0 3px 0;
+    line-height: 1.28;
     font-weight: 800;
   }
   .subtitle {
     color: #CBD5E1;
-    font-size: 9.4pt;
+    font-size: 9.2pt;
     font-weight: 500;
-    margin-bottom: 7px;
+    margin-bottom: 6px;
   }
   .meta-bar {
-    font-size: 7.9pt;
+    font-size: 7.8pt;
     color: #E2E8F0;
     border-top: 1px solid #334155;
-    padding-top: 5px;
+    padding-top: 4px;
     display: flex;
     justify-content: space-between;
     white-space: nowrap;
   }
 
-  /* Section 1: Main Messages Box (10% Budget, HCL Blue Tint #EEF3FE) */
+  /* Section 1: Main Messages Box (HCL Blue Tint #EEF3FE) */
   .main-message-box {
     background-color: #EEF3FE;
     border: 1.5px solid #1A48A0;
     border-left: 6px solid #1A48A0;
     border-radius: 6px;
-    padding: 10px 14px;
-    margin: 0 0 11px 0;
+    padding: 9px 14px;
+    margin: 0 0 10px 0;
     break-inside: avoid;
   }
   .main-message-title {
     color: #1A48A0;
     font-weight: 800;
-    font-size: 10.4pt;
-    margin-bottom: 6px;
+    font-size: 10.3pt;
+    margin-bottom: 5px;
     border-bottom: 1px solid #BFDBFE;
-    padding-bottom: 4px;
+    padding-bottom: 3px;
   }
 
-  /* High-Scent Layer-Cake Headings (Pirolli & Card 1999) */
+  /* High-Scent Layer-Cake Major Chapter Headings (Always at Top of Chapter Page) */
   h2 {
     color: #0F172A;
-    font-size: 11.2pt;
+    font-size: 11.4pt;
     font-weight: 800;
     background-color: #F8FAFC;
     border-left: 5px solid #1A48A0;
-    border-bottom: 1px solid #CBD5E1;
-    padding: 5px 11px;
-    margin-top: 11px;
+    border-bottom: 1.5px solid #CBD5E1;
+    padding: 6px 11px;
+    margin-top: 0;
     margin-bottom: 7px;
     break-after: avoid;
     page-break-after: avoid;
   }
   h3 {
     color: #1A48A0;
-    font-size: 10.2pt;
+    font-size: 10.0pt;
     font-weight: 800;
-    margin-top: 10px;
-    margin-bottom: 6px;
+    margin-top: 8px;
+    margin-bottom: 5px;
     break-after: avoid;
     page-break-after: avoid;
   }
 
   p {
-    margin: 5px 0;
+    margin: 4px 0 6px 0;
     text-align: justify;
-    line-height: 1.70;
+    line-height: 1.64;
     text-wrap: pretty;
     orphans: 3;
     widows: 3;
@@ -166,12 +169,12 @@ html_content = """<!DOCTYPE html>
 
   ul.clean-list {
     list-style: none;
-    margin: 5px 0;
+    margin: 4px 0;
     padding-left: 2px;
   }
   ul.clean-list li {
-    margin-bottom: 6px;
-    line-height: 1.64;
+    margin-bottom: 5px;
+    line-height: 1.60;
     text-align: justify;
     text-wrap: pretty;
   }
@@ -193,19 +196,19 @@ html_content = """<!DOCTYPE html>
     font-weight: 700;
   }
 
-  /* Ehrenberg (1977) Scientific Booktabs 3-Line Table (Zero Vertical Lines, Zero Widows!) */
+  /* Ehrenberg (1977) Scientific Booktabs 3-Line Table */
   table.ehrenberg {
     width: 100%;
     border-collapse: collapse;
-    margin: 6px 0 10px 0;
-    font-size: 9.1pt;
-    line-height: 1.56;
+    margin: 5px 0 9px 0;
+    font-size: 8.9pt;
+    line-height: 1.52;
     break-inside: avoid;
   }
   table.ehrenberg th {
     border-top: 2px solid #0F172A;
     border-bottom: 1.5px solid #0F172A;
-    padding: 6px 8px;
+    padding: 5px 7px;
     background-color: #F8FAFC;
     color: #0F172A;
     font-weight: 800;
@@ -219,7 +222,7 @@ html_content = """<!DOCTYPE html>
     text-wrap: nowrap !important;
   }
   table.ehrenberg td {
-    padding: 6px 8px;
+    padding: 5px 7px;
     border-bottom: 1px solid #E2E8F0;
     vertical-align: middle;
     text-align: left;
@@ -233,24 +236,23 @@ html_content = """<!DOCTYPE html>
     color: #1A48A0;
   }
 
-  /* Stat list inside table cells: strictly single-line per item, zero orphan wrap */
   .stat-line {
     white-space: nowrap;
     display: block;
-    line-height: 1.58;
+    line-height: 1.52;
   }
 
-  /* Three-Tier Chart Embed Container (Rule 4.3 & Quantitative Spec) */
+  /* Three-Tier Chart Embed Container */
   .figure-box {
     background-color: #F8FAFC;
     border: 1px solid #CBD5E1;
     border-radius: 6px;
-    padding: 8px 11px;
-    margin: 6px 0 9px 0;
+    padding: 7px 10px;
+    margin: 6px 0 8px 0;
     break-inside: avoid;
   }
   .figure-header {
-    font-size: 9.4pt;
+    font-size: 9.2pt;
     font-weight: 800;
     color: #0F172A;
     margin-bottom: 5px;
@@ -265,54 +267,54 @@ html_content = """<!DOCTYPE html>
     border-radius: 4px;
   }
   .figure-footnote {
-    font-size: 8.5pt;
+    font-size: 8.3pt;
     color: #475569;
-    margin-top: 6px;
+    margin-top: 5px;
     border-top: 1px dashed #CBD5E1;
-    padding-top: 5px;
+    padding-top: 4px;
     text-align: justify;
-    line-height: 1.52;
+    line-height: 1.48;
   }
 
-  /* Formula Sandwich Protocol (Rule 2.3) */
+  /* Formula Sandwich Protocol */
   .formula-sandwich {
     border: 1.5px solid #1A48A0;
     border-radius: 6px;
     overflow: hidden;
-    margin: 8px 0 12px 0;
+    margin: 6px 0 10px 0;
     break-inside: avoid;
   }
   .sandwich-top {
     background-color: #EEF3FE;
-    padding: 8px 12px;
-    font-size: 9.2pt;
+    padding: 7px 12px;
+    font-size: 9.1pt;
     color: #0F172A;
     border-bottom: 1px solid #BFDBFE;
-    line-height: 1.62;
+    line-height: 1.58;
   }
   .sandwich-mid {
     background-color: #0F172A;
     color: #FFFFFF;
     text-align: center;
-    padding: 11px 14px;
+    padding: 9px 14px;
   }
   .math-expr {
     font-family: "Cambria Math", "Times New Roman", Georgia, serif;
-    font-size: 13pt;
+    font-size: 12.8pt;
     font-weight: 700;
     letter-spacing: 0.5px;
     color: #38BDF8;
   }
   .sandwich-bot {
     background-color: #F8FAFC;
-    padding: 8px 12px;
-    font-size: 9pt;
+    padding: 7px 12px;
+    font-size: 8.9pt;
     color: #1E293B;
     border-top: 1px solid #CBD5E1;
-    line-height: 1.62;
+    line-height: 1.58;
   }
 
-  /* Parallel Row-Aligned Grid Cards (Rule 2.4.4 & [INS-11] Solid Border Protection) */
+  /* Parallel Row-Aligned Grid Cards */
   .parallel-grid-table {
     width: 100%;
     border-collapse: separate;
@@ -320,32 +322,31 @@ html_content = """<!DOCTYPE html>
     margin: 2px 0;
   }
   .parallel-grid-table td.card-header {
-    padding: 6px 9px;
+    padding: 6px 8px;
     font-weight: 800;
-    font-size: 9.3pt;
+    font-size: 9.2pt;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
     text-align: center;
     white-space: nowrap;
   }
   .parallel-grid-table td.card-row {
-    padding: 6px 10px;
-    font-size: 9pt;
-    line-height: 1.54;
+    padding: 6px 9px;
+    font-size: 8.9pt;
+    line-height: 1.52;
     vertical-align: top;
     text-wrap: pretty;
   }
   .parallel-grid-table td.card-footer {
-    padding: 6px 10px;
-    font-size: 9pt;
+    padding: 6px 9px;
+    font-size: 8.9pt;
     font-weight: 700;
-    line-height: 1.50;
+    line-height: 1.48;
     vertical-align: top;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
     text-wrap: pretty;
   }
-  /* Explicit 4-sided closed solid borders per color theme to prevent Chromium Skia clipping ([INS-11]) */
   .b-crimson { border-left: 2px solid #AC1953 !important; border-right: 2px solid #AC1953 !important; border-top: 1px solid #E5A3B8 !important; border-bottom: 1px solid #E5A3B8 !important; }
   .b-crimson-foot { border-left: 2px solid #AC1953 !important; border-right: 2px solid #AC1953 !important; border-top: 1px solid #AC1953 !important; border-bottom: 2px solid #AC1953 !important; }
   .b-ochre { border-left: 2px solid #9C5100 !important; border-right: 2px solid #9C5100 !important; border-top: 1px solid #DFB88C !important; border-bottom: 1px solid #DFB88C !important; }
@@ -360,47 +361,47 @@ html_content = """<!DOCTYPE html>
     background-color: #FFFFFF;
     border: 1px solid #CBD5E1;
     border-radius: 5px;
-    padding: 7px 10px;
+    padding: 6px 9px;
     margin: 2px 0;
   }
   .prefrontal-box {
     background-color: #FBF1EA;
     border: 2px solid #9C5100;
     border-radius: 5px;
-    padding: 6px 12px;
-    width: 92%;
-    margin: 0 auto 4px auto;
+    padding: 5px 11px;
+    width: 94%;
+    margin: 0 auto 3px auto;
     text-align: center;
   }
   .brain-connector {
     text-align: center;
-    font-size: 8.8pt;
+    font-size: 8.6pt;
     font-weight: 700;
     color: #9C5100;
-    margin: 4px 0 6px 0;
+    margin: 3px 0 5px 0;
   }
 
   /* Gantt Roadmap Visual Matrix */
   .gantt-bar-bg {
     background-color: #E2E8F0;
     border-radius: 3px;
-    height: 13px;
+    height: 12px;
     width: 100%;
     position: relative;
     overflow: hidden;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
   }
   .gantt-fill-1 { background-color: #2659B8; height: 100%; border-radius: 3px; }
   .gantt-fill-2 { background-color: #9C5100; height: 100%; border-radius: 3px; }
   .gantt-fill-3 { background-color: #006B58; height: 100%; border-radius: 3px; }
 
-  /* Kahneman Closing Block & Action Seal (Rule 2.4.5) */
+  /* Kahneman Closing Block & Action Seal */
   .closing-seal {
     background-color: #0F172A;
     color: #F8FAFC;
     border-radius: 6px;
-    padding: 11px 15px;
-    margin-top: 12px;
+    padding: 10px 14px;
+    margin-top: 8px;
     border: 1.5px solid #1A48A0;
     border-left: 6px solid #006B58;
     break-inside: avoid;
@@ -409,43 +410,31 @@ html_content = """<!DOCTYPE html>
     display: grid;
     grid-template-columns: 49% 49%;
     gap: 2%;
-    margin-top: 7px;
+    margin-top: 6px;
   }
   .closing-subbox {
     background-color: #1E293B;
     border: 1px solid #334155;
     border-radius: 5px;
-    padding: 8px 11px;
-    font-size: 8.8pt;
-    line-height: 1.56;
+    padding: 7px 10px;
+    font-size: 8.7pt;
+    line-height: 1.52;
   }
   .closing-subbox-title {
     color: #38BDF8;
     font-weight: 800;
-    font-size: 9.3pt;
-    margin-bottom: 5px;
+    font-size: 9.2pt;
+    margin-bottom: 4px;
     border-bottom: 1px solid #334155;
     padding-bottom: 3px;
   }
-  .index-bar {
-    background-color: #F8FAFC;
-    border: 1px solid #CBD5E1;
-    border-left: 4px solid #63289E;
-    border-radius: 4px;
-    padding: 8px 12px;
-    margin-top: 10px;
-    font-size: 8.6pt;
-    color: #334155;
-    line-height: 1.55;
-    break-inside: avoid;
-  }
   .sign-off-footer {
-    margin-top: 10px;
-    padding-top: 6px;
+    margin-top: 8px;
+    padding-top: 5px;
     border-top: 1.5px solid #0F172A;
     display: flex;
     justify-content: space-between;
-    font-size: 8.5pt;
+    font-size: 8.4pt;
     color: #475569;
     font-weight: 700;
     break-inside: avoid;
@@ -454,7 +443,7 @@ html_content = """<!DOCTYPE html>
 </head>
 <body>
 
-<!-- ==================== HEADER + SECTION 1 + SECTION 2 ==================== -->
+<!-- ==================== PAGE 1: COVER + CHAPTER 壹 (MAIN MESSAGES & MASTER STRUCTURE MAP) ==================== -->
 <div class="header-cover">
   <div class="badge-row">
     <span class="doc-badge">B1 高階決策與策略白皮書 (1:3:25 Executive Strategy Whitepaper)</span>
@@ -463,9 +452,9 @@ html_content = """<!DOCTYPE html>
   <h1>從流沙到混凝土：生成式 AI 時代的企業數據治理與資產準備度策略</h1>
   <div class="subtitle">Enterprise Data Readiness &amp; Governance Strategy for Generative AI: From Quicksand to Concrete</div>
   <div class="meta-bar">
-    <span><strong>實證基準</strong>：Davenport &amp; Tiwari (MIT Sloan / AWS 全球 334 位 CDO 實證研究)</span>
+    <span><strong>實證基準</strong>：Davenport &amp; Tiwari (MIT Sloan / AWS 全球 335 位 CDO 實證研究)</span>
     <span><strong>適用決策層</strong>：董事會 / CEO / CDO / CIO / CTO</span>
-    <span><strong>版本</strong>：v2.1 Final</span>
+    <span><strong>版本</strong>：v2.2 Final (Chapter-Aligned)</span>
   </div>
 </div>
 
@@ -478,15 +467,25 @@ html_content = """<!DOCTYPE html>
   </ul>
 </div>
 
+<div class="figure-box">
+  <div class="figure-header">圖 1（格式 A 全景主圖實體內嵌）：企業數據資產面對生成式 AI 的準備度與治理策略 —— 由淺入深四階全景結構圖</div>
+  <img src="01_article_master_structure_map.png" class="figure-img" alt="企業數據準備度與治理策略全景主圖">
+  <div class="figure-footnote">
+    <strong>全景結構導讀（Ausubel 前導組織體）</strong>：中央脊椎收斂從「看清表面落差」到「挑對起點破局」之四步核心主軸；左右四象限依「淺層現象 &rarr; 中層機制 &rarr; 深層決策」展開表面亂象、深層病因、雙腦系統解法與安全試點步驟。
+  </div>
+</div>
+
+<!-- ==================== PAGE 2: CHAPTER 貳 (SITUATION DIAGNOSIS + SCQA TABLE + QUANTITATIVE CHART) ==================== -->
+<div class="chapter-break"></div>
 <h2>貳、【現狀與衝突診斷】為何 80% 投資熱潮僅換來 6% 生產落地：流沙地基引發的全面停滯</h2>
-<p>全球企業高層對生成式 AI 抱持空前期待，但絕大多數組織卻困在「個人零星試用」與「局部概念驗證（POC）」的泥沼中無法創造實質經濟價值。下表依據 <strong>Ehrenberg (1977) 科學化三線表規範</strong>，完整收斂 MIT Sloan 針對 334 位數據長（CDO）之核心實證與標竿案例對照：</p>
+<p>全球企業高層對生成式 AI 抱持空前期待，但絕大多數組織卻困在「個人零星試用」與「局部概念驗證（POC）」的泥沼中無法創造實質經濟價值。下表依據 <strong>Ehrenberg (1977) 科學化三線表規範</strong>，完整收斂 MIT Sloan 針對數據長（CDO）之核心實證與標竿案例對照，並於下方圖 2 呈現統一 Y 軸高度下之準備度留存斷崖：</p>
 
 <table class="ehrenberg">
   <thead>
     <tr>
       <th style="width: 13%;">SCQA 維度</th>
       <th style="width: 37%;">核心組織現實與因果機制推演</th>
-      <th style="width: 24%;">關鍵實證統計 (N = 334)</th>
+      <th style="width: 24%;">關鍵實證統計 (N = 335)</th>
       <th style="width: 26%;">標竿企業正反實踐對照</th>
     </tr>
   </thead>
@@ -510,7 +509,7 @@ html_content = """<!DOCTYPE html>
         <span class="stat-line">• <span class="highlight-stat">57%</span> 至今未改數據策略</span>
         <span class="stat-line">• <span class="highlight-stat">16%</span> 因資安下令全面禁用</span>
       </td>
-      <td>高達 <strong>89%</strong> 企業停滯於個人摸索（33%）、指引制定（21%）或部門試點（19%）。</td>
+      <td>高達 <strong>89%</strong> 企業停滯於個人摸索（33%）、指引制定（21%）、部門試點（19%）或全面禁用（16%）。</td>
     </tr>
     <tr>
       <td class="nowrap"><strong>核心問題<br>(Question)</strong></td>
@@ -538,17 +537,18 @@ html_content = """<!DOCTYPE html>
   </tbody>
 </table>
 
-<!-- ==================== PAGE 2: FIGURE 1 + SECTION 3 (FORMULA SANDWICH) ==================== -->
-<div class="page-break"></div>
 <div class="figure-box">
-  <div class="figure-header">圖 1（格式 D 實體內嵌）：MIT Sloan &amp; AWS 數據長調查實證 —— 80% 商業預期崩跌至 6% 生產落地之「空間重力折線斷崖與雙圖接力全景」</div>
+  <div class="figure-header">圖 2（格式 D 量化圖表實體內嵌）：2024 全球數據長調查實證 —— 80% 商業預期崩跌至 6% 核心投產之「空間重力折線斷崖與雙圖接力全景」</div>
   <img src="03_cdo_survey_quantitative_charts.png" class="figure-img" alt="MIT Sloan CDO 調查量化全景圖">
   <div class="figure-footnote">
     <strong>統計與視覺解讀（Tversky 空間重力映射 &amp; Brewer 同質單色相漸層）</strong>：左右雙圖共用相同之 Y 軸高度比例尺（0%～100%）。左圖（皇家藍同質漸層）將反向阻礙換算為正向留存率（54% 品質過關、43% 策略行動），刻劃出從左上 80% 預期一路俯衝至右下 6% 核心投產之單調斷崖（&Delta; = -74%）；右圖（深青綠同質漸層）接力拆解未投產企業之真實去向（73% 停留在早期摸索與部門試點 + 16% 全面禁用）。
   </div>
 </div>
 
+<!-- ==================== PAGE 3: CHAPTER 參 (THEORETICAL LIMITS + FORMULA SANDWICH + 3 TRAPS MATRIX) ==================== -->
+<div class="chapter-break"></div>
 <h2>參、【底層機制與理論壁壘】為何單靠 Prompt 無法取代數據治理：非結構化剪刀差與三大陷阱</h2>
+<p>許多技術團隊誤以為只要透過長視窗提示詞（Prompt Engineering）與少樣本範例（Few-Shot In-Context Learning），即可讓大語言模型自動清洗海量內部文件。以下透過<strong>「非結構化數據剪刀差積分方程」</strong>與<strong>「三大深層工程陷阱平行解剖矩陣」</strong>，嚴密論證為何缺乏主數據地基的 AI 必然引發系統性崩潰：</p>
 
 <div class="formula-sandwich">
   <div class="sandwich-top">
@@ -568,10 +568,8 @@ html_content = """<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ==================== PAGE 3: FIGURE 2 + SECTION 4 (FIGURE 3 BICAMERAL) ==================== -->
-<div class="page-break"></div>
 <div class="figure-box" style="background-color: #FFFFFF;">
-  <div class="figure-header">圖 2（原生向量結構圖，字級 &ge; 9.5pt）：為何單靠 Prompt 必然失效 —— 三大深層工程陷阱平行解剖矩陣</div>
+  <div class="figure-header">圖 3（原生向量結構圖）：為何單靠 Prompt 必然失效 —— 三大深層工程陷阱平行解剖矩陣（淺層機制 &rarr; 中層失效 &rarr; 深層對策）</div>
   <table class="parallel-grid-table">
     <tr>
       <td class="card-header" style="width: 33.3%; background-color: #AC1953; color: #FFFFFF;">陷阱一：波蘭尼悖論與長尾偽陽性</td>
@@ -580,49 +578,51 @@ html_content = """<!DOCTYPE html>
     </tr>
     <tr>
       <td class="card-row b-crimson" style="background-color: #FEECF0;">
-        <strong>【理論機制】</strong>波蘭尼悖論指出「人類知道的遠比能說出來的多」。<span class="nowrap">Few-Shot</span> 範例僅能覆蓋 80% 常態分布，無法窮盡隱含法規與歷史默會脈絡。
+        <strong>● 【淺層直覺：有些事只可意會】</strong>波蘭尼悖論指出「人類知道的遠比能說出來的多」。<span class="nowrap">Few-Shot</span> 範例僅能覆蓋 80% 常態分布，無法窮盡隱含法規與歷史默會脈絡。
       </td>
       <td class="card-row b-ochre" style="background-color: #FBF1EA;">
-        <strong>【理論機制】</strong>大模型擅長在「單篇文檔」內以 98% 準確率提取欄位，但天生缺乏跨 10 萬份檔案的「全局實體唯一性校驗（Entity Resolution）」能力。
+        <strong>● 【淺層直覺：看單篇都很合理】</strong>大模型擅長在「單篇文檔」內以 98% 準確率提取欄位，但天生缺乏跨 10 萬份檔案的「全局實體唯一性校驗（Entity Resolution）」能力。
       </td>
       <td class="card-row b-blue" style="background-color: #EEF3FE;">
-        <strong>【理論機制】</strong>生成式 AI 的革命性優勢在於高維潛在向量空間（Embeddings）的語境理解；強行將所有文本壓平回二維表格屬於降維倒退。
+        <strong>● 【淺層直覺：硬塞表格反失真】</strong>生成式 AI 的革命性優勢在於高維潛在向量空間（Embeddings）的語境理解；強行將所有文本壓平回二維表格屬於降維倒退。
       </td>
     </tr>
     <tr>
       <td class="card-row b-crimson" style="background-color: #FFFFFF;">
-        <strong>【失效場景】</strong>遇到 20% 罕見長尾合約（如特殊違約豁免條款）時，模型不會承認不懂，而是<strong>極度自信地硬套常規範本</strong>，輸出格式完美但語意相反的致命錯誤。
+        <strong>● 【中層失效：不懂裝懂最致命】</strong>遇到 20% 罕見長尾合約（如特殊違約豁免條款）時，模型不會承認不懂，而是<strong>極度自信地硬套常規範本</strong>，輸出格式完美但語意相反的致命錯誤。
       </td>
       <td class="card-row b-ochre" style="background-color: #FFFFFF;">
-        <strong>【失效場景】</strong>文件 A 寫「台積電」、文件 B 寫「TSMC」、文件 C 寫「3nm 專案組」且記載信用額度互斥，LLM 無法判定何者為最新權威事實，導致資料庫自相矛盾。
+        <strong>● 【中層失效：同名不同人亂成團】</strong>文件 A 寫「台積電」、文件 B 寫「TSMC」、文件 C 寫「3nm 專案組」且記載信用額度互斥，LLM 無法判定何者為最新權威事實，導致資料庫自相矛盾。
       </td>
       <td class="card-row b-blue" style="background-color: #FFFFFF;">
-        <strong>【失效場景】</strong>將客戶投訴錄音壓成「情緒：負面、類別：退貨」兩個死板欄位，徹底抹殺了語氣急迫度、潛在訴訟威脅與細微產品缺陷脈絡。
+        <strong>● 【中層失效：抹殺語氣與急迫度】</strong>將客戶投訴錄音壓成「情緒：負面、類別：退貨」兩個死板欄位，徹底抹殺了語氣急迫度、潛在訴訟威脅與細微產品缺陷脈絡。
       </td>
     </tr>
     <tr>
       <td class="card-footer b-crimson-foot" style="background-color: #FEECF0; color: #881337;">
-        ★ 破局對策：設置置信度閘門（&lt;90% 強制攔截），轉交前額葉人類專家仲裁。
+        ★ 深層對策：設置 90% 置信度閘門，攔截 &lt;5% 長尾難題轉交前額葉人類專家仲裁。
       </td>
       <td class="card-footer b-ochre-foot" style="background-color: #FBF1EA; color: #7C2D12;">
-        ★ 破局對策：建立剛性「主數據管理（MDM）」與受控本體庫，鎖定單一真實來源。
+        ★ 深層對策：建立剛性「主數據管理（MDM）」與受控本體庫，鎖定單一真實來源。
       </td>
       <td class="card-footer b-blue-foot" style="background-color: #EEF3FE; color: #1E3A8A;">
-        ★ 破局對策：保留原文高維向量，改為治理「後設資料層（時效、權威度、評分）」。
+        ★ 深層對策：保留原文高維向量，改為治理「後設資料層（時效、權威度、評分）」。
       </td>
     </tr>
   </table>
 </div>
 
+<!-- ==================== PAGE 4: CHAPTER 肆 (BICAMERAL ARCHITECTURE + EHRENBERG COMPARISON TABLE) ==================== -->
+<div class="chapter-break"></div>
 <h2>肆、【破局系統架構】雙腦分層認知系統與 Ehrenberg 科學對照實證</h2>
 <p>為同時達成「100% 事實零幻覺」與「海量非結構化文本之高維語義理解」，企業必須建構仿生學之<strong>「雙腦分層認知架構（Bicameral Cognitive Architecture）」</strong>，將確定性規則與機率性生成嚴格解耦：</p>
 
 <div class="figure-box" style="background-color: #F8FAFC;">
-  <div class="figure-header">圖 3（原生向量拓撲圖，字級 &ge; 9.5pt）：現代企業數據準備度之「雙腦分層認知架構與前額葉仲裁迴路」</div>
+  <div class="figure-header">圖 4（原生向量拓撲圖）：現代企業數據準備度之「雙腦分層認知架構與前額葉仲裁迴路」</div>
   <div class="bicameral-diagram">
     <div class="prefrontal-box">
-      <div style="font-weight: 800; font-size: 9.8pt; color: #9C5100;">【前額葉：Human-in-the-Loop 領域專家與知識策劃人 (Knowledge Curator)】</div>
-      <div style="font-size: 9pt; color: #1E293B; margin-top: 3px; line-height: 1.54;">
+      <div style="font-weight: 800; font-size: 9.6pt; color: #9C5100;">【前額葉：Human-in-the-Loop 領域專家與知識策劃人 (Knowledge Curator)】</div>
+      <div style="font-size: 8.8pt; color: #1E293B; margin-top: 2px; line-height: 1.50;">
         • <strong>置信度路由閘門（Confidence Gate）</strong>：95% 高置信度樣本自動放行；僅攔截 <strong>&lt; 5% 跨文件衝突或長尾罕見案例</strong> 由人類專家拍板。<br>
         • <strong>雙向動態反哺飛輪</strong>：專家每次仲裁結果，同步更新「左腦受控本體詞庫」並追加為「右腦 <span class="nowrap">Few-Shot</span> 黃金範例」。
       </div>
@@ -637,7 +637,7 @@ html_content = """<!DOCTYPE html>
         <td class="card-header" style="width: 47.5%; background-color: #1A48A0; color: #FFFFFF;">
           【剛性左腦：確定性數據地基 (Deterministic Core)】
         </td>
-        <td style="width: 5%; text-align: center; vertical-align: middle; font-weight: 800; color: #0F172A; font-size: 8.5pt;">
+        <td style="width: 5%; text-align: center; vertical-align: middle; font-weight: 800; color: #0F172A; font-size: 8.4pt;">
           實體<br>校驗<br>◄═►<br>語義<br>對齊
         </td>
         <td class="card-header" style="width: 47.5%; background-color: #006B58; color: #FFFFFF;">
@@ -684,18 +684,14 @@ html_content = """<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ==================== PAGE 4: EHRENBERG TABLE + SECTION 5 (GANTT ROADMAP) ==================== -->
-<div class="page-break"></div>
 <h3>二、 Ehrenberg 科學化架構對照表：三種數據整理與治理模式之極限檢驗</h3>
-<p>以下遵循 Ehrenberg 三線表五大鐵律（依演進邏輯排序、垂直同欄比較、2 位有效數字、零垂直格線、決策收斂底線），對照三種企業數據準備模式之真實工程表現：</p>
-
 <table class="ehrenberg">
   <thead>
     <tr>
       <th style="width: 25%;">評估維度與核心指標</th>
-      <th class="num-col" style="width: 25%;">模式 A：純人工專家整理<br><span style="font-weight: 400; font-size: 8.2pt; color: #64748B;">(傳統精英工匠模式)</span></th>
-      <th class="num-col" style="width: 25%;">模式 B：純 Prompt / Few&#8209;Shot<br><span style="font-weight: 400; font-size: 8.2pt; color: #64748B;">(輕信技術直覺模式)</span></th>
-      <th class="num-col" style="width: 25%;">模式 C：雙腦分層人機協同<br><span style="font-weight: 400; font-size: 8.2pt; color: #1A48A0;">(現代數據工程最佳實踐)</span></th>
+      <th class="num-col" style="width: 25%;">模式 A：純人工專家整理<br><span style="font-weight: 400; font-size: 8.0pt; color: #64748B;">(傳統精英工匠模式)</span></th>
+      <th class="num-col" style="width: 25%;">模式 B：純 Prompt / Few&#8209;Shot<br><span style="font-weight: 400; font-size: 8.0pt; color: #64748B;">(輕信技術直覺模式)</span></th>
+      <th class="num-col" style="width: 25%;">模式 C：雙腦分層人機協同<br><span style="font-weight: 400; font-size: 8.0pt; color: #1A48A0;">(現代數據工程最佳實踐)</span></th>
     </tr>
   </thead>
   <tbody>
@@ -744,6 +740,8 @@ html_content = """<!DOCTYPE html>
   </tbody>
 </table>
 
+<!-- ==================== PAGE 5: CHAPTER 伍 (MVP ROADMAP + GANTT MATRIX + RACI MATRIX) ==================== -->
+<div class="chapter-break"></div>
 <h2>伍、【落地路線圖與權責矩陣】破除 71% 組織觀望：非對稱 MVP 試點與 18 個月推進計畫</h2>
 <p>調查顯示高達 <strong>71% 數據長坦言「目前更重視從其他傳統數據方案取得實際價值」</strong>，主因在於傳統結構化數據債未清、CDO/CIO/CTO 主導權爭奪內耗，以及恐懼大模型出錯引發合規災難。企業切忌試圖一次性清理全公司所有非結構化數據，必須優先鎖定<strong>具備天然安全網與確定性反饋</strong>的兩大非對稱優勢領域：</p>
 <ul class="clean-list">
@@ -752,8 +750,8 @@ html_content = """<!DOCTYPE html>
 </ul>
 
 <div class="figure-box" style="background-color: #FFFFFF;">
-  <div class="figure-header">圖 4（原生向量甘特矩陣，字級 &ge; 9.5pt）：企業生成式 AI 數據準備度 18 個月三階段漸進式落地路線圖</div>
-  <table class="ehrenberg" style="margin: 4px 0 0 0;">
+  <div class="figure-header">圖 5（原生向量甘特矩陣）：企業生成式 AI 數據準備度 18 個月三階段漸進式落地路線圖</div>
+  <table class="ehrenberg" style="margin: 3px 0 0 0;">
     <thead>
       <tr>
         <th style="width: 24%;">轉型階段與核心目標</th>
@@ -798,8 +796,6 @@ html_content = """<!DOCTYPE html>
   </table>
 </div>
 
-<!-- ==================== PAGE 5: RACI MATRIX + SECTION 6 (CLOSING SEAL & INDEX) ==================== -->
-<div class="page-break"></div>
 <h3>二、 跨職能 RACI 權責劃分矩陣（終結 CDO / CIO / CTO 多頭馬車內耗）</h3>
 <table class="ehrenberg">
   <thead>
@@ -850,31 +846,38 @@ html_content = """<!DOCTYPE html>
   </tbody>
 </table>
 
+<!-- ==================== PAGE 6: CHAPTER 陸 (BICAMERAL DEEP-DIVE DIAGRAM + EXECUTIVE CLOSING SEAL) ==================== -->
+<div class="chapter-break"></div>
+<h2>陸、【終章收束與立即行動檢核】雙腦落地三層流程全圖、董事會黃金鐵律與星期一啟動清單</h2>
+<p>為確保技術與業務團隊在執行時具備一致的工程藍圖，下圖 6 完整展開「剛性左腦 &times; 中間裁判 &times; 靈性右腦」從標準字典建立、跨檔案消歧到安全試點上線之三層九宮格實作流程，並於底部收斂董事會立即行動檢核清單：</p>
+
+<div class="figure-box">
+  <div class="figure-header">圖 6（格式 A 專題圖譜實體內嵌）：企業資料「左右腦分工」與安全落地三層流程圖 (Bicameral Data Architecture &amp; Governance Pipeline)</div>
+  <img src="02_bicameral_data_architecture.png" class="figure-img" alt="企業資料左右腦分工與安全落地三層流程圖">
+  <div class="figure-footnote">
+    <strong>專題架構導讀</strong>：橫向對應「第 1 層：統一標準字典與語境保留 &rarr; 第 2 層：唯一客戶名冊與專家拍板 &rarr; 第 3 層：文件身分證過濾與自帶安全網雙試點」；縱向展現左腦死規矩、中間真人裁判與右腦活聯想之閉環協同。
+  </div>
+</div>
+
 <div class="closing-seal">
-  <div style="font-weight: 800; font-size: 10.5pt; color: #FFFFFF; border-bottom: 1px solid #334155; padding-bottom: 4px;">
-    陸、【終章收束與立即行動檢核】董事會三大黃金鐵律與星期一啟動清單 (Executive Closing &amp; Action Seal)
+  <div style="font-weight: 800; font-size: 10.2pt; color: #FFFFFF; border-bottom: 1px solid #334155; padding-bottom: 4px;">
+    ★ 終章決策收束：董事會三大黃金鐵律與「星期一立即啟動」四步檢核清單 (Executive Closing &amp; Action Seal)
   </div>
   <div class="closing-grid">
     <div class="closing-subbox">
       <div class="closing-subbox-title">★ 董事會與高階主管「三大黃金決策鐵律」</div>
-      <div style="margin-bottom: 5px;"><strong>1. 數據治理非事後補丁</strong>：大模型只是燃油，經過審核、具備單一真實來源（SSOT）與後設資料的企業知識庫才是引擎。</div>
-      <div style="margin-bottom: 5px;"><strong>2. 左腦與右腦缺一不可</strong>：不建立外部本體詞庫與 MDM，企圖只靠 Prompt 微調解決數據混亂，如同在流沙上蓋摩天大樓。</div>
+      <div style="margin-bottom: 4px;"><strong>1. 數據治理非事後補丁</strong>：大模型只是燃油，經過審核、具備單一真實來源（SSOT）與後設資料的企業知識庫才是引擎。</div>
+      <div style="margin-bottom: 4px;"><strong>2. 左腦與右腦缺一不可</strong>：不建立外部本體詞庫與 MDM，企圖只靠 Prompt 微調解決數據混亂，如同在流沙上蓋摩天大樓。</div>
       <div><strong>3. 短反饋試點啟動飛輪</strong>：拒絕拿高風險核心資產裸奔；從客服與代碼生成切入，邊創造實質價值邊償還非結構化數據債。</div>
     </div>
     <div class="closing-subbox">
       <div class="closing-subbox-title">☑ 決策層「星期一立即啟動」四步檢核清單</div>
-      <div style="margin-bottom: 5px;"><strong>[ &check; ] Step 1｜終結權力爭奪</strong>：召開 CDO-CIO-BU 聯席會，簽署 RACI 矩陣，確立 CDO 最終數據審定權。</div>
-      <div style="margin-bottom: 5px;"><strong>[ &check; ] Step 2｜凍結盲目微調</strong>：立即暫停將未清洗、未標註時效與權威度之歷史文檔直接灌入模型微調。</div>
-      <div style="margin-bottom: 5px;"><strong>[ &check; ] Step 3｜編纂首部本體庫</strong>：指派知識策劃人（Curator）於 60 天內完成首個業務領域受控詞表。</div>
+      <div style="margin-bottom: 4px;"><strong>[ &check; ] Step 1｜終結權力爭奪</strong>：召開 CDO-CIO-BU 聯席會，簽署 RACI 矩陣，確立 CDO 最終數據審定權。</div>
+      <div style="margin-bottom: 4px;"><strong>[ &check; ] Step 2｜凍結盲目微調</strong>：立即暫停將未清洗、未標註時效與權威度之歷史文檔直接灌入模型微調。</div>
+      <div style="margin-bottom: 4px;"><strong>[ &check; ] Step 3｜編纂首部本體庫</strong>：指派知識策劃人（Curator）於 60 天內完成首個業務領域受控詞表。</div>
       <div><strong>[ &check; ] Step 4｜立項雙軌 MVP</strong>：啟動 90 天「客服輔助」或「代碼生成」試點，強制綁定真人覆核迴路。</div>
     </div>
   </div>
-</div>
-
-<div class="index-bar">
-  <span class="stat-line"><strong>★ 跨媒介高解析度全景知識圖譜附件索引（ISO 9241 視覺分流交付）</strong>：配套兩幅 A3 級 300 DPI 圖譜獨立交付於同目錄：</span>
-  <span class="stat-line">• <strong>附件圖譜 A</strong>：<code>01_article_master_structure_map.png</code>《企業數據準備度與治理策略 — 瑞士網格宏觀結構全景圖》</span>
-  <span class="stat-line">• <strong>附件圖譜 B</strong>：<code>02_bicameral_data_architecture.png</code>《企業數據雙腦認知架構與非對稱治理推進管線專題圖》</span>
 </div>
 
 <div class="sign-off-footer">
@@ -893,10 +896,6 @@ pdf_path = os.path.join(output_dir, "01_executive_strategy_report.pdf")
 with open(html_path, "w", encoding="utf-8") as f:
     f.write(html_content)
 print(f"[OK] Temporary W3C CLREQ HTML written to: {html_path}")
-
-# Compile HTML to PDF using Chrome Headless with isolated user-data-dir
-import shutil
-import tempfile
 
 chrome_path = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 temp_profile = tempfile.mkdtemp(prefix="chrome_pdf_")
@@ -923,7 +922,6 @@ else:
 
 shutil.rmtree(temp_profile, ignore_errors=True)
 
-# Automatically remove temporary HTML file so 02_outputs stays clean
 if os.path.exists(html_path):
     os.remove(html_path)
     print(f"[CLEAN] Removed intermediate HTML file: {html_path}")
