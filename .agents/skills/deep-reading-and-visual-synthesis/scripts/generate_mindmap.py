@@ -27,7 +27,7 @@ TOKEN_RE = re.compile(r"\d+(?:,\d+)+\+?|[A-Za-z0-9_.\-+%/]+|.")
 
 
 def sanitize_cjk_glyphs(text):
-    """Replaces glyphs missing in Windows Microsoft JhengHei (e.g. U+2794, U+2194, U+21C4) with safe equivalents."""
+    """Replaces glyphs and emojis missing in Windows Microsoft JhengHei with safe geometric equivalents."""
     if not text:
         return text
     return (
@@ -35,6 +35,15 @@ def sanitize_cjk_glyphs(text):
             .replace("➜", "→")
             .replace("↔", "←→")
             .replace("⇄", "←→")
+            .replace("⚠️", "▲")
+            .replace("⚠", "▲")
+            .replace("🟢", "●")
+            .replace("🔴", "●")
+            .replace("🔵", "●")
+            .replace("🟡", "●")
+            .replace("✅", "■")
+            .replace("❌", "×")
+            .replace("⭐", "★")
     )
 
 
