@@ -1,51 +1,58 @@
-# 特化格式 B：結構化深度報告、四大體裁篇幅配額與科學表格規範 (Structured Report Spec)
+# 結構化深度報告與雙模態排版規範（Format B: Document Report Spec）
 
-輸出深度報告或讀書筆記（`.md` / `.docx` / `.pdf`）時，必須先依使用者需求選配以下 **4 種特化報告體裁之一**，並嚴格執行其篇幅配額與微觀排版規則。
-
----
-
-## 一、 四大特化報告體裁與篇幅配額矩陣 (4 Report Archetypes & Page Budgets)
-
-| 報告體裁代號與名稱 | 適用場景 | 核心設計哲學 `[文獻依據]` | 嚴格篇幅與章節空間配額 (Space Allocation Budget) |
-| :--- | :--- | :--- | :--- |
-| **B1：高階決策與策略白皮書**<br>*(1:3:25 Executive Strategy)*<br>**【預設商務/實戰首選】** | 商業個案、落地方案、跨部門提案 | **結論先行 ＋ 1:3:25 漸進入口 ＋ 千層蛋糕高氣味掃描**<br>`[Lomas 2000; Minto 2009; NN/g 2017]` | • **10% `Main Messages` 決策主訊息框**：3～5 條 *So-What* 行動斷言（嚴禁寫成空泛摘要）。<br>• **20% `Executive Overview` 與 SCQA 矩陣**。<br>• **45% 底層機制診斷、LaTeX 模型推導與 Ehrenberg 對照表**。<br>• **25% 分階段落地路線圖（Roadmap）、RACI 與風險防線**。 |
-| **B2：亞馬遜式深度敘事備忘錄**<br>*(Tufte-Amazon 6-Page Memo)* | 嚴密推敲多變數因果鏈、辯論策略取捨（Trade-offs） | **完整句子因果敘事段落（拒絕碎片條列掩蓋邏輯漏洞）＋ 數據附表**<br>`[Tufte 2006; Bryar & Carr 2021]` | • **15% 問題本質定義、核心決策原則（Tenets）與終極主張**。<br>• **35% 現狀痛點與底層因果鏈深度敘事推演**（以連貫段落剖析為何舊做法必然失效）。<br>• **30% 破局機制、對立視角辯證（FAQ 質疑與反駁）與成立邊界**。<br>• **20% 量化對照表、數學模型附錄與試點檢核指標**。 |
-| **B3：概念矩陣綜述與學術評析**<br>*(Concept-Centric Synthesis)* | 硬核論文拆解、技術調研、**跨多篇文章綜合統整** | **概念中心制（拒絕單篇流水帳摘錄）＋ 跨維度概念矩陣表**<br>`[Webster & Watson 2002]` | • **15% 焦點問題（Focus Question）與核心理論範疇界定**。<br>• **25% Webster-Watson 跨維度概念矩陣總表**（依「核心概念 × 個體/組織/宏觀層次」對照各篇觀點）。<br>• **40% 分概念維度之理論推導、LaTeX 公式三明治與實證檢驗**。<br>• **20% 方法論限制、理論盲區（Gaps）與未來延伸議程**。 |
-| **B4：康乃爾 × 漸進式讀書筆記**<br>*(Cornell & Progressive Note)* | 個人深度內化、建立第二大腦知識卡、快速複習檢索 | **檢索線索分離（30:70 比例）＋ 四層漸進高亮壓縮**<br>`[Pauk 1962; Forte 2022]` | • **15% 頂部 `Layer 4` 個人白話心智模型重述**（融合第一階段使用者直覺的 3 句話精髓）。<br>• **70% 主體康乃爾 30:70 雙欄對照表/區**（左欄 30% 放「蘇格拉底檢索提問與關鍵詞」，右欄 70% 放「四層漸進高亮筆記、公式與正反案例」）。<br>• **15% 底部跨領域抽象基模卡與個人行動觸發點（Action Trigger）**。 |
+> **單一職責定位（Single Responsibility）**：本檔專責 **Format B（結構化深度分析報告 `.md` 與高解析印刷級 `.pdf`）** 的文體選擇、注意力節律排版、Playwright A4 印刷 CSS 規格與防斷框工程守則。跨格式共用的組塊階層、白話由淺入深原則與基礎色票請見 `visual_cognition_principles.md`。
 
 ---
 
-## 二、 微觀排版與資訊設計四大硬性規則 (Micro-Typography Rules)
+## 一、 四大報告文體與結構配比（4 Document Genres & Structural Proportions）
 
-### 1. 千層蛋糕標題與「高資訊氣味」段落 `[依據：Pirolli & Card 1999; NN/g 2017]`
-* **禁止零氣味標題**：嚴禁寫 `## 二、原因分析`；必須採用**「屬性標籤 ＋ 完整因果斷言」**（如：`## 貳、【病因診斷】為何高層直覺必然輸給簡單線性模型：可得性偏誤與權重失真`）。
-* **段落上限與行首粗體錨點**：單段限 **3～4 行（90～130 漢字）**。條列項強制採用：`● **[四至六字粗體概念錨點]** — [具體因果機制推導 → 量化或實證結果]`。
+- **理論依據**：**體裁分析理論（Genre Analysis, Swales 1990）** 與 **金字塔原理（Pyramid Principle, Minto 2009）**。
+- **頁數無硬性上限原則**：報告總頁數由內容深度、圖表數量與視覺留白自然決定，**嚴禁設定固定頁數上限（如強行壓縮至 6 頁）或為了湊頁數而灌水**。以下百分比（`%`）代表**全篇篇幅與認知權重的相對配比**：
 
-### 2. Ehrenberg (1977) & Few (2012) 科學化表格五鐵律 (Scientific Supertables)
-報告內所有比較表格必須遵守：
-1. **邏輯/數值排序**：列（Rows）必須依演進階段、影響權重大小或邏輯層級排序，禁止隨機排列。
-2. **垂直同欄比較**：待比較的各維度指標必須對齊於同一垂直欄（Column）。
-3. **2 位有效數字**：統計數據或百分比精簡至 **2 位有效數字**，消除心算阻礙。
-4. **剔除垂直牢籠線（Booktabs 三線表）**：輸出 HTML/PDF/DOCX 時**嚴禁畫垂直格線**，僅保留頂線、表頭底線、總結底線與充足內距（Padding `8px 12px`）。
-5. **必備「★ 決策收斂底列（Bottom-Line Row）」**：表格最後一列強制設為跨欄或高亮的「**★ 核心決策啟示／人機分工底線**」。
+| 文體類型 | 適用場景 | 核心結構與篇幅權重配比（`%`） |
+| :--- | :--- | :--- |
+| **1. 深度綜合評論**<br>*(Comprehensive Synthesis)* | 跨領域長文、多視角理論交鋒 | ① 核心命題與金字塔結論 (`15%`) → ② 原文論證脈絡與實證拆解 (`35%`) → ③ 跨領域視角與結構映射 (`25%`) → ④ 反思盲點與延伸應用 (`25%`) |
+| **2. 高階決策備忘錄**<br>*(Executive Strategy Memo)* | 商業調查報告、轉型策略、管理實證 | ① 執行摘要與 SCQA 破題 (`15%`) → ② 核心矛盾與實證數據診斷 (`25%`) → ③ 系統架構與失效機制解剖 (`30%`) → ④ 雙軌治理與分階段行動路線圖 (`30%`) |
+| **3. 方法論實踐藍圖**<br>*(Methodological Blueprint)* | 工程架構、演算法、治理管線或操作指南 | ① 核心設計哲學與邊界 (`15%`) → ② 系統架構與運作機制 (`35%`) → ③ 落地步驟與檢核矩陣 (`30%`) → ④ 常見反模式（Anti-patterns）與防禦對策 (`20%`) |
+| **4. 跨域知識卡片組**<br>*(Atomic Knowledge Cards)* | 高密度概念萃取、建立個人知識庫 | ① 全局概念索引地圖 (`15%`) → ② 原子概念卡（每卡含：白話定義、運作機制、正反案例、跨域連結）(`65%`) → ③ 實踐自測清單 (`20%`) |
 
-### 3. LaTeX 公式「三明治詮釋協定 (Formula Sandwich Protocol)」
-任何數學或邏輯公式嚴禁孤立出現，必須包夾於三層結構：
-- **(上) 直覺問題意識**：1～2 句白話說明該公式解決什麼現實盲點。
-- **(中) 獨立置中標準 LaTeX 公式**：如 $$\min_{\beta} \left\{ \frac{1}{2N} \sum_{i=1}^N (y_i - X_i\beta)^2 + \lambda \sum_{j=1}^p |\beta_j| \right\}$$
-- **(下) 參數物理意義與極端邊界推演**：解釋各變數之真實商業/系統意義，並推演參數趨近極端值（如 $\lambda \to 0$ vs. $\lambda$ 適中）時的系統行為。
+---
 
-### 4. W3C CLREQ 出版級長文樣式、分頁連續性與實體 PDF 編譯管線 `[依據：W3C CLREQ; W3C CSS Fragmentation Level 3; W3C Paged Media; Müller-Brockmann 1981; ISO 9241-303; Kahneman 1993]`
-1. **實體 PDF 自動編譯管線與特化模板注入（Automated Native PDF Compilation Pipeline）**：
-   - **禁止僅交付原始 `.md` 文字檔**：當使用者選配報告體裁時，系統必須依據所選體裁（B1～B4）之專屬 CSS 樣式，將 Markdown、LaTeX 公式（KaTeX/MathML）、Ehrenberg 表格與內嵌圖表打包為 `01_executive_strategy_report.html`。
-   - **無損列印至實體 PDF**：透過系統無頭瀏覽器（如 `chrome.exe --headless=new --disable-gpu --print-to-pdf="01_executive_strategy_report.pdf" --no-pdf-header-footer`）自動編譯交付可直接翻閱、列印之出版級實體 `.pdf`，落實真特化輸出。
-2. **章節連續性鎖定與防無故換頁留白（Section Continuity & Pagination Control）**：
-   - **嚴禁「章節標題與導言留在頁尾、子內容全部跳到下一頁」的斷裂排版**！在 HTML/PDF 中，必須將每個章節的「`h2`/`h3` 標題 ＋ 前導段落 ＋ 第一個內容區塊（如第一張卡片或表格前段）」包入同一個 `.section-anchor-group { break-inside: avoid-page; }` 容器中；若頁尾空間不足以同時容納標題與第一個內容塊，則整組標題與內容一起換頁。
-   - **解除過度鎖定（Avoid Over-Constrained Blocks）**：切勿對高度超過半頁的大型複合容器設死 `break-inside: avoid`（這會導致頁面下半部留白 40% 以上）；應緊湊化區塊內外距（Margin/Padding），讓子卡片與段落自然流式銜接（單頁填充率須達 `85%～92%`），並設定 `p { orphans: 3; widows: 3; }`。
-3. **ISO 9241 跨媒介圖表分流與正文實體內嵌鐵律（Mandatory Visual Embedding Gate）**：
-   - **報告正文強制實體內嵌圖表**：**嚴禁報告正文僅有純文字框架而將圖表完全割裂於外部**！正文關鍵章節必須透過 `<img src="...">` 或原生 HTML/SVG 實體內嵌格式 D 之量化科學圖表（如漏斗落差圖）與大字級結構圖（字級 $\ge 9.5\text{pt}\sim 10.5\text{pt}$），達成圖文互鎖。高資訊密度全景心智圖則以獨立高解析檔案交付並於文末索引說明。
-4. **列點呼吸感行距與並排平行對齊網格（Parallel Row Alignment）**：
-   - 條列項禁止將長文擠在同一行或使用過密行距；必須將「`● 【核心概念標題】`」加粗突顯，內文維持 `line-height: 1.72`、列點間距 `margin-bottom: 9px`。
-   - 當使用雙欄或三欄並排呈現對照列點時（如「東牆 vs. 西牆」或「道・法・術」），**必須使用 CSS Grid / Table-Row 對齊機制，確保左右並排卡片的第 1 個列點、第 2 個列點在水平方向上嚴格平行對齊（Horizontal Baseline Alignment）**！
-5. **Kahneman 峰終定律「終章總結與行動封底（Executive Closing Block）」**：
-   - 報告文末**嚴禁在講完最後一節後突兀結束**！必須配置正式的「**終章收束與立即行動檢核區（Executive Closing & Action Seal）**」，收斂全篇 3 大黃金守則、下一步行動清單與文件簽署資訊，達成有頭有尾的完整閱讀體驗。
+## 二、 注意力節律與雙模態混合排版法則（Attention Cadence & Dual-Modal Formatting）
+
+### 1. 「注意力波峰與波谷」交錯節律（Attention Peak-and-Valley Cadence）
+- **理論依據**：**雙碼理論（Dual-Coding Theory, Paivio 1986）** 與 **認知負荷理論（Sweller 2011）**。若整份報告全部堆滿卡片與表格，會引發嚴重的「視覺網格疲勞（Grid Fatigue）」；若全部皆為純文字長段落，則缺乏結構錨點。
+- **強制交錯結構**：每一個大章節（Section）必須遵循 **「敘事波谷（Narrative Valley）$\rightarrow$ 結構波峰（Structural Peak）$\rightarrow$ 洞見收斂（Synthesis Takeaway）」** 的節律：
+  1. **章節前導與過渡敘事段落（Narrative Exposition Paragraphs）**：在進入高密度表格、架構圖或公式前，**必須撰寫未經壓縮的完整散文段落（每段約 180～280 漢字）**，流暢交代背景脈絡、因果推演與「為什麼這件事對決策者至關重要」，建立閱讀呼吸感與邏輯連貫性。
+  2. **高密度結構化視覺組件（Tables / Parallel Anatomy Matrices / Cards）**：將多維度對比、階段指標或正反案例收斂為對齊矩陣或雙欄卡片。卡片與表格內的條目一律採用 `● 【白話核心錨點】` 開頭並落實「由淺入深（淺層現象 $\rightarrow$ 中層情境 $\rightarrow$ 深層對策）」。
+  3. **獨立公式展示塊（Display Equation Box）**：凡涉及數學、統計或邏輯關係式，一律抽離為獨立置中的展示區塊，並在下方緊接「白話直覺翻譯（Plain-Language Walkthrough）」，逐項解釋每個符號的真實業務意義。
+
+### 2. 原創精煉圖表嵌入與零孤立原則（Seamless Visual Integration）
+- 報告必須直接嵌入 Phase 2 生成的高解析度資訊圖譜（Format A）與量化實證圖表（Format D），使用 `<figure>` 搭配完整圖說（Caption）。
+- **圖文互文導讀**：每張圖表前後的正文必須明確引導讀者觀察圖中的關鍵落差或轉折，嚴禁「只貼圖不解說」。
+
+---
+
+## 三、 Playwright A4 印刷級 PDF 轉換與防斷框工程規範（Print PDF Engineering）
+
+### 1. A4 邊距擴張與字級舒適度（Expansive Print Margins & Typography）
+- **頁面尺寸與擴張印域**：`@page { size: A4 portrait; margin: 11mm 10.5mm 12mm 10.5mm; }`，將實際可列印寬度擴張至 **`189mm`**（較傳統 `16mm` 邊距增加 `11mm` 橫向空間），徹底舒緩多欄比較表與雙欄卡片的垂直折行壓力。
+- **字級與行高硬指標**：
+  - 正文段落（`p`）：**`10.6pt ~ 11.2pt`**，行高 `1.68 ~ 1.75`，段距 `8px ~ 10px`。
+  - 表格與卡片內文（`td`, `.card-body`）：**`9.8pt ~ 10.5pt`**，行高 `1.55 ~ 1.62`。
+  - 膠囊標籤與圖說（`.badge`, `figcaption`）：**`9.2pt ~ 9.8pt`**。
+
+### 2. 防範「跨頁裁切」與「渲染高度溢位斷框」雙重鐵律
+- **防跨頁腰斬**：所有視覺容器（`.card`, `.matrix-box`, `figure`, `.equation-box`, `tr`, `.callout`）必須強制加上 CSS：
+  ```css
+  break-inside: avoid;
+  page-break-inside: avoid;
+  ```
+- **防渲染高度溢位斷框（No Hardcoded Height & No Overflow Hidden）**：
+  - **嚴禁**在任何卡片、表格容器或雙欄區塊設定固定高度（`height: ...`）或 `overflow: hidden`。當字級放大或文字折行增加時，`overflow: hidden` 會直接切斷卡片底部框線（Bottom Border Missing）。
+  - 雙欄或多欄並列容器必須使用 `display: flex; align-items: stretch;` 或 CSS Grid，外框統一設為整數像素 `border: 1.5px solid <color>; border-radius: 8px; background: #FFFFFF;`。
+  - 若卡片帶有頂部色塊標題列（`.card-header`），則將圓角 `border-radius: 6px 6px 0 0;` 設於標題列本身，避免依賴父容器 `overflow: hidden` 裁切圓角。
+
+### 3. 視覺預覽驗證與正式檔單一交付流程
+- 渲染腳本統一使用 Python `playwright`（Chromium Headless `page.pdf(print_background=True, prefer_css_page_size=True)`）。
+- 生成 PDF 後必須實際檢視每一頁，確認**所有卡片四邊框線完整閉合、無孤行標題（Orphan Headings）、無圖片爆版**，驗證完畢後立即刪除暫存 `.html` 檔。

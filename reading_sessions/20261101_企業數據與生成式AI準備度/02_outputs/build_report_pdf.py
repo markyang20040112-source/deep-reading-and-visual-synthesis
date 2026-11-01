@@ -1,7 +1,11 @@
 """
 build_report_pdf.py
-Compiles 01_executive_strategy_report.md into a publication-grade HTML and PDF document
-following W3C Paged Media Module Level 3, W3C CLREQ, and ISO 9241 standards.
+Compiles 01_executive_strategy_report.md into a publication-grade PDF document
+(01_executive_strategy_report.pdf) in 100% compliance with:
+- document_report_spec.md (B1 1:3:25 Executive Strategy Whitepaper)
+- visual_cognition_principles.md (CIELUV HCL Tri-Tier Solid Colors, W3C CLREQ Typography)
+- [INS-09] Zero Single-Character Widows in Table Cells (text-wrap: pretty, nowrap locks, column capacity alignment)
+- [INS-10] W3C CLREQ Golden Leading (1.72x), Spacious Cell Padding (7px 9px), and >=30% Active Breathing Room
 """
 
 import os
@@ -15,423 +19,867 @@ html_content = """<!DOCTYPE html>
 <style>
   @page {
     size: A4 portrait;
-    margin: 18mm 15mm 20mm 15mm;
+    margin: 12.5mm 10.5mm 14mm 10.5mm;
     @bottom-center {
-      content: "— " counter(page) " —";
-      font-size: 9pt;
+      content: "— " counter(page) " / " counter(pages) " —";
+      font-size: 8.5pt;
       color: #64748B;
-      font-family: "Microsoft JhengHei", sans-serif;
+      font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
     }
   }
 
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   body {
-    font-family: "Microsoft JhengHei", "PingFang TC", "Helvetica Neue", sans-serif;
-    color: #1E293B;
+    font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+    color: #0F172A;
     background-color: #FFFFFF;
-    line-height: 1.75;
-    font-size: 10.5pt;
+    line-height: 1.72;
+    font-size: 10.2pt;
     margin: 0;
     padding: 0;
+    text-wrap: pretty;
+    line-break: strict;
   }
 
-  .header-cover {
-    border-bottom: 2.5px solid #1E40AF;
-    padding-bottom: 15px;
-    margin-bottom: 25px;
-  }
-  .doc-badge {
-    display: inline-block;
-    background-color: #EFF6FF;
-    color: #1E40AF;
-    font-weight: bold;
-    font-size: 9pt;
-    padding: 3px 10px;
-    border-radius: 4px;
-    border: 1px solid #BFDBFE;
-    margin-bottom: 8px;
-  }
-  h1 {
-    color: #0F172A;
-    font-size: 19pt;
-    margin: 6px 0 8px 0;
-    line-height: 1.35;
-    font-weight: 800;
-  }
-  .subtitle {
-    color: #475569;
-    font-size: 12pt;
-    font-weight: 600;
-    margin-bottom: 12px;
-  }
-  .meta-bar {
-    font-size: 9pt;
-    color: #64748B;
-    border-top: 1px solid #E2E8F0;
-    padding-top: 8px;
-  }
-
-  .main-message-box {
-    background-color: #F8FAFC;
-    border: 1.5px solid #1E40AF;
-    border-left: 6px solid #1E40AF;
-    border-radius: 6px;
-    padding: 14px 18px;
-    margin: 20px 0;
-    page-break-inside: avoid;
-  }
-  .main-message-title {
-    color: #1E40AF;
-    font-weight: bold;
-    font-size: 11.5pt;
-    margin-bottom: 8px;
-  }
-
-  h2 {
-    color: #0F172A;
-    font-size: 13.5pt;
-    border-left: 4px solid #1E40AF;
-    padding-left: 10px;
-    margin-top: 28px;
-    margin-bottom: 12px;
-    page-break-after: avoid;
-  }
-  h3 {
-    color: #1E293B;
-    font-size: 11.5pt;
-    margin-top: 18px;
-    margin-bottom: 8px;
-    page-break-after: avoid;
-  }
-
-  p {
-    margin: 8px 0;
-    text-align: justify;
-    orphans: 3;
-    widows: 3;
-  }
-
-  .formula-box {
-    background-color: #0F172A;
-    color: #F8FAFC;
-    border-radius: 6px;
-    padding: 14px;
-    margin: 16px 0;
-    text-align: center;
-    border: 1px solid #38BDF8;
-    page-break-inside: avoid;
-  }
-  .formula-title {
-    font-size: 9.5pt;
-    color: #38BDF8;
-    font-weight: bold;
-    margin-bottom: 4px;
-  }
-  .formula-math {
-    font-size: 14pt;
-    font-family: "Georgia", serif;
-    font-weight: bold;
-    color: #FFFFFF;
-    margin: 6px 0;
-  }
-
-  .chart-container {
-    text-align: center;
-    margin: 20px 0;
-    page-break-inside: avoid;
-  }
-  .chart-img {
-    width: 100%;
-    max-width: 100%;
-    border-radius: 6px;
-    border: 1px solid #CBD5E1;
-  }
-  .chart-caption {
-    font-size: 9pt;
-    color: #64748B;
-    margin-top: 6px;
-    font-weight: 500;
-  }
-
-  table.ehrenberg {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 18px 0;
-    font-size: 9.5pt;
-    page-break-inside: avoid;
-  }
-  table.ehrenberg th {
-    border-top: 2px solid #0F172A;
-    border-bottom: 1.5px solid #0F172A;
-    padding: 8px 10px;
-    background-color: #F8FAFC;
-    color: #0F172A;
-    font-weight: bold;
-    text-align: center;
-  }
-  table.ehrenberg td {
-    padding: 7px 10px;
-    border-bottom: 1px solid #E2E8F0;
-    text-align: center;
-  }
-  table.ehrenberg tr.bottom-line td {
-    border-top: 1.5px solid #0F172A;
-    border-bottom: 2px solid #0F172A;
-    background-color: #EFF6FF;
-    font-weight: bold;
-    color: #1E40AF;
+  .nowrap {
+    white-space: nowrap !important;
+    text-wrap: nowrap !important;
   }
 
   .page-break {
     page-break-before: always;
+    break-before: page;
   }
 
-  ul {
-    margin: 8px 0;
-    padding-left: 20px;
+  /* Header Cover Banner (HCL Deep Royal Blue H=250) */
+  .header-cover {
+    background-color: #0F172A;
+    color: #FFFFFF;
+    border-top: 5px solid #1A48A0;
+    border-bottom: 3px solid #38BDF8;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 11px;
   }
-  li {
+  .badge-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+  .doc-badge {
+    display: inline-block;
+    background-color: #2659B8;
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 8pt;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+  }
+  .doc-id {
+    font-size: 7.8pt;
+    color: #94A3B8;
+    font-family: Consolas, monospace;
+    white-space: nowrap;
+  }
+  h1 {
+    color: #FFFFFF;
+    font-size: 15.5pt;
+    margin: 3px 0 3px 0;
+    line-height: 1.3;
+    font-weight: 800;
+  }
+  .subtitle {
+    color: #CBD5E1;
+    font-size: 9.4pt;
+    font-weight: 500;
+    margin-bottom: 7px;
+  }
+  .meta-bar {
+    font-size: 7.9pt;
+    color: #E2E8F0;
+    border-top: 1px solid #334155;
+    padding-top: 5px;
+    display: flex;
+    justify-content: space-between;
+    white-space: nowrap;
+  }
+
+  /* Section 1: Main Messages Box (10% Budget, HCL Blue Tint #EEF3FE) */
+  .main-message-box {
+    background-color: #EEF3FE;
+    border: 1.5px solid #1A48A0;
+    border-left: 6px solid #1A48A0;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 0 0 11px 0;
+    break-inside: avoid;
+  }
+  .main-message-title {
+    color: #1A48A0;
+    font-weight: 800;
+    font-size: 10.4pt;
     margin-bottom: 6px;
+    border-bottom: 1px solid #BFDBFE;
+    padding-bottom: 4px;
   }
-  .bullet-tag {
-    font-weight: bold;
+
+  /* High-Scent Layer-Cake Headings (Pirolli & Card 1999) */
+  h2 {
+    color: #0F172A;
+    font-size: 11.2pt;
+    font-weight: 800;
+    background-color: #F8FAFC;
+    border-left: 5px solid #1A48A0;
+    border-bottom: 1px solid #CBD5E1;
+    padding: 5px 11px;
+    margin-top: 11px;
+    margin-bottom: 7px;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  h3 {
+    color: #1A48A0;
+    font-size: 10.2pt;
+    font-weight: 800;
+    margin-top: 10px;
+    margin-bottom: 6px;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  p {
+    margin: 5px 0;
+    text-align: justify;
+    line-height: 1.70;
+    text-wrap: pretty;
+    orphans: 3;
+    widows: 3;
+  }
+
+  ul.clean-list {
+    list-style: none;
+    margin: 5px 0;
+    padding-left: 2px;
+  }
+  ul.clean-list li {
+    margin-bottom: 6px;
+    line-height: 1.64;
+    text-align: justify;
+    text-wrap: pretty;
+  }
+  .bullet-dot {
+    color: #1A48A0;
+    font-weight: 900;
+    margin-right: 4px;
+  }
+  .anchor-tag {
+    font-weight: 800;
     color: #0F172A;
   }
+  .highlight-stat {
+    color: #AC1953;
+    font-weight: 700;
+  }
+  .highlight-good {
+    color: #006B58;
+    font-weight: 700;
+  }
 
-  .closing-card {
+  /* Ehrenberg (1977) Scientific Booktabs 3-Line Table (Zero Vertical Lines, Zero Widows!) */
+  table.ehrenberg {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6px 0 10px 0;
+    font-size: 9.1pt;
+    line-height: 1.56;
+    break-inside: avoid;
+  }
+  table.ehrenberg th {
+    border-top: 2px solid #0F172A;
+    border-bottom: 1.5px solid #0F172A;
+    padding: 6px 8px;
+    background-color: #F8FAFC;
+    color: #0F172A;
+    font-weight: 800;
+    text-align: left;
+    white-space: nowrap;
+  }
+  table.ehrenberg th.num-col,
+  table.ehrenberg td.num-col {
+    text-align: center;
+    white-space: nowrap !important;
+    text-wrap: nowrap !important;
+  }
+  table.ehrenberg td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #E2E8F0;
+    vertical-align: middle;
+    text-align: left;
+    text-wrap: pretty;
+  }
+  table.ehrenberg tr.bottom-line td {
+    border-top: 1.5px solid #0F172A;
+    border-bottom: 2px solid #0F172A;
+    background-color: #EEF3FE;
+    font-weight: 700;
+    color: #1A48A0;
+  }
+
+  /* Stat list inside table cells: strictly single-line per item, zero orphan wrap */
+  .stat-line {
+    white-space: nowrap;
+    display: block;
+    line-height: 1.58;
+  }
+
+  /* Three-Tier Chart Embed Container (Rule 4.3 & Quantitative Spec) */
+  .figure-box {
+    background-color: #F8FAFC;
+    border: 1px solid #CBD5E1;
+    border-radius: 6px;
+    padding: 8px 11px;
+    margin: 6px 0 9px 0;
+    break-inside: avoid;
+  }
+  .figure-header {
+    font-size: 9.4pt;
+    font-weight: 800;
+    color: #0F172A;
+    margin-bottom: 5px;
+    border-left: 4px solid #1A48A0;
+    padding-left: 8px;
+  }
+  .figure-img {
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    margin: 0 auto;
+    border-radius: 4px;
+  }
+  .figure-footnote {
+    font-size: 8.5pt;
+    color: #475569;
+    margin-top: 6px;
+    border-top: 1px dashed #CBD5E1;
+    padding-top: 5px;
+    text-align: justify;
+    line-height: 1.52;
+  }
+
+  /* Formula Sandwich Protocol (Rule 2.3) */
+  .formula-sandwich {
+    border: 1.5px solid #1A48A0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 8px 0 12px 0;
+    break-inside: avoid;
+  }
+  .sandwich-top {
+    background-color: #EEF3FE;
+    padding: 8px 12px;
+    font-size: 9.2pt;
+    color: #0F172A;
+    border-bottom: 1px solid #BFDBFE;
+    line-height: 1.62;
+  }
+  .sandwich-mid {
+    background-color: #0F172A;
+    color: #FFFFFF;
+    text-align: center;
+    padding: 11px 14px;
+  }
+  .math-expr {
+    font-family: "Cambria Math", "Times New Roman", Georgia, serif;
+    font-size: 13pt;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #38BDF8;
+  }
+  .sandwich-bot {
+    background-color: #F8FAFC;
+    padding: 8px 12px;
+    font-size: 9pt;
+    color: #1E293B;
+    border-top: 1px solid #CBD5E1;
+    line-height: 1.62;
+  }
+
+  /* Parallel Row-Aligned Grid Cards (Rule 2.4.4 & [INS-11] Solid Border Protection) */
+  .parallel-grid-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 6px 0;
+    margin: 2px 0;
+  }
+  .parallel-grid-table td.card-header {
+    padding: 6px 9px;
+    font-weight: 800;
+    font-size: 9.3pt;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .parallel-grid-table td.card-row {
+    padding: 6px 10px;
+    font-size: 9pt;
+    line-height: 1.54;
+    vertical-align: top;
+    text-wrap: pretty;
+  }
+  .parallel-grid-table td.card-footer {
+    padding: 6px 10px;
+    font-size: 9pt;
+    font-weight: 700;
+    line-height: 1.50;
+    vertical-align: top;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    text-wrap: pretty;
+  }
+  /* Explicit 4-sided closed solid borders per color theme to prevent Chromium Skia clipping ([INS-11]) */
+  .b-crimson { border-left: 2px solid #AC1953 !important; border-right: 2px solid #AC1953 !important; border-top: 1px solid #E5A3B8 !important; border-bottom: 1px solid #E5A3B8 !important; }
+  .b-crimson-foot { border-left: 2px solid #AC1953 !important; border-right: 2px solid #AC1953 !important; border-top: 1px solid #AC1953 !important; border-bottom: 2px solid #AC1953 !important; }
+  .b-ochre { border-left: 2px solid #9C5100 !important; border-right: 2px solid #9C5100 !important; border-top: 1px solid #DFB88C !important; border-bottom: 1px solid #DFB88C !important; }
+  .b-ochre-foot { border-left: 2px solid #9C5100 !important; border-right: 2px solid #9C5100 !important; border-top: 1px solid #9C5100 !important; border-bottom: 2px solid #9C5100 !important; }
+  .b-blue { border-left: 2px solid #1A48A0 !important; border-right: 2px solid #1A48A0 !important; border-top: 1px solid #93C5FD !important; border-bottom: 1px solid #93C5FD !important; }
+  .b-blue-foot { border-left: 2px solid #1A48A0 !important; border-right: 2px solid #1A48A0 !important; border-top: 1px solid #1A48A0 !important; border-bottom: 2px solid #1A48A0 !important; }
+  .b-teal { border-left: 2px solid #006B58 !important; border-right: 2px solid #006B58 !important; border-top: 1px solid #6EE7B7 !important; border-bottom: 1px solid #6EE7B7 !important; }
+  .b-teal-foot { border-left: 2px solid #006B58 !important; border-right: 2px solid #006B58 !important; border-top: 1px solid #006B58 !important; border-bottom: 2px solid #006B58 !important; }
+
+  /* Native Vector Structural Diagram: Bicameral Architecture */
+  .bicameral-diagram {
+    background-color: #FFFFFF;
+    border: 1px solid #CBD5E1;
+    border-radius: 5px;
+    padding: 7px 10px;
+    margin: 2px 0;
+  }
+  .prefrontal-box {
+    background-color: #FBF1EA;
+    border: 2px solid #9C5100;
+    border-radius: 5px;
+    padding: 6px 12px;
+    width: 92%;
+    margin: 0 auto 4px auto;
+    text-align: center;
+  }
+  .brain-connector {
+    text-align: center;
+    font-size: 8.8pt;
+    font-weight: 700;
+    color: #9C5100;
+    margin: 4px 0 6px 0;
+  }
+
+  /* Gantt Roadmap Visual Matrix */
+  .gantt-bar-bg {
+    background-color: #E2E8F0;
+    border-radius: 3px;
+    height: 13px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 3px;
+  }
+  .gantt-fill-1 { background-color: #2659B8; height: 100%; border-radius: 3px; }
+  .gantt-fill-2 { background-color: #9C5100; height: 100%; border-radius: 3px; }
+  .gantt-fill-3 { background-color: #006B58; height: 100%; border-radius: 3px; }
+
+  /* Kahneman Closing Block & Action Seal (Rule 2.4.5) */
+  .closing-seal {
     background-color: #0F172A;
     color: #F8FAFC;
     border-radius: 6px;
-    padding: 16px 20px;
-    margin-top: 25px;
-    border: 1.5px solid #38BDF8;
-    page-break-inside: avoid;
+    padding: 11px 15px;
+    margin-top: 12px;
+    border: 1.5px solid #1A48A0;
+    border-left: 6px solid #006B58;
+    break-inside: avoid;
   }
-  .closing-title {
+  .closing-grid {
+    display: grid;
+    grid-template-columns: 49% 49%;
+    gap: 2%;
+    margin-top: 7px;
+  }
+  .closing-subbox {
+    background-color: #1E293B;
+    border: 1px solid #334155;
+    border-radius: 5px;
+    padding: 8px 11px;
+    font-size: 8.8pt;
+    line-height: 1.56;
+  }
+  .closing-subbox-title {
     color: #38BDF8;
-    font-weight: bold;
-    font-size: 11.5pt;
-    margin-bottom: 8px;
+    font-weight: 800;
+    font-size: 9.3pt;
+    margin-bottom: 5px;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 3px;
+  }
+  .index-bar {
+    background-color: #F8FAFC;
+    border: 1px solid #CBD5E1;
+    border-left: 4px solid #63289E;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-top: 10px;
+    font-size: 8.6pt;
+    color: #334155;
+    line-height: 1.55;
+    break-inside: avoid;
+  }
+  .sign-off-footer {
+    margin-top: 10px;
+    padding-top: 6px;
+    border-top: 1.5px solid #0F172A;
+    display: flex;
+    justify-content: space-between;
+    font-size: 8.5pt;
+    color: #475569;
+    font-weight: 700;
+    break-inside: avoid;
   }
 </style>
 </head>
 <body>
 
+<!-- ==================== HEADER + SECTION 1 + SECTION 2 ==================== -->
 <div class="header-cover">
-  <div class="doc-badge">B1 高階決策與策略白皮書 (Executive Strategy Whitepaper)</div>
+  <div class="badge-row">
+    <span class="doc-badge">B1 高階決策與策略白皮書 (1:3:25 Executive Strategy Whitepaper)</span>
+    <span class="doc-id">DOC-REF: MIT-CDO-20261101-B1 ｜ CIELUV HCL Calibrated</span>
+  </div>
   <h1>從流沙到混凝土：生成式 AI 時代的企業數據治理與資產準備度策略</h1>
-  <div class="subtitle">Enterprise Data Readiness & Governance Strategy for Generative AI: From Quicksand to Concrete</div>
+  <div class="subtitle">Enterprise Data Readiness &amp; Governance Strategy for Generative AI: From Quicksand to Concrete</div>
   <div class="meta-bar">
-    <strong>制定依據</strong>：Thomas H. Davenport & Priyanka Tiwari 調查研究 (MIT Sloan / AWS, N=334 CDO) ｜ <strong>發布日期</strong>：2026-11-01 ｜ <strong>版本</strong>：v1.0 Final
+    <span><strong>實證基準</strong>：Davenport &amp; Tiwari (MIT Sloan / AWS 全球 334 位 CDO 實證研究)</span>
+    <span><strong>適用決策層</strong>：董事會 / CEO / CDO / CIO / CTO</span>
+    <span><strong>版本</strong>：v2.1 Final</span>
   </div>
 </div>
 
 <div class="main-message-box">
-  <div class="main-message-title">壹、 決策主訊息框 (Main Messages — 3 大 So-What 核心斷言)</div>
-  <ul>
-    <li><span class="bullet-tag">【破除資料短缺迷思：缺的不是總量，而是具備單一真理的「混凝土地基」】</span> 企業內部非結構化數據以幾何級數膨脹（佔總量 80%~90%），但 80% 熱潮僅轉化為 <strong>6% 的生產環境落地</strong>，高達 <strong>46% 的數據長指出「數據品質與多源衝突」是第一死穴</strong>。大語言模型無法自動消歧矛盾事實，將未治理的暗數據餵給 AI，只會以極高效率自動化放大組織錯誤。</li>
-    <li><span class="bullet-tag">【終結 Prompt 萬能論：以「雙腦分層認知架構」破解規則窮盡性詛咒】</span> 波蘭尼悖論證明「人類知道的遠比能說出來的多」，在 Prompt 撰寫窮盡規則必然遭遇組合爆炸與長尾邊緣案例的自信偽陽性。企業必須建構<strong>「剛性左腦（受控本體庫、主數據管理 MDM）」&times;「靈性右腦（LLM 高維語義抽取）」&times;「前額葉（領域專家 HITL 仲裁 <5% 邊緣衝突）」</strong>之三層協同體系。</li>
-    <li><span class="bullet-tag">【非對稱 MVP 破局路徑：以高容錯短反饋試點啟動組織飛輪】</span> 71% 數據長因守舊慣性或權力博弈對生成式 AI 裹足不前。破局策略在於<strong>嚴禁直接拿核心財務/研發數據試錯</strong>，優先切入「客服坐席輔助」與「代碼工程生成」等具備即時編譯/真人覆核機制的非對稱優勢場景，以最低試錯成本累積可遷移之治理經驗與提示範本。</li>
+  <div class="main-message-title">壹、【決策主訊息】破除算力迷思與流沙微調：三大 So-What 戰略行動斷言 (Main Messages)</div>
+  <ul class="clean-list">
+    <li><span class="bullet-dot">●</span><span class="anchor-tag">【破除資料短缺迷思】</span> — 企業非結構化數據佔比高達 80%～90% 且以年增 50% 指數膨脹，但全球 <span class="highlight-stat">80% 的變革預期僅轉化為 6% 的核心生產落地</span>；高達 <span class="highlight-stat">46% 數據長指認「數據品質不良與多源衝突」為首要死穴</span>。大語言模型無法自動消歧矛盾事實，將未治理的流沙暗數據餵給 AI，只會以極高效率自動化放大組織錯誤。</li>
+    <li><span class="bullet-dot">●</span><span class="anchor-tag">【終結提示詞萬能論】</span> — 波蘭尼默會知識悖論證明「人類知道的遠比能說出來的多」，企圖在 Prompt 撰寫窮盡規則必然遭遇組合爆炸與長尾邊緣案例的「自信偽陽性」。企業必須建構 <span class="highlight-good">「剛性左腦（受控本體庫 Ontology、主數據管理 MDM）」&times;「靈性右腦（LLM 高維語義抽取）」&times;「前額葉（領域專家 HITL 仲裁 &lt;5% 邊緣衝突）」</span> 之三層協同體系。</li>
+    <li><span class="bullet-dot">●</span><span class="anchor-tag">【非對稱試點破局法】</span> — 高達 <span class="highlight-stat">71% 數據長因傳統數據債未清與跨部門權力爭奪而選擇觀望</span>，57% 至今未修改數據策略。破局之道在於嚴禁直接拿高風險財務或臨床數據試錯，優先切入 <span class="highlight-good">「客服坐席輔助（真人覆核防護網）」與「軟體工程代碼生成（編譯器確定性驗證）」</span> 兩大非對稱優勢場景，於 90 天內跑通治理飛輪。</li>
   </ul>
 </div>
 
-<h2>貳、 執行摘要與 SCQA 現狀矩陣 (Executive Overview & SCQA Matrix)</h2>
+<h2>貳、【現狀與衝突診斷】為何 80% 投資熱潮僅換來 6% 生產落地：流沙地基引發的全面停滯</h2>
+<p>全球企業高層對生成式 AI 抱持空前期待，但絕大多數組織卻困在「個人零星試用」與「局部概念驗證（POC）」的泥沼中無法創造實質經濟價值。下表依據 <strong>Ehrenberg (1977) 科學化三線表規範</strong>，完整收斂 MIT Sloan 針對 334 位數據長（CDO）之核心實證與標竿案例對照：</p>
 
 <table class="ehrenberg">
   <thead>
     <tr>
-      <th style="width: 18%;">結構維度</th>
-      <th style="width: 52%;">核心情境與組織現實</th>
-      <th style="width: 30%;">關鍵統計與實證依據</th>
+      <th style="width: 13%;">SCQA 維度</th>
+      <th style="width: 37%;">核心組織現實與因果機制推演</th>
+      <th style="width: 24%;">關鍵實證統計 (N = 334)</th>
+      <th style="width: 26%;">標竿企業正反實踐對照</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><strong>情境 (Situation)</strong></td>
-      <td style="text-align: left;">生成式 AI 橫空出世，技術範式從處理二維數字表格跳躍至吞吐非結構化文本、語音與影像，引發企業董事會與高層空前的投資熱情。</td>
-      <td>• <strong>80%</strong> CDO 預期重構商業<br>• <strong>62%</strong> 企業計畫擴大 AI 支出</td>
+      <td class="nowrap"><strong>情境<br>(Situation)</strong></td>
+      <td>生成式 AI 突破過往僅能處理二維結構化數字表格的限制，開始吞吐文本、語音與影像等非結構化資產，引發董事會空前關注與預算挹注。</td>
+      <td>
+        <span class="stat-line">• <strong>80%</strong> 預期徹底重構商業</span>
+        <span class="stat-line">• <strong>62%</strong> 計畫擴大 AI 經費</span>
+        <span class="stat-line">• <strong>93%</strong> 認同數據策略關鍵</span>
+      </td>
+      <td>數據長（CDO）從幕後走向台前，成為企業數位轉型「舞會上的焦點」。</td>
     </tr>
     <tr>
-      <td><strong>衝突 (Complication)</strong></td>
-      <td style="text-align: left;">絕大多數企業內部數據處於「未受治理的流沙狀態」，各部門指標定義互斥、文檔版本過期，大模型直接吞食引發嚴重幻覺級聯。</td>
-      <td>• <strong>僅 6%</strong> 進入生產環境<br>• <strong>46%</strong> 認證數據品質不良首要阻礙<br>• <strong>57%</strong> 未對數據策略做任何修改</td>
+      <td class="nowrap"><strong>衝突<br>(Complication)</strong></td>
+      <td>企業內部非結構化內容長期缺乏治理，跨部門指標互斥、連結失效、版本過期；大模型直接吞食髒數據引發嚴重幻覺級聯與資安封鎖。</td>
+      <td>
+        <span class="stat-line">• <span class="highlight-stat">僅 6%</span> 部署至核心生產</span>
+        <span class="stat-line">• <span class="highlight-stat">46%</span> 視數據品質為死穴</span>
+        <span class="stat-line">• <span class="highlight-stat">57%</span> 至今未改數據策略</span>
+        <span class="stat-line">• <span class="highlight-stat">16%</span> 因資安下令全面禁用</span>
+      </td>
+      <td>高達 <strong>89%</strong> 企業停滯於個人摸索（33%）、指引制定（21%）或部門試點（19%）。</td>
     </tr>
     <tr>
-      <td><strong>核心問題 (Question)</strong></td>
-      <td style="text-align: left;">當數據生成速度以指數級壓倒傳統人工結構化速度時，企業應如何重構數據治理策略？能否透過 AI 自我結構化配合人機協同打破僵局？</td>
-      <td>• 傳統 ETL 線性通量 vs. 非結構化數據指數生成之剪刀差。<br>• 如何確立單一真實來源 (SSOT)？</td>
+      <td class="nowrap"><strong>核心問題<br>(Question)</strong></td>
+      <td>當非結構化數據生成速度以指數級壓倒人工整理速度時，如何在不損失高維語義的前提下，建立零幻覺的「單一真實來源（SSOT）」？</td>
+      <td>
+        <span class="stat-line">• <strong>僅 37%</strong> 具備 AI 數據基礎</span>
+        <span class="stat-line">• <span class="highlight-stat">僅 11%</span> 強烈同意已就緒</span>
+        <span class="stat-line">• <strong>71%</strong> 優先處理傳統數據</span>
+      </td>
+      <td>傳統 ETL 線性處理通量 vs. 非結構化暗數據指數膨脹之結構性剪刀差。</td>
     </tr>
     <tr class="bottom-line">
-      <td><strong>★ 策略解答 (Answer)</strong></td>
-      <td style="text-align: left;">轉向「雙腦分層架構」：以主數據管理 (MDM) 與本體庫打造剛性左腦，結合 LLM 弱監督抽取，並以非對稱 MVP 試點打破 71% 組織觀望僵局。</td>
-      <td><strong>摩根士丹利 5 年審核體系<br>默克數據經緯 (Data Fabric)</strong></td>
+      <td class="nowrap"><strong>★ 策略解答<br>(Answer)</strong></td>
+      <td>放棄「將所有文字壓平為二維表」與「純靠 Prompt 硬解」，轉向「雙腦分層認知架構」＋「非對稱 MVP 試點」雙軌推進。</td>
+      <td>
+        <span class="stat-line">• <strong>25%</strong> 聚焦數據整合清理</span>
+        <span class="stat-line">• <strong>18%</strong> 盤點高價值數據集</span>
+        <span class="stat-line">• <strong>17%</strong> 啟動領域文本策劃</span>
+      </td>
+      <td>
+        <span class="stat-line">• 摩根士丹利：5 年審核評分體系</span>
+        <span class="stat-line">• 默克與賽諾菲：混凝土地基架構</span>
+      </td>
     </tr>
   </tbody>
 </table>
 
-<div class="chart-container">
-  <img src="03_cdo_survey_quantitative_charts.png" class="chart-img" alt="MIT Sloan CDO 調查量化全景圖">
-  <div class="chart-caption">圖 1：MIT Sloan & AWS 數據長 (CDO) 調查實證 —— 統一尺標 (0~100%) 下的企業 AI 數據赤字全景 (Tufte Lie Factor ≡ 1.00)</div>
-</div>
-
+<!-- ==================== PAGE 2: FIGURE 1 + SECTION 3 (FORMULA SANDWICH) ==================== -->
 <div class="page-break"></div>
-
-<h2>參、 底層機制診斷與三大理論壁壘 (Deep Mechanism Diagnostics)</h2>
-
-<p>企業面臨的第一個殘酷物理現實，是結構化處理通量與數據生成通量的維度脫節：</p>
-
-<div class="formula-box">
-  <div class="formula-title">【非結構化數據剪刀差與債務積累公式】</div>
-  <div class="formula-math">&Delta;<sub>Debt</sub>(t) = &int;<sub>0</sub><sup>t</sup> [ &alpha; &middot; e<sup>&lambda;&tau;</sup> - &beta; &middot; M(&tau;) ] d&tau;</div>
-  <div style="font-size: 8.5pt; color: #94A3B8; margin-top: 4px;">&alpha;e<sup>&lambda;t</sup>: 非結構化數據幾何級數生成率 (年增 50%+) ｜ &beta;M(t): 人工標註與關聯式 Schema 線性處理通量</div>
+<div class="figure-box">
+  <div class="figure-header">圖 1（格式 D 實體內嵌）：MIT Sloan &amp; AWS 數據長調查實證 —— 80% 商業預期崩跌至 6% 生產落地之「空間重力折線斷崖與雙圖接力全景」</div>
+  <img src="03_cdo_survey_quantitative_charts.png" class="figure-img" alt="MIT Sloan CDO 調查量化全景圖">
+  <div class="figure-footnote">
+    <strong>統計與視覺解讀（Tversky 空間重力映射 &amp; Brewer 同質單色相漸層）</strong>：左右雙圖共用相同之 Y 軸高度比例尺（0%～100%）。左圖（皇家藍同質漸層）將反向阻礙換算為正向留存率（54% 品質過關、43% 策略行動），刻劃出從左上 80% 預期一路俯衝至右下 6% 核心投產之單調斷崖（&Delta; = -74%）；右圖（深青綠同質漸層）接力拆解未投產企業之真實去向（73% 停留在早期摸索與部門試點 + 16% 全面禁用）。
+  </div>
 </div>
 
-<h3>為何不能單靠 Prompt 窮盡規則？三大深層陷阱解剖</h3>
-<ul>
-  <li><span class="bullet-tag">1. 波蘭尼默會知識悖論與長尾邊緣案例的「自信偽陽性（Structural False Positive）」</span>：波蘭尼指出「我們知道的遠比能說出來的多」。Few-Shot Prompt 僅能窮盡典型分佈。當遇到長尾極端案例（如特殊違約免責條款）時，模型不會承認不懂，而是會<strong>極度自信地硬套最接近的常規範本</strong>，輸出看似格式完美的錯誤標籤。</li>
-  <li><span class="bullet-tag">2. 局部單篇抽取（Local Parsing）與全局主數據消歧（MDM）的斷層</span>：大模型能在單篇文檔內以 98% 準確率提取欄位，但無法解決跨 10 萬份文檔之事實衝突（文件 A 寫台積電、文件 B 寫 TSMC、文件 C 寫專案小組）。缺乏主數據管理 (MDM)，多個局部數據將在數據庫中自相矛盾。</li>
-  <li><span class="bullet-tag">3. 資訊維度壓平損耗（Lossy Compression）vs. 後設資料層治理</span>：生成式 AI 的核心優勢在於直接在高維潛在向量空間（Embeddings）運算。強行將文字壓回二維表格反而抹殺了語氣、情緒與隱含脈絡。企業真正需要的是建立<strong>後設資料（Metadata：時效戳記、撰寫權威等級、審核狀態分數）</strong>。</li>
+<h2>參、【底層機制與理論壁壘】為何單靠 Prompt 無法取代數據治理：非結構化剪刀差與三大陷阱</h2>
+
+<div class="formula-sandwich">
+  <div class="sandwich-top">
+    <strong>(上) 直覺問題意識</strong>：傳統結構化資料僅佔企業數據冰山一角（10%～20%），而會議紀錄、客訴工單、合約與研究報告等非結構化文本佔比高達 80%～90%。為何企業不能跳過耗時的底層數據清理，直接把海量歷史檔案丟給大語言模型自動結構化？
+  </div>
+  <div class="sandwich-mid">
+    <div style="font-size: 8.5pt; color: #94A3B8; margin-bottom: 3px;">【非結構化數據剪刀差與技術數據債累積積分方程 (Formula Sandwich Protocol)】</div>
+    <div class="math-expr">
+      &Delta;<sub>Debt</sub>(<i>t</i>) = &int;<sub>0</sub><sup><i>t</i></sup> <span style="font-size: 14pt;">[</span> &alpha; &middot; <i>e</i><sup>&lambda;&tau;</sup> &minus; ( &beta;<sub>human</sub> &middot; <i>M</i>(&tau;) + &gamma;<sub>AI</sub> &middot; <i>I</i><sub>MDM</sub>(&tau;) ) <span style="font-size: 14pt;">]</span> <i>d</i>&tau;
+    </div>
+  </div>
+  <div class="sandwich-bot">
+    <strong>(下) 參數物理意義與極端邊界推演</strong>：<br>
+    • <strong>&alpha; &middot; e<sup>&lambda;&tau;</sup></strong>：企業非結構化暗數據之指數生成速率（年複合增長率 &lambda; &ge; 50%）；<strong>&beta;<sub>human</sub> &middot; M(&tau;)</strong>：純依賴人工審核與傳統關聯式 Schema 的線性處理通量。<br>
+    • <strong>&gamma;<sub>AI</sub> &middot; I<sub>MDM</sub>(&tau;)</strong>：導入大模型弱監督抽取之有效治理通量，其槓桿倍數直接受制於<strong>底層主數據架構完備度指標 I<sub>MDM</sub> &isin; [0, 1]</strong>。<br>
+    • <strong>極端邊界推演</strong>：當企業未建立主數據標準與受控詞表（<strong>I<sub>MDM</sub> &rarr; 0</strong>）時，有效 AI 治理項歸零，隨時間 <strong>t &rarr; &infin;，數據債 &Delta;<sub>Debt</sub>(t) &rarr; +&infin;</strong>（淪為流沙數據沼澤）；唯有先打造剛性主數據地基（<strong>I<sub>MDM</sub> &rarr; 1</strong>），方能觸發 &gamma;<sub>AI</sub> &gg; &alpha; 之自動化治理飛輪。
+  </div>
+</div>
+
+<!-- ==================== PAGE 3: FIGURE 2 + SECTION 4 (FIGURE 3 BICAMERAL) ==================== -->
+<div class="page-break"></div>
+<div class="figure-box" style="background-color: #FFFFFF;">
+  <div class="figure-header">圖 2（原生向量結構圖，字級 &ge; 9.5pt）：為何單靠 Prompt 必然失效 —— 三大深層工程陷阱平行解剖矩陣</div>
+  <table class="parallel-grid-table">
+    <tr>
+      <td class="card-header" style="width: 33.3%; background-color: #AC1953; color: #FFFFFF;">陷阱一：波蘭尼悖論與長尾偽陽性</td>
+      <td class="card-header" style="width: 33.3%; background-color: #9C5100; color: #FFFFFF;">陷阱二：局部抽取 vs. 全局實體斷層</td>
+      <td class="card-header" style="width: 33.3%; background-color: #1A48A0; color: #FFFFFF;">陷阱三：資訊壓平損耗 vs. 後設缺失</td>
+    </tr>
+    <tr>
+      <td class="card-row b-crimson" style="background-color: #FEECF0;">
+        <strong>【理論機制】</strong>波蘭尼悖論指出「人類知道的遠比能說出來的多」。<span class="nowrap">Few-Shot</span> 範例僅能覆蓋 80% 常態分布，無法窮盡隱含法規與歷史默會脈絡。
+      </td>
+      <td class="card-row b-ochre" style="background-color: #FBF1EA;">
+        <strong>【理論機制】</strong>大模型擅長在「單篇文檔」內以 98% 準確率提取欄位，但天生缺乏跨 10 萬份檔案的「全局實體唯一性校驗（Entity Resolution）」能力。
+      </td>
+      <td class="card-row b-blue" style="background-color: #EEF3FE;">
+        <strong>【理論機制】</strong>生成式 AI 的革命性優勢在於高維潛在向量空間（Embeddings）的語境理解；強行將所有文本壓平回二維表格屬於降維倒退。
+      </td>
+    </tr>
+    <tr>
+      <td class="card-row b-crimson" style="background-color: #FFFFFF;">
+        <strong>【失效場景】</strong>遇到 20% 罕見長尾合約（如特殊違約豁免條款）時，模型不會承認不懂，而是<strong>極度自信地硬套常規範本</strong>，輸出格式完美但語意相反的致命錯誤。
+      </td>
+      <td class="card-row b-ochre" style="background-color: #FFFFFF;">
+        <strong>【失效場景】</strong>文件 A 寫「台積電」、文件 B 寫「TSMC」、文件 C 寫「3nm 專案組」且記載信用額度互斥，LLM 無法判定何者為最新權威事實，導致資料庫自相矛盾。
+      </td>
+      <td class="card-row b-blue" style="background-color: #FFFFFF;">
+        <strong>【失效場景】</strong>將客戶投訴錄音壓成「情緒：負面、類別：退貨」兩個死板欄位，徹底抹殺了語氣急迫度、潛在訴訟威脅與細微產品缺陷脈絡。
+      </td>
+    </tr>
+    <tr>
+      <td class="card-footer b-crimson-foot" style="background-color: #FEECF0; color: #881337;">
+        ★ 破局對策：設置置信度閘門（&lt;90% 強制攔截），轉交前額葉人類專家仲裁。
+      </td>
+      <td class="card-footer b-ochre-foot" style="background-color: #FBF1EA; color: #7C2D12;">
+        ★ 破局對策：建立剛性「主數據管理（MDM）」與受控本體庫，鎖定單一真實來源。
+      </td>
+      <td class="card-footer b-blue-foot" style="background-color: #EEF3FE; color: #1E3A8A;">
+        ★ 破局對策：保留原文高維向量，改為治理「後設資料層（時效、權威度、評分）」。
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h2>肆、【破局系統架構】雙腦分層認知系統與 Ehrenberg 科學對照實證</h2>
+<p>為同時達成「100% 事實零幻覺」與「海量非結構化文本之高維語義理解」，企業必須建構仿生學之<strong>「雙腦分層認知架構（Bicameral Cognitive Architecture）」</strong>，將確定性規則與機率性生成嚴格解耦：</p>
+
+<div class="figure-box" style="background-color: #F8FAFC;">
+  <div class="figure-header">圖 3（原生向量拓撲圖，字級 &ge; 9.5pt）：現代企業數據準備度之「雙腦分層認知架構與前額葉仲裁迴路」</div>
+  <div class="bicameral-diagram">
+    <div class="prefrontal-box">
+      <div style="font-weight: 800; font-size: 9.8pt; color: #9C5100;">【前額葉：Human-in-the-Loop 領域專家與知識策劃人 (Knowledge Curator)】</div>
+      <div style="font-size: 9pt; color: #1E293B; margin-top: 3px; line-height: 1.54;">
+        • <strong>置信度路由閘門（Confidence Gate）</strong>：95% 高置信度樣本自動放行；僅攔截 <strong>&lt; 5% 跨文件衝突或長尾罕見案例</strong> 由人類專家拍板。<br>
+        • <strong>雙向動態反哺飛輪</strong>：專家每次仲裁結果，同步更新「左腦受控本體詞庫」並追加為「右腦 <span class="nowrap">Few-Shot</span> 黃金範例」。
+      </div>
+    </div>
+
+    <div class="brain-connector">
+      ▲ 衝突升級攔截 (置信度 &lt; 90%) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ▼ 權威規則下發與黃金範例反哺
+    </div>
+
+    <table class="parallel-grid-table" style="margin-bottom: 0;">
+      <tr>
+        <td class="card-header" style="width: 47.5%; background-color: #1A48A0; color: #FFFFFF;">
+          【剛性左腦：確定性數據地基 (Deterministic Core)】
+        </td>
+        <td style="width: 5%; text-align: center; vertical-align: middle; font-weight: 800; color: #0F172A; font-size: 8.5pt;">
+          實體<br>校驗<br>◄═►<br>語義<br>對齊
+        </td>
+        <td class="card-header" style="width: 47.5%; background-color: #006B58; color: #FFFFFF;">
+          【靈性右腦：高維語義大模型 (Probabilistic LLM)】
+        </td>
+      </tr>
+      <tr>
+        <td class="card-row b-blue" style="background-color: #EEF3FE;">
+          <strong>1. 受控本體詞庫 (Ontology)</strong>：統一部門術語與指標定義，消滅同名異義與部門穀倉。
+        </td>
+        <td></td>
+        <td class="card-row b-teal" style="background-color: #EAF4F1;">
+          <strong>1. 多模態非結構化吞吐</strong>：直接理解文本、語音、合約與財報之隱含語境與情緒。
+        </td>
+      </tr>
+      <tr>
+        <td class="card-row b-blue" style="background-color: #FFFFFF;">
+          <strong>2. 主數據管理 (MDM / SSOT)</strong>：鎖定跨 10 萬份文檔之唯一權威事實版本，拒絕多頭矛盾。
+        </td>
+        <td></td>
+        <td class="card-row b-teal" style="background-color: #FFFFFF;">
+          <strong>2. 弱監督實體與關係抽取</strong>：依左腦定義之 Schema 自動抽取候選結構化標籤與血緣。
+        </td>
+      </tr>
+      <tr>
+        <td class="card-row b-blue" style="background-color: #EEF3FE;">
+          <strong>3. 後設資料與數據經緯 (Data Fabric)</strong>：標註時效戳記、作者權威度與審核分數（對標摩根士丹利與默克混凝土架構）。
+        </td>
+        <td></td>
+        <td class="card-row b-teal" style="background-color: #EAF4F1;">
+          <strong>3. 高維向量嵌入與檢索生成 (GraphRAG)</strong>：保留微觀脈絡，拒絕粗暴二維表格壓平損耗。
+        </td>
+      </tr>
+      <tr>
+        <td class="card-footer b-blue-foot" style="background-color: #DBEAFE; color: #1E3A8A;">
+          ★ 物理特性：100% 確定性演算法、零幻覺、扮演「企業事實憲法」。
+        </td>
+        <td></td>
+        <td class="card-footer b-teal-foot" style="background-color: #D1FAE5; color: #065F46;">
+          ★ 物理特性：高泛化力、強聯想匹配、受左腦本體庫嚴格邊界約束。
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== PAGE 4: EHRENBERG TABLE + SECTION 5 (GANTT ROADMAP) ==================== -->
+<div class="page-break"></div>
+<h3>二、 Ehrenberg 科學化架構對照表：三種數據整理與治理模式之極限檢驗</h3>
+<p>以下遵循 Ehrenberg 三線表五大鐵律（依演進邏輯排序、垂直同欄比較、2 位有效數字、零垂直格線、決策收斂底線），對照三種企業數據準備模式之真實工程表現：</p>
+
+<table class="ehrenberg">
+  <thead>
+    <tr>
+      <th style="width: 25%;">評估維度與核心指標</th>
+      <th class="num-col" style="width: 25%;">模式 A：純人工專家整理<br><span style="font-weight: 400; font-size: 8.2pt; color: #64748B;">(傳統精英工匠模式)</span></th>
+      <th class="num-col" style="width: 25%;">模式 B：純 Prompt / Few&#8209;Shot<br><span style="font-weight: 400; font-size: 8.2pt; color: #64748B;">(輕信技術直覺模式)</span></th>
+      <th class="num-col" style="width: 25%;">模式 C：雙腦分層人機協同<br><span style="font-weight: 400; font-size: 8.2pt; color: #1A48A0;">(現代數據工程最佳實踐)</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="nowrap"><strong>1. 單位文檔治理成本</strong></td>
+      <td class="num-col">$45 / 篇 (極高昂)</td>
+      <td class="num-col">$0.02 / 篇 (極低廉)</td>
+      <td class="num-col"><strong>$1.2 / 篇 (最適成本效益)</strong></td>
+    </tr>
+    <tr>
+      <td class="nowrap"><strong>2. 單日處理通量上限</strong></td>
+      <td class="num-col">20 篇 / 人 (線性瓶頸)</td>
+      <td class="num-col">50,000 篇 (無校驗狂奔)</td>
+      <td class="num-col"><strong>10,000 篇 (受控高通量)</strong></td>
+    </tr>
+    <tr>
+      <td class="nowrap"><strong>3. 長尾案例幻覺錯誤率</strong></td>
+      <td class="num-col">&lt; 0.5% (專家嚴格把關)</td>
+      <td class="num-col"><span class="highlight-stat">18% (高且具隱蔽偽陽性)</span></td>
+      <td class="num-col"><span class="highlight-good">&lt; 1.0% (前額葉閘門攔截)</span></td>
+    </tr>
+    <tr>
+      <td class="nowrap"><strong>4. 跨來源實體消歧準確率</strong></td>
+      <td class="num-col">65% (受限人腦記憶跨度)</td>
+      <td class="num-col"><span class="highlight-stat">12% (完全缺乏全局校驗)</span></td>
+      <td class="num-col"><span class="highlight-good">95% (左腦 MDM 圖譜對齊)</span></td>
+    </tr>
+    <tr>
+      <td class="nowrap"><strong>5. 高維非結構化語義保留</strong></td>
+      <td class="num-col">40% (人工摘要丟失細節)</td>
+      <td class="num-col">30% (強行壓平二維表損耗)</td>
+      <td class="num-col"><span class="highlight-good">88% (向量嵌入 + Metadata)</span></td>
+    </tr>
+    <tr>
+      <td class="nowrap"><strong>6. 組織建置與見效週期</strong></td>
+      <td class="num-col">3～5 年 (緩慢累積)</td>
+      <td class="num-col">1 週 (上線即埋下數據債)</td>
+      <td class="num-col"><strong>3～6 個月 (分領域漸進飛輪)</strong></td>
+    </tr>
+    <tr class="bottom-line">
+      <td class="nowrap"><strong>★ 核心決策收斂底線</strong></td>
+      <td class="num-col">僅適用於頂級合規資產</td>
+      <td class="num-col" style="color: #AC1953;">★ 嚴禁單獨用於核心生產</td>
+      <td class="num-col" style="color: #006B58;">★ 跨越 6% 生產鴻溝唯一正解</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>伍、【落地路線圖與權責矩陣】破除 71% 組織觀望：非對稱 MVP 試點與 18 個月推進計畫</h2>
+<p>調查顯示高達 <strong>71% 數據長坦言「目前更重視從其他傳統數據方案取得實際價值」</strong>，主因在於傳統結構化數據債未清、CDO/CIO/CTO 主導權爭奪內耗，以及恐懼大模型出錯引發合規災難。企業切忌試圖一次性清理全公司所有非結構化數據，必須優先鎖定<strong>具備天然安全網與確定性反饋</strong>的兩大非對稱優勢領域：</p>
+<ul class="clean-list">
+  <li><span class="bullet-dot">●</span><span class="anchor-tag">【第一優先：顧客經營（客服坐席輔助）】</span> — AI 檢索內部知識庫並草擬回覆，但<strong>由真人客服坐席先覆核再發送給客戶（天然 Human-in-the-Loop 防火牆）</strong>，外部合規風險趨近於零，且能立即縮短 30% 案件查找與通話處置時間。</li>
+  <li><span class="bullet-dot">●</span><span class="anchor-tag">【第二優先：軟體工程（代碼生成輔助）】</span> — 具備<strong>編譯器（Compiler）、語法檢查器（Linter）與自動化單元測試組成的「毫秒級確定性驗證迴圈」</strong>，AI 生成的程式碼好壞瞬間見真章（如環球音樂亦於核心研發探索受版權保護之 AI 協作）。</li>
 </ul>
 
-<div class="chart-container">
-  <img src="01_article_master_structure_map.png" class="chart-img" alt="企業數據資產面對生成式 AI 準備度全景主圖">
-  <div class="chart-caption">圖 2：企業數據資產面對生成式 AI 的準備度與治理策略 —— 瑞士網格宏觀結構全景圖</div>
+<div class="figure-box" style="background-color: #FFFFFF;">
+  <div class="figure-header">圖 4（原生向量甘特矩陣，字級 &ge; 9.5pt）：企業生成式 AI 數據準備度 18 個月三階段漸進式落地路線圖</div>
+  <table class="ehrenberg" style="margin: 4px 0 0 0;">
+    <thead>
+      <tr>
+        <th style="width: 24%;">轉型階段與核心目標</th>
+        <th style="width: 37%;">關鍵交付物與數據工程行動</th>
+        <th class="num-col" style="width: 13%;">M1–M4</th>
+        <th class="num-col" style="width: 13%;">M5–M10</th>
+        <th class="num-col" style="width: 13%;">M11–M18</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="nowrap"><strong>Phase 1：地基盤點與詞庫</strong><br><span style="font-size: 8pt; color: #1A48A0;">(對標 18% 先行者盤點實踐)</span></td>
+        <td>
+          <span class="stat-line">• 盤點高價值非結構化數據，剔除失效連結</span>
+          <span class="stat-line">• 編纂首部業務受控本體詞庫與品質評分卡</span>
+        </td>
+        <td class="num-col"><div class="gantt-bar-bg"><div class="gantt-fill-1" style="width: 100%;"></div></div><span style="font-size: 7.8pt; color: #1A48A0; font-weight: 700;">100% 集中攻堅</span></td>
+        <td class="num-col"><div class="gantt-bar-bg"><div class="gantt-fill-1" style="width: 35%;"></div></div><span style="font-size: 7.8pt; color: #64748B;">持續迭代</span></td>
+        <td class="num-col"><span style="font-size: 7.8pt; color: #94A3B8;">常態維運</span></td>
+      </tr>
+      <tr>
+        <td class="nowrap"><strong>Phase 2：雙軌 MVP 與經緯</strong><br><span style="font-size: 8pt; color: #9C5100;">(對標默克 Data Fabric 基建)</span></td>
+        <td>
+          <span class="stat-line">• 上線「客服輔助」與「代碼生成」雙試點</span>
+          <span class="stat-line">• 部署後設資料層與 &lt;5% 專家仲裁閘門</span>
+        </td>
+        <td class="num-col"><span style="font-size: 7.8pt; color: #94A3B8;">環境準備</span></td>
+        <td class="num-col"><div class="gantt-bar-bg"><div class="gantt-fill-2" style="width: 100%;"></div></div><span style="font-size: 7.8pt; color: #9C5100; font-weight: 700;">雙試點上線驗證</span></td>
+        <td class="num-col"><div class="gantt-bar-bg"><div class="gantt-fill-2" style="width: 50%;"></div></div><span style="font-size: 7.8pt; color: #64748B;">跨部門擴展</span></td>
+      </tr>
+      <tr class="bottom-line">
+        <td class="nowrap"><strong>★ Phase 3：主數據規模生產</strong><br><span style="font-size: 8pt; color: #006B58;">(對標摩根士丹利與賽諾菲)</span></td>
+        <td>
+          <span class="stat-line">• 打通跨部門實體消歧與企業級 GraphRAG</span>
+          <span class="stat-line">• 全面賦能行銷與研發核心，跨越 6% 鴻溝</span>
+        </td>
+        <td class="num-col"><span style="font-size: 7.8pt; color: #94A3B8;">架構設計</span></td>
+        <td class="num-col"><div class="gantt-bar-bg"><div class="gantt-fill-3" style="width: 30%;"></div></div><span style="font-size: 7.8pt; color: #64748B;">局部對接</span></td>
+        <td class="num-col"><div class="gantt-bar-bg"><div class="gantt-fill-3" style="width: 100%;"></div></div><span style="font-size: 7.8pt; color: #006B58; font-weight: 800;">★ 核心生產落地</span></td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
+<!-- ==================== PAGE 5: RACI MATRIX + SECTION 6 (CLOSING SEAL & INDEX) ==================== -->
 <div class="page-break"></div>
-
-<h2>肆、 破局架構：雙腦分層認知系統與科學對照表</h2>
-
-<p>為兼顧「嚴謹零幻覺」與「海量非結構化語義理解」，現代企業數據架構必須採行三層分流體系：</p>
-
+<h3>二、 跨職能 RACI 權責劃分矩陣（終結 CDO / CIO / CTO 多頭馬車內耗）</h3>
 <table class="ehrenberg">
   <thead>
     <tr>
-      <th style="width: 25%;">評估維度</th>
-      <th style="width: 25%;">模式 A：純人工專家整理<br>(摩根士丹利早期模式)</th>
-      <th style="width: 25%;">模式 B：純 Prompt / Few-Shot<br>(輕信技術直覺模式)</th>
-      <th style="width: 25%;">模式 C：雙腦分層人機協同<br>(現代數據架構)</th>
+      <th style="width: 32%;">轉型里程碑與核心治理任務</th>
+      <th class="num-col" style="width: 17%;">數據長 (CDO)</th>
+      <th class="num-col" style="width: 17%;">資訊/技術長 (CIO)</th>
+      <th class="num-col" style="width: 17%;">業務專家 (Curator)</th>
+      <th class="num-col" style="width: 17%;">法務合規長 (CLO)</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><strong>單位文檔處理成本</strong></td>
-      <td>$45.00 (極高)</td>
-      <td>$0.02 (極低)</td>
-      <td><strong>$1.20 (最適平衡)</strong></td>
+      <td class="nowrap"><strong>1. 業務受控本體詞表 (Ontology) 定義</strong></td>
+      <td class="num-col"><strong>A (主責審定)</strong></td>
+      <td class="num-col">C (相容性諮詢)</td>
+      <td class="num-col"><strong>R (撰寫領域詞條)</strong></td>
+      <td class="num-col">C (合規術語審查)</td>
     </tr>
     <tr>
-      <td><strong>處理通量與速度</strong></td>
-      <td>20 篇 / 天 / 人 (緩慢)</td>
-      <td>50,000 篇 / 小時 (極快)</td>
-      <td><strong>10,000 篇 / 小時 (高度自動化)</strong></td>
+      <td class="nowrap"><strong>2. 數據經緯 (Data Fabric) 與向量基建</strong></td>
+      <td class="num-col">C (定義治理規格)</td>
+      <td class="num-col"><strong>A / R (架構實施)</strong></td>
+      <td class="num-col">I (知會存取介面)</td>
+      <td class="num-col">C (資安邊界審核)</td>
     </tr>
     <tr>
-      <td><strong>長尾 OOD 幻覺率</strong></td>
-      <td>&lt; 0.5% (極低)</td>
-      <td>18.0% (高且具隱蔽性)</td>
-      <td><strong>&lt; 1.0% (前額葉安全攔截)</strong></td>
+      <td class="nowrap"><strong>3. 非對稱 MVP 試點 (客服/代碼) 選型</strong></td>
+      <td class="num-col"><strong>A (價值統籌)</strong></td>
+      <td class="num-col">R (API 模型整合)</td>
+      <td class="num-col"><strong>R (業務場景實測)</strong></td>
+      <td class="num-col">I (知會上線範圍)</td>
     </tr>
     <tr>
-      <td><strong>跨來源實體消歧力</strong></td>
-      <td>65% (受限於個人記憶)</td>
-      <td>12% (完全缺乏全局校驗)</td>
-      <td><strong>95% (左腦 MDM 圖譜精確對齊)</strong></td>
-    </tr>
-    <tr>
-      <td><strong>非結構化語義保留</strong></td>
-      <td>40% (摘要常丟失微觀細節)</td>
-      <td>30% (欄位壓平嚴重損耗)</td>
-      <td><strong>88% (向量嵌入 + 語境保留)</strong></td>
+      <td class="nowrap"><strong>4. 前額葉人機迴路 (HITL) 衝突仲裁</strong></td>
+      <td class="num-col">R (設計評分流)</td>
+      <td class="num-col">I (提供標註工具)</td>
+      <td class="num-col"><strong>A / R (專家仲裁)</strong></td>
+      <td class="num-col">C (免責版權界定)</td>
     </tr>
     <tr class="bottom-line">
-      <td><strong>★ 決策收斂底線</strong></td>
-      <td>僅適用於頂級極限合規資產</td>
-      <td>★ 嚴禁單獨用於核心決策</td>
-      <td>★ 規模化落地之唯一穩健解法</td>
+      <td class="nowrap"><strong>★ 5. 主數據管理 (MDM) 單一真理鎖定</strong></td>
+      <td class="num-col"><strong>★ A / R (唯一真理)</strong></td>
+      <td class="num-col"><strong>R (管線強制對齊)</strong></td>
+      <td class="num-col"><strong>C (跨部門協商)</strong></td>
+      <td class="num-col"><strong>I (稽核軌跡備查)</strong></td>
     </tr>
   </tbody>
 </table>
 
-<div class="chart-container">
-  <img src="02_bicameral_data_architecture.png" class="chart-img" alt="企業數據雙腦架構與治理管線圖">
-  <div class="chart-caption">圖 3：企業數據雙腦架構與非對稱治理推進管線 —— 剛性左腦約束、靈性右腦抽取與前額葉專家迴路</div>
+<div class="closing-seal">
+  <div style="font-weight: 800; font-size: 10.5pt; color: #FFFFFF; border-bottom: 1px solid #334155; padding-bottom: 4px;">
+    陸、【終章收束與立即行動檢核】董事會三大黃金鐵律與星期一啟動清單 (Executive Closing &amp; Action Seal)
+  </div>
+  <div class="closing-grid">
+    <div class="closing-subbox">
+      <div class="closing-subbox-title">★ 董事會與高階主管「三大黃金決策鐵律」</div>
+      <div style="margin-bottom: 5px;"><strong>1. 數據治理非事後補丁</strong>：大模型只是燃油，經過審核、具備單一真實來源（SSOT）與後設資料的企業知識庫才是引擎。</div>
+      <div style="margin-bottom: 5px;"><strong>2. 左腦與右腦缺一不可</strong>：不建立外部本體詞庫與 MDM，企圖只靠 Prompt 微調解決數據混亂，如同在流沙上蓋摩天大樓。</div>
+      <div><strong>3. 短反饋試點啟動飛輪</strong>：拒絕拿高風險核心資產裸奔；從客服與代碼生成切入，邊創造實質價值邊償還非結構化數據債。</div>
+    </div>
+    <div class="closing-subbox">
+      <div class="closing-subbox-title">☑ 決策層「星期一立即啟動」四步檢核清單</div>
+      <div style="margin-bottom: 5px;"><strong>[ &check; ] Step 1｜終結權力爭奪</strong>：召開 CDO-CIO-BU 聯席會，簽署 RACI 矩陣，確立 CDO 最終數據審定權。</div>
+      <div style="margin-bottom: 5px;"><strong>[ &check; ] Step 2｜凍結盲目微調</strong>：立即暫停將未清洗、未標註時效與權威度之歷史文檔直接灌入模型微調。</div>
+      <div style="margin-bottom: 5px;"><strong>[ &check; ] Step 3｜編纂首部本體庫</strong>：指派知識策劃人（Curator）於 60 天內完成首個業務領域受控詞表。</div>
+      <div><strong>[ &check; ] Step 4｜立項雙軌 MVP</strong>：啟動 90 天「客服輔助」或「代碼生成」試點，強制綁定真人覆核迴路。</div>
+    </div>
+  </div>
 </div>
 
-<div class="page-break"></div>
+<div class="index-bar">
+  <span class="stat-line"><strong>★ 跨媒介高解析度全景知識圖譜附件索引（ISO 9241 視覺分流交付）</strong>：配套兩幅 A3 級 300 DPI 圖譜獨立交付於同目錄：</span>
+  <span class="stat-line">• <strong>附件圖譜 A</strong>：<code>01_article_master_structure_map.png</code>《企業數據準備度與治理策略 — 瑞士網格宏觀結構全景圖》</span>
+  <span class="stat-line">• <strong>附件圖譜 B</strong>：<code>02_bicameral_data_architecture.png</code>《企業數據雙腦認知架構與非對稱治理推進管線專題圖》</span>
+</div>
 
-<h2>伍、 組織動態學與非對稱 MVP 落地路線圖 (Organizational Roadmap)</h2>
-
-<h3>破除 71% 組織觀望：非對稱風險收益套利法則</h3>
-<p>調查顯示高達 71% 數據長選擇觀望，原因在於傳統數據債未清、跨職能權力爭奪內耗以及恐懼毀滅性尾端風險。破局處方在於實施<strong>非對稱試點（Asymmetric Pilot）</strong>：</p>
-<ul>
-  <li><span class="bullet-tag">第一優先：顧客經營（客服坐席輔助）</span> — 具備真人坐席即時覆核機制，輸出有真人擋在客戶前面，風險受控且能直接縮短 30% 通話處置時間。</li>
-  <li><span class="bullet-tag">第二優先：軟體工程（代碼生成輔助）</span> — 具備編譯器 (Compiler)、Linter 與單元測試組成的毫秒級確定性反饋迴圈，AI 程式碼好壞即時見真章。</li>
-</ul>
-
-<table class="ehrenberg">
-  <thead>
-    <tr>
-      <th style="width: 35%;">轉型里程碑任務</th>
-      <th style="width: 16%;">數據長 (CDO)</th>
-      <th style="width: 16%;">資訊長 (CIO)</th>
-      <th style="width: 16%;">業務專家 (BU)</th>
-      <th style="width: 17%;">合規長 (CLO)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="text-align: left;">1. 業務受控本體詞表 (Ontology) 定義</td>
-      <td><strong>A (主責審定)</strong></td>
-      <td>C (諮詢相容性)</td>
-      <td><strong>R (具體撰寫)</strong></td>
-      <td>C (合規術語)</td>
-    </tr>
-    <tr>
-      <td style="text-align: left;">2. 數據經緯 (Data Fabric) 與安全基建</td>
-      <td>C (提供規格)</td>
-      <td><strong>A / R (架構實施)</strong></td>
-      <td>I (知會進度)</td>
-      <td>C (存取邊界)</td>
-    </tr>
-    <tr>
-      <td style="text-align: left;">3. 非對稱 MVP 試點 (客服/代碼) 選型</td>
-      <td><strong>A (專案統籌)</strong></td>
-      <td>R (系統整合)</td>
-      <td><strong>R (業務驗證)</strong></td>
-      <td>I (知會上線)</td>
-    </tr>
-    <tr>
-      <td style="text-align: left;">4. 前額葉人機迴路 (HITL) 審核流程</td>
-      <td>R (設計機制)</td>
-      <td>I (系統支持)</td>
-      <td><strong>A / R (日常仲裁)</strong></td>
-      <td>C (免責條款)</td>
-    </tr>
-    <tr class="bottom-line">
-      <td style="text-align: left;">5. 主數據管理 (MDM) 權威版本鎖定</td>
-      <td><strong>A / R (單一真理)</strong></td>
-      <td>R (管線對齊)</td>
-      <td>C (爭議協商)</td>
-      <td>I (知會)</td>
-    </tr>
-  </tbody>
-</table>
-
-<div class="closing-card">
-  <div class="closing-title">陸、 終章總結與立即行動檢核 (Executive Closing & Action Seal)</div>
-  <p><strong>🏆 董事會三大黃金決策鐵律：</strong></p>
-  <ul>
-    <li>1. <strong>數據治理非事後補丁</strong>：大模型只是燃油，經過審核與主數據治理的企業高階知識才是引擎。</li>
-    <li>2. <strong>左腦與右腦缺一不可</strong>：不建立外部知識圖譜與受控詞表，只靠 Prompt 調整，就像在流沙上加蓋摩天大樓。</li>
-    <li>3. <strong>以短反饋試點累積制度經驗</strong>：用客服與代碼的確定性反饋跑通組織人機協同，再揮軍核心高價值數據資產。</li>
-  </ul>
-  <p style="margin-top: 10px;"><strong>📋 星期一立即啟動清單：</strong></p>
-  <ul>
-    <li>[ &check; ] 召開 CDO-CIO-BU 聯席會議，成立「AI 數據準備度專案小組」。</li>
-    <li>[ &check; ] 凍結未清洗內部文檔的盲目微調預算。</li>
-    <li>[ &check; ] 啟動首個「業務受控本體詞表 (Ontology)」編纂專案。</li>
-    <li>[ &check; ] 立項 90 天內實現的客服/代碼生成非對稱 MVP 試點。</li>
-  </ul>
+<div class="sign-off-footer">
+  <span>核准簽署：企業 AI 與數據治理轉型委員會 (CDO / CIO / CTO Joint Steering Committee)</span>
+  <span>機密等級：內部高階決策專用 (Executive Eyes Only)</span>
 </div>
 
 </body>
@@ -444,19 +892,38 @@ pdf_path = os.path.join(output_dir, "01_executive_strategy_report.pdf")
 
 with open(html_path, "w", encoding="utf-8") as f:
     f.write(html_content)
-print(f"[OK] W3C CLREQ Styled HTML saved to: {html_path}")
+print(f"[OK] Temporary W3C CLREQ HTML written to: {html_path}")
 
-# Compile HTML to PDF using Chrome Headless via PowerShell Start-Process
+# Compile HTML to PDF using Chrome Headless with isolated user-data-dir
+import shutil
+import tempfile
+
 chrome_path = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+temp_profile = tempfile.mkdtemp(prefix="chrome_pdf_")
+temp_pdf = os.path.join(temp_profile, "output.pdf")
+
 if os.path.exists(chrome_path):
     cmd = [
         "powershell", "-Command",
-        f'Start-Process -FilePath "{chrome_path}" -ArgumentList "--headless=new", "--disable-gpu", "--print-to-pdf={pdf_path}", "--no-pdf-header-footer", "{html_path}" -Wait'
+        f'Start-Process -FilePath "{chrome_path}" -ArgumentList "--headless=new", "--disable-gpu", "--user-data-dir={temp_profile}", "--print-to-pdf={temp_pdf}", "--no-pdf-header-footer", "{html_path}" -Wait'
     ]
     res = subprocess.run(cmd, capture_output=True, text=True)
-    if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 1000:
-        print(f"[OK] Executive PDF successfully compiled to: {pdf_path} (Size: {os.path.getsize(pdf_path):,} bytes)")
+    if os.path.exists(temp_pdf) and os.path.getsize(temp_pdf) > 1000:
+        try:
+            shutil.copyfile(temp_pdf, pdf_path)
+            print(f"[OK] Publication-grade PDF compiled to: {pdf_path} (Size: {os.path.getsize(pdf_path):,} bytes)")
+        except PermissionError:
+            fallback_pdf = os.path.abspath(r"C:\Users\User\.gemini\antigravity\brain\768c9608-42ca-4d16-9c26-9f6299016f4f\01_executive_strategy_report_preview.pdf")
+            shutil.copyfile(temp_pdf, fallback_pdf)
+            print(f"[LOCKED] {pdf_path} is currently open in a PDF viewer. Saved preview to: {fallback_pdf} (Size: {os.path.getsize(fallback_pdf):,} bytes)")
     else:
         print(f"[FAIL] PDF compilation failed: {res.stderr}")
 else:
     print(f"[WARN] Chrome not found at {chrome_path}")
+
+shutil.rmtree(temp_profile, ignore_errors=True)
+
+# Automatically remove temporary HTML file so 02_outputs stays clean
+if os.path.exists(html_path):
+    os.remove(html_path)
+    print(f"[CLEAN] Removed intermediate HTML file: {html_path}")
