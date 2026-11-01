@@ -33,7 +33,7 @@ html_content = """<!DOCTYPE html>
       content: "資訊管理（MIS）個案分析報告：巨量資料分析有多可靠？  ｜  Page " counter(page) " of " counter(pages);
       font-size: 8.0pt;
       color: #64748B;
-      font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+      font-family: "DFKai-SB", "標楷體", "BiauKai", "Times New Roman", serif;
     }
   }
 
@@ -44,11 +44,11 @@ html_content = """<!DOCTYPE html>
   }
 
   body {
-    font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+    font-family: "DFKai-SB", "標楷體", "BiauKai", "Times New Roman", serif;
     color: #0F172A;
     background-color: #FFFFFF;
     line-height: 1.44;
-    font-size: 9.1pt;
+    font-size: 9.2pt;
     margin: 0;
     padding: 0;
     text-wrap: pretty;
@@ -170,6 +170,7 @@ html_content = """<!DOCTYPE html>
   p {
     margin: 2px 0 4px 0;
     text-align: justify;
+    text-indent: 2em;
     line-height: 1.44;
     text-wrap: pretty;
     orphans: 3;
@@ -826,7 +827,7 @@ html_content = """<!DOCTYPE html>
     <tr class="bottom-line">
       <td class="num-col"><strong>小組總計</strong></td>
       <td class="num-col"><strong>共 2 人</strong></td>
-      <td><strong>完成 7 頁印刷級深度分析報告 PDF、3 張高解析度圖譜與量化圖表、12 頁原生向量簡報 PPTX 及 25 分鐘 Q&amp;A 題庫</strong></td>
+      <td><strong>完成 7 頁印刷級深度分析報告 PDF、3 張高解析度圖譜與量化圖表、11 頁原生向量簡報 PPTX 及 25 分鐘 Q&amp;A 題庫</strong></td>
       <td class="num-col"><strong>全員皆上台</strong></td>
       <td class="num-col"><strong>100%</strong></td>
     </tr>
@@ -838,22 +839,22 @@ html_content = """<!DOCTYPE html>
   <thead>
     <tr>
       <th style="width: 18%;">報告階段與講者</th>
-      <th style="width: 28%;">對應簡報頁次（共 12 頁）</th>
+      <th style="width: 32%;">對應簡報頁次（共 11 頁）</th>
       <th class="num-col" style="width: 14%;">時間配當</th>
-      <th style="width: 40%;">上台報告核心演講脈絡與轉場銜接設計</th>
+      <th style="width: 36%;">上台報告核心演講脈絡與轉場銜接設計</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><strong>上半場主講：<br>楊亞恩</strong><br>（<code>311157139</code>）</td>
-      <td>• <strong>Slide 01–02</strong>：封面破題與五步導覽<br>• <strong>Slide 03</strong>：(1) 個案國別及產業簡介<br>• <strong>Slide 04</strong>：(2) 問題識別與量化斷崖圖<br>• <strong>Slide 05</strong>：(3) 個案簡介與全景架構<br>• <strong>Slide 06</strong>：(4) 問題 1 效益 ＆ 問題 2 改善決策</td>
+      <td>• <strong>Slide 01–02</strong>：封面破題與架構導覽<br>• <strong>Slide 03</strong>：(1) 個案國別及產業簡介<br>• <strong>Slide 04</strong>：(2) 問題識別與量化斷崖圖<br>• <strong>Slide 05</strong>：(3) 個案簡介與全景架構<br>• <strong>Slide 06</strong>：(4) 問題 1 效益 ＆ 問題 2 改善決策</td>
       <td class="num-col"><strong>11.5 分鐘</strong><br><em>(約 1.9 分/頁)</em></td>
       <td>● 從全球每日 <code>2,500 萬億 Bytes</code> 破題，梳理英、美、紐澳與跨國四大板塊及六大失靈事件，並深入解析英國 NHS（省 <code>5.81 億英鎊</code>）與紐約警局（<code>76 轄區</code>）兩大成功決策如何創造實質效益。</td>
     </tr>
     <tr class="bottom-line">
       <td><strong>下半場主講：<br>黃宥丞</strong><br>（<code>311357109</code>）</td>
-      <td>• <strong>Slide 07</strong>：(4) 問題 2 兩大失敗決策剖析<br>• <strong>Slide 08</strong>：(4) 問題 3 五大限制與推論隱私<br>• <strong>Slide 09</strong>：(4) 問題 4 MIS 管理×組織×科技<br>• <strong>Slide 10</strong>：(4) 問題 5 進階建模公式與防線<br>• <strong>Slide 11–12</strong>：(5) 成員貢獻表、總結與 Q&amp;A</td>
-      <td class="num-col"><strong>11.5 分鐘</strong><br><em>(約 1.9 分/頁)</em></td>
+      <td>• <strong>Slide 07</strong>：(4) 問題 2 兩大失敗決策剖析<br>• <strong>Slide 08</strong>：(4) 問題 3 五大限制與推論隱私<br>• <strong>Slide 09</strong>：(4) 問題 4 MIS 管理×組織×科技<br>• <strong>Slide 10</strong>：(4) 問題 5 進階建模公式與防線<br>• <strong>Slide 11</strong>：總結三大定律與 Q&amp;A 討論</td>
+      <td class="num-col"><strong>11.5 分鐘</strong><br><em>(約 2.3 分/頁)</em></td>
       <td>● 接棒剖析 Twitter KPI 迷思、IE 與謀殺率假性相關、GFT 與 2016 美選預測翻車及帕金森氏症「推論隱私」危機，最後以 MIS 鐵三角與動態脈絡校正公式總結全案，引導進入 <strong>25 分鐘 Q&amp;A</strong>。</td>
     </tr>
   </tbody>
