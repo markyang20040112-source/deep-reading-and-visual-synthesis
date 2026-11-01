@@ -2,63 +2,65 @@
 name: deep-reading-and-visual-synthesis
 description: >-
   Facilitates deep reading comprehension via a theory-grounded 5-step Socratic scaffolding and analogical encoding protocol (Phase 1),
-  followed by scientifically designed, high-cognitive-absorption multi-format outputs including multi-topology Python matplotlib knowledge diagrams, 4-genre structured reports, and Assertion-Evidence presentation slides (Phase 2),
+  followed by scientifically designed, high-cognitive-absorption multi-format outputs including multi-topology Python matplotlib knowledge diagrams, 4-genre structured reports, Assertion-Evidence presentation slides, and quantitative scientific charts (Phase 2),
   with a post-session empirical skill evolution mechanism.
   Activate when a user uploads or discusses an article, business case, research paper, report, or video transcript for deep reading, critical analysis, or visual synthesis.
 ---
 
-# 深度閱讀引導與視覺化知識統整 — 總路由指南 (Master Router)
+# 深度閱讀引導與視覺化知識統整 — 總路由指南与檔案地圖 (Master Router & File Map)
 
 > [!IMPORTANT]
 > **三大核心運作鐵律**：
-> 1. **雙階段隔離（Default Mode）**：傳入文章時預設**只讀 `phase1_reading/phase1_socratic_reading_guide.md`**；第一階段進行中**嚴禁讀取 `phase2_output/`**。
-> 2. **顯式跳關特例（Fast-Track Override）**：**唯有使用者明確要求跳過引導、直接生成成果**時，先將原文存入 `reading_sessions/<YYYYMMDD_主題簡稱>/00_source_article.md`，直接讀取 `phase2_output/phase2_output_router.md` 產出檔案。
-> 3. **靈感生命週期鐵律（Capture $\rightarrow$ Apply $\rightarrow$ Delete，嚴禁私自改檔）**：過程中產生之技能優化靈感，必須嚴格遵守下方「紀錄規則、運用時機與刪除時機」，**絕對禁止中斷主流程或私自在背後偷改技能檔**！
+> 1. **雙階段隔離（Default Mode）**：傳入文章時預設**只讀 [`phase1_reading/phase1_socratic_reading_guide.md`](./phase1_reading/phase1_socratic_reading_guide.md)**；第一階段進行中**嚴禁讀取 `phase2_output/`**。
+> 2. **顯式跳關特例（Fast-Track Override）**：**唯有使用者明確要求跳過引導、直接生成成果**時，先將原文存入 `reading_sessions/<YYYYMMDD_主題簡稱>/00_source_article.md`，直接讀取 [`phase2_output/phase2_output_router.md`](./phase2_output/phase2_output_router.md) 產出檔案。
+> 3. **靈感生命週期鐵律（Capture $\rightarrow$ Apply $\rightarrow$ Delete，嚴禁私自改檔）**：過程中產生之技能優化靈感，必須嚴格遵守本檔第四節之「紀錄、運用與刪除規則」，**絕對禁止中斷主流程或私自在背後偷改技能檔**！
 
 ---
 
-## 🗂️ 閱讀專案自動歸檔結構 (`reading_sessions/`)
+## 🗺️ 一、 全專案檔案地圖與單一職責分工表 (File Architecture & Single Responsibility Map)
+
+本技能庫採**「單一事實來源（SSOT）＋按需載入（Lazy Loading）」**設計，每個檔案僅負責單一明確維度，**嚴禁跨檔重複抄寫規則或一次讀取全部檔案**：
+
+| 檔案路徑 | 唯一職責說明（Single Responsibility） | 開啟時機（When to Read） |
+| :--- | :--- | :--- |
+| **[`SKILL.md`](./SKILL.md)**<br>*(本檔案 — 總控台)* | 雙階段路由判定、`reading_sessions/` 歸檔結構、Git 同步規範、靈感生命週期（`_pending_skill_inspirations.md`）唯一權威定義。 | 技能啟動時預設載入。 |
+| **[`phase1_reading/phase1_socratic_reading_guide.md`](./phase1_reading/phase1_socratic_reading_guide.md)** | 第一階段五步漸進式認知推進（Step 0 護欄 $\rightarrow$ Step 1 直覺提取与 Kintsch 診斷 $\rightarrow$ Step 2 理論對齊 $\rightarrow$ Step 3 雙維詰問 $\rightarrow$ Step 4 類比編碼 $\rightarrow$ Step 5 架構收斂）。 | **狀態 1**：進入第一階段閱讀互動時唯一開啟之檔案。 |
+| **[`phase2_output/phase2_output_router.md`](./phase2_output/phase2_output_router.md)** | 第二階段 4 步輸出流程總控台、跨格式「動態三維視覺決策引擎（資料形式 × 敘事目的 × 長寬比配適）」。 | **狀態 2**：第一階段 Step 5 完成或使用者要求直接生成時首先開啟。 |
+| **[`phase2_output/visual_cognition_principles.md`](./phase2_output/visual_cognition_principles.md)** | **四格式共通底層定律**：① $4 \to 2 \to 3$ 階層式分塊與平行列對齊；②「白話直覺先行、由淺入深（淺 $\rightarrow$ 中 $\rightarrow$ 深）」敘事鐵律；③ 跨格式適度放大字級階梯；④ 75-20-5 色彩配額與 CIELUV HCL 規則。 | 進入第二階段 Step 1 必讀（提供跨格式共通標準）。 |
+| **[`phase2_output/visual_diagram_matplotlib_spec.md`](./phase2_output/visual_diagram_matplotlib_spec.md)** | **特化格式 A（知識圖譜 `.png`）**：Ausubel 宏觀主圖優先、五大拓撲（T1～T5）、4 主幹分叉連線、雙行 60～66 字飽滿配適、列槽幾何真置中（`va="center"`）、全形縮排避頭尾保護。 | 第二階段需生成【格式 A：知識圖譜】時開啟。 |
+| **[`phase2_output/document_report_spec.md`](./phase2_output/document_report_spec.md)** | **特化格式 B（深度報告 `.md`/`.pdf`）**：四大體裁（B1～B4，總頁數無上限）、人類注意力起伏節奏（波谷長段敘事 $\leftrightarrow$ 波峰三線表／公式三明治）、`189mm` 擴張版心、`.nowrap` 防孤字鎖定、Chromium 四邊實線防掉框。 | 第二階段需生成【格式 B：深度報告／白皮書】時開啟。 |
+| **[`phase2_output/presentation_slide_spec.md`](./phase2_output/presentation_slide_spec.md)** | **特化格式 C（高階簡報 `.pptx`）**：三區架構、八大版型動態調度（`S0`～`S7`，含依圖片長寬比與文字結構動態切換之 `S7-A` 左圖右卡／`S7-B` 上圖下卡）、首尾定錨＋中段雙因子動態分頁。 | 第二階段需生成【格式 C：高階簡報】時開啟。 |
+| **[`phase2_output/quantitative_chart_spec.md`](./phase2_output/quantitative_chart_spec.md)** | **特化格式 D（量化科學圖表 `.png`）**：目的驅動差距表現（橫向推演柱線複合圖／啞鈴跨距圖）、Brewer 同質單色相明度漸層 vs. 異質色相、雙圖 1+1>2 視覺漏斗連通、零旋轉雙層 X 軸與左對齊雙欄 Y 軸。 | 第二階段需生成【格式 D：量化統計圖表】時開啟。 |
+| **[`scripts/hcl_color_engine.py`](./scripts/hcl_color_engine.py)**<br>**[`scripts/generate_mindmap.py`](./scripts/generate_mindmap.py)** | 底層 Python 科學渲染引擎：`hcl_color_engine.py` 負責 CIELUV HCL 色尺與 WCAG 對比度計算；`generate_mindmap.py` 負責知識圖譜卡片、列槽置中、避頭尾斷行與主幹分叉繪製。 | 撰寫或執行第二階段 Python 繪圖腳本時引用。 |
+| **[`THEORY_ARCHIVE.md`](./THEORY_ARCHIVE.md)** | 本技能背後之 35 條核心認知心理學、教育心理學、視覺感知與排版工學實證文獻封存庫。 | **狀態 3**：僅於詢問理論出處或執行 Step E3 技能進化時開啟（**日常嚴禁讀取以省流量**）。 |
+
+---
+
+## 🗂️ 二、 閱讀專案自動歸檔與目錄整潔規範 (`reading_sessions/`)
 
 每次處理新文章時，於工作區根目錄建立以下結構（嚴禁存入 `.agents/skills/` 內）：
 - `reading_sessions/<YYYYMMDD_主題簡稱>/00_source_article.md`：一收到文章立即原封不動存檔。
 - `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`：即時同步更新該篇文章之思辨紀錄。
-- `reading_sessions/<YYYYMMDD_主題簡稱>/02_outputs/`：存放第二階段生成之圖譜、腳本、報告或簡報。
-- `reading_sessions/_pending_skill_inspirations.md`：**【跨階段靈感暫存檔】**（僅在過程中出現優化靈感時動態建立，處理完畢後**立即刪除**，不污染文章知識庫）。
-- **Git 雙模同步與跨裝置接續規則（Git Auto & On-Demand Sync）**：
+- `reading_sessions/<YYYYMMDD_主題簡稱>/02_outputs/`：**僅存放最終正式交付成果（`.png`、`.pdf`、`.md`、`.pptx`）與對應之正式生成腳本（`.py`）**。任何臨時編譯中介檔（如 `.html`、`test_*.png`、重複之 `.jpg` 或預覽圖）於驗證完畢後必須立即自動清除，保持 `02_outputs/` 100% 乾淨！
+- `reading_sessions/_pending_skill_inspirations.md`：**【跨階段靈感暫存檔】**（僅在過程中出現優化靈感時動態建立，於 Step E3 寫入技能庫後**立即刪除**）。
+- **Git 雙模同步與跨裝置接續規則**：
   1. **階段完成自動同步**：每當完成第二階段成果產出，或完成技能進化更新（Step E3）後，自動執行 `git add -A && git commit -m "..." && git push origin main`。
-  2. **跨裝置隨時同步（On-Demand Checkpoint Sync）**：在**第一階段或第二階段任何時刻**，只要使用者要求「先同步到 Git／我要換裝置」，AI 必須立即將當前進度寫入 `01_phase1_socratic_log.md`（標明目前停在哪個 Step），並立刻執行 `git add -A && git commit -m "wip(session): checkpoint sync for device handoff" && git push origin main`；在另一台裝置接續時，先執行 `git pull` 並讀取 `01_phase1_socratic_log.md` 即可無縫從斷點繼續！
+  2. **跨裝置隨時同步（On-Demand Checkpoint Sync）**：在任何時刻，只要使用者要求「先同步到 Git／我要換裝置」，AI 立即將當前進度寫入 `01_phase1_socratic_log.md`，並執行 `git add -A && git commit -m "wip(session): checkpoint sync for device handoff" && git push origin main`。
 
 ---
 
-## 🗺️ 按需載入路由表 (When to Open What)
-
-| 當前狀態 | 唯一應開啟之檔案 | 職責說明 |
-| :--- | :--- | :--- |
-| **狀態 1：進入第一階段**<br>*(預設閱讀與思辨互動)* | **[phase1_socratic_reading_guide.md](./phase1_reading/phase1_socratic_reading_guide.md)** | 建立 `00` 原文檔與 `01` 紀錄檔，執行五步漸進式認知推進流程（Step 0 ~ Step 5）。 |
-| **狀態 2：進入第二階段**<br>*(Step 5 完成 或 顯式要求直接生成)* | **[phase2_output_router.md](./phase2_output/phase2_output_router.md)** | 讀取共通視覺科學規範與指定格式規範（圖譜 / 報告 / 簡報 / 量化圖表），啟動動態三維視覺決策引擎，輸出至 `02_outputs/`。 |
-| **狀態 3：詢問學術依據 或 執行技能進化**<br>*(僅查詢理論出處 或 Step E3 更新文獻)* | **[THEORY_ARCHIVE.md](./THEORY_ARCHIVE.md)** | 查閱或擴充本技能背後之認知心理學與設計科學實證文獻庫（日常執行嚴禁讀取以省流量）。 |
-
----
-
-## 🔄 技能優化靈感之「紀錄、運用與刪除」完整生命週期規範
+## 🔄 三、 技能優化靈感之「紀錄、運用與刪除」完整生命週期規範（唯一權威定義）
 
 ### 1. 📝 紀錄規則（Recording Rules — 何時記、記哪裡、怎麼記）
-- **全方位靈感範疇（All-Encompassing Scope）**：靈感**不限於功能或理論改動**，凡是與本技能相關的一切構想皆可納入，包含：
-  1. **功能與引導流程**：閱讀提問策略、跨領域思辨方法、新輸出格式或 Python 腳本功能。
-  2. **視覺與排版設計**：色彩配置、字體工學、圖譜拓撲、報告或簡報版面細節。
-  3. **技能檔案本身的寫法與架構編排（Meta-Skill Architecture）**：`.md` 規範檔的提示詞寫法（Prompting）、格式編排、檔案拆分與路由邏輯、Token 流量壓縮或提升 AI 讀取效率之工程優化。
-- **觸發時機**：在第一階段或第二階段進行中，當**(A) 使用者主動提出**想法，或 **(B) AI 自己察覺**上述任何維度有可優化之處時。
-- **獨立暫存位置**：統一寫入 `reading_sessions/_pending_skill_inspirations.md`（與單篇文章的 `01` 思辨筆記分離，避免污染文章紀錄）。
-- **標準紀錄格式**：每條靈感簡明記錄：`[編號] | [來源：使用者 / AI] | [靈感類別：功能流程 / 視覺設計 / 技能檔寫法與編排] | [目標檔案] | [觀察痛點與具體改良構想]`。
-- **不中斷原則**：寫入暫存檔後，僅以括號附註一句：*「（💡 已將此技能優化靈感記錄至暫存檔，待本次閱讀與產出全部完成後再與您討論）」*，隨即繼續執行當前步驟，**嚴禁中途離題查資料或改檔**。
+- **全方位靈感範疇**：凡與本技能相關的一切構想皆可納入，包含：(1) 功能與引導流程、(2) 視覺與排版設計、(3) 技能 `.md` 檔案本身的寫法、結構去重、檔案分工或 Python 腳本優化。
+- **觸發與不中斷原則**：在第一階段或第二階段進行中，當使用者主動提出或 AI 察覺可優化之處時，統一寫入 `reading_sessions/_pending_skill_inspirations.md`（格式：`[編號] | [來源] | [類別] | [目標檔案] | [觀察痛點與具體改良構想]`），僅附註一句*「（💡 已記錄至靈感暫存檔，待成果交付完畢後再一併查證與升級）」*，**嚴禁中途離題查資料或私自改檔**（若正在逐項檢查格式，則待全部格式檢查完畢後統一處理）。
 
-### 2. 🚀 運用時機（Application Timing — 何時喚醒與三步執行）
-- **唯一喚醒時機**：當【第二階段】最終成果已存入 `02_outputs/` 並交付使用者、**整套閱讀與生成流程正式結束時**（或使用者主動下令現在處理靈感時），AI 檢查 `reading_sessions/_pending_skill_inspirations.md` 是否存在。若存在，立即啟動以下三步（每步皆須使用者確認）：
-  1. **Step E1（提議與徵詢同意）**：列出暫存檔中的靈感（若為 AI 靈感須說明理由），詢問使用者：*「請問您是否同意我針對這項靈感去檢索相關學術研究與實證資料，來評估如何升級技能？（或選擇不採用並直接刪除）」*
-  2. **Step E2（查證文獻與修改方案確認）**：獲同意後，檢索有憑有據之權威論文或設計標準，向使用者回報**「(1) 查證依據、(2) 預計修改之技能檔案與具體規則條文」**，請使用者確認。
-  3. **Step E3（無損瘦身寫入技能庫）**：獲確認後，將完整文獻出處補入 `THEORY_ARCHIVE.md`，並將高密度執行指令更新至對應之 `phase1` 或 `phase2` 規範檔。
+### 2. 🚀 運用時機（Application Timing — 三步閉環）
+當最終成果已交付並驗收完畢（或使用者主動下令處理靈感）時，若 `_pending_skill_inspirations.md` 存在，依序執行：
+1. **Step E1（提議與徵詢同意）**：列出暫存靈感，詢問使用者是否同意檢索學術研究與實證標準以評估升級。
+2. **Step E2（查證文獻與修改方案確認）**：檢索權威論文或技術標準，回報「(1) 實證依據、(2) 預計修改之技能檔案與具體條文」，請使用者確認。
+3. **Step E3（無損寫入技能庫）**：獲確認後，將文獻補入 `THEORY_ARCHIVE.md`，將精煉規則更新至對應之單一職責規範檔（避免跨檔重複與舊規矛盾）。
 
-### 3. 🗑️ 刪除時機（Deletion Timing — 何時清理歸零）
-為防止過期靈感殘留、重複詢問或浪費讀取流量，必須嚴格執行**「處理完畢即刻銷毀」**原則：
-- **刪除時機 A（使用者否決/放棄時）**：於 Step E1 或 Step E2 使用者表示「不採用／不需要修改」時，**當下立即將該條靈感從 `_pending_skill_inspirations.md` 移除**。
-- **刪除時機 B（完成技能更新時）**：於 Step E3 將新規則正式寫入技能規範檔與 `THEORY_ARCHIVE.md` 後，該靈感已固化為永久技能，**當下立即刪除 `reading_sessions/_pending_skill_inspirations.md` 檔案**，確保暫存區 100% 歸零！
+### 3. 🗑️ 刪除時機（Deletion Timing — 處理完畢即刻歸零）
+- **刪除時機 A（使用者否決時）**：於 Step E1/E2 使用者表示不採用時，當下立即將該條靈感從暫存檔移除。
+- **刪除時機 B（完成技能更新時）**：於 Step E3 將新規則寫入技能庫後，**當下立即刪除 `reading_sessions/_pending_skill_inspirations.md` 檔案**，確保暫存區 100% 歸零！
