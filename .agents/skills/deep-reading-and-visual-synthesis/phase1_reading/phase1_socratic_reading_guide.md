@@ -9,22 +9,30 @@
 
 ---
 
-## 零、 原文自動存檔與思辨紀錄即時持久化 (`reading_sessions/<YYYYMMDD_主題簡稱>/`)
+## 零、 四大輸入模式自動分流與思辨紀錄即時持久化 (`reading_sessions/<YYYYMMDD_主題簡稱>/`)
 
-1. **初始化建檔（收到文章第一時間）**：
-   - 建立 `00_source_article.md`：完整保存原始文章全文、標題與日期。
-   - 建立 `01_phase1_socratic_log.md`：建立下方標準紀錄結構（純粹記錄本文知識，不混雜系統靈感）。
-2. **每輪對話後即時更新與跨裝置中繼同步**：
-   - 在 Step 1 ～ Step 5 每輪互動後，同步更新 `01_phase1_socratic_log.md`。
-   - 若使用者要求「先同步到 Git／我要換裝置」，更新 `01_phase1_socratic_log.md` 後立即執行 `git add -A && git commit -m "wip(phase1): checkpoint at Step X" && git push origin main`。
+### 1. 四大輸入模式自動識別與分流表 (4 Input Modes Routing Table)
+收到使用者輸入時，先依輸入型態執行對應之歸檔與 Phase 1 對齊協定：
+
+| 輸入模式 | 觸發特徵 | 原始檔案歸檔方式 | Phase 1 核心任務與 `01_phase1_socratic_log.md` 紀錄重點 |
+| :--- | :--- | :--- | :--- |
+| **模式 1：單篇文獻／報告／逐字稿**<br>*(Single Article / Paper)* | 單篇商業評論、學術論文、個案或演講稿 | 完整存入 `00_source_article.md` | 執行下方標準 **Step 0 ～ Step 5 蘇格拉底五步思辨**（初始探針 1 題 $\rightarrow$ 雙維詰問每輪 2 題 $\rightarrow$ 跨域類比 $\rightarrow$ 零刪減收斂）。 |
+| **模式 2：純結構化數據集**<br>*(Pure Structured Dataset)* | 傳入 `.csv`、`.json`、資料表或開放數據平臺指標 | 原始資料存入 `data/`，摘要說明存入 `00_source_article.md` | 執行**「數據維度盤點與製圖前 6 大條件確認」**：(1) 實際變數與類別欄位 Schema、(2) 數值單位、(3) 上下限範圍 `Min/Max`、(4) 發散基準中心（`0%` 或 `100%`）、(5) 指標極性同質化檢核與 `NA` 缺失值標記（`#D9D9D9`）、(6) 類別 $>4$ 時之 `4+1` 聚焦或排行擴充策略。 |
+| **模式 3：多檔案專案／課程診斷包**<br>*(Multi-File Diagnostic Package)* | 傳入多個簡報、報告、草稿與課程／專案評分規範 | 原始檔案歸入 `00_drive_source_files/`，建立 `00_source_article.md` 總索引 | 建立**「評分標準／需求矩陣對齊表（Rubric & Requirement Alignment Matrix）」**：逐項診斷既有檔案之結構斷層、數據不一致或視覺痛點，收斂出無損升級藍圖。 |
+| **模式 4：多篇跨文獻綜合統整**<br>*(Multi-Article Synthesis)* | 要求跨多篇已讀文章或多個 `reading_sessions/` 進行融會貫通 | 於 `00_source_article.md` 列出跨篇來源清單與核心命題索引 | 以**「道（底層統計與認知哲學）・法（系統治理與雙腦架構）・術（非對稱試點與工具落地）」**三層框架進行跨文獻結構映射，抽離共同基模與互補張力。 |
+
+### 2. 每輪對話後即時更新與跨裝置中繼同步
+- 在 Step 1 ～ Step 5 每輪互動後，同步更新 `01_phase1_socratic_log.md`（純粹記錄本文知識，不混雜系統靈感）。
+- 若使用者要求「先同步到 Git／我要換裝置」，更新 `01_phase1_socratic_log.md` 後立即執行 `git add -A && git commit -m "wip(phase1): checkpoint at Step X" && git push origin main`。
 
 ```markdown
-# 【第一階段思辨紀錄】<文章主題名稱>
-- **建立時間**：YYYY-MM-DD | **原文路徑**：`./00_source_article.md` | **狀態**：Step X
+# 【第一階段思辨紀錄】<文章或專案主題名稱>
+- **建立時間**：YYYY-MM-DD | **原文路徑**：`./00_source_article.md` | **狀態**：Step X（或已完成）
+- **輸入模式**：模式 1 (單篇文獻) / 模式 2 (結構化數據集) / 模式 3 (多檔案診斷包) / 模式 4 (跨篇統整)
 - **使用者輸出格式偏好與排除項（User Format Preferences & Exclusions）**：（即時記錄使用者指定或排除之產出格式，Phase 2 嚴格遵守）
 
-## 1. 問題意識錨點 (Step 0)
-- **核心挑戰之傳統認知 / 結構矛盾**：...
+## 1. 問題意識錨點 / 數據與專案診斷基準 (Step 0)
+- **核心挑戰之傳統認知 / 結構矛盾（或數據 Schema 與 6 大製圖條件檢核）**：...
 
 ## 2. 使用者先備直覺與理論精準對齊 (Step 1 & Step 2)
 - **使用者白話觀點（原話精萃）**：...
@@ -39,8 +47,12 @@
 - **抽離之底層抽象基模 / 公式**：...
 - **並置比較之跨領域正反面案例**：...
 
-## 5. 最終確認之核心知識分支架構 (Step 5 Exit Consensus)
-- **核心樞紐（Hub）與 3~5 個宏觀知識分支節點**：...
+## 5. 最終確認之零刪減知識分支架構 (Step 5 Zero-Truncation Exit Consensus)
+- **核心樞紐（Hub）**：...
+- **(a) 核心論證主幹分支（Core Argument Spine Branches，通常 3~4 個核心主幹）**：
+  1. ...
+- **(b) 批判延伸與跨域遷移分支（Critical & Extended Synthesis Branches，1~4+ 個延伸議題，不設上限、零刪減）**：
+  1. ...
 ```
 
 ---
@@ -57,7 +69,7 @@
 ---
 
 ### Step 1：先備知識提取與自我解釋催化 `[依據：Chi 1994 自我解釋 & Kapur 2016 生產性挫敗]`
-* **動作 A（若使用者尚未表達想法）**：
+* **動作 A（若使用者尚未表達想法 —— 拋出 1 個初始直覺探針問題）**：
   * 邀請直覺破題：*「讀完這篇，哪個觀點最讓你意外或最有共鳴？你覺得作者真正想戳破的盲點是什麼？」*
 * **動作 B（收到初步回饋後 —— 執行 Kintsch 認知層次診斷並更新 `01` 紀錄檔）**：
 
@@ -98,9 +110,12 @@
 
 ---
 
-### Step 5：情境模型收斂與階段過關檢核 `[依據：Kintsch 1998 & Chi 2014 ICAP]`
+### Step 5：情境模型「零刪減」收斂與階段過關檢核 `[依據：Kintsch 1998 & Chi 2014 ICAP]`
 * **過關三檢核（Exit Criteria）**：確認對話已涵蓋：(1) 核心因果機制、(2) 成立邊界與反面警示、(3) 跨領域抽象基模與落地處方。
-* **收斂與交接**：
-  1. 將收斂出的 **【3～5 個高密度宏觀知識分支共識】** 寫入 `01_phase1_socratic_log.md` 第 5 節並展示給使用者。
-  2. 詢問使用者確認架構並指定輸出格式（格式 A 知識圖譜 `.png`、格式 B 深度報告 `.md`/`.pdf`、格式 C 高階簡報 `.pptx`、格式 D 量化圖表 `.png`、格式 E 數據儀表板 Web `.html`/`.css`/`.js` ＋ 靜態全景圖 `.png`）。
-  3. **使用者確認後，立即讀取 [`../phase2_output/phase2_output_router.md`](../phase2_output/phase2_output_router.md) 進入第二階段。**
+* **零刪減收斂與分組交接鐵律（Zero-Truncation Convergence — 不設分支數上限）**：
+  1. **嚴禁人為壓縮或刪減延伸議題**：Phase 1 Step 5 **不設任何分支數量上限**！絕不可為了塞進 3～4 個分類而刪除文章細節、反例邊界或使用者在 Step 3/4 激盪出的延伸批判議題。
+  2. **雙群組結構化收斂**：將全篇收斂出的 $N$ 個高密度知識分支，依性質整理為 `01_phase1_socratic_log.md` 第 5 節的兩大區塊並展示給使用者：
+     - **(a) 核心論證主幹分支（Core Argument Spine Branches，通常 3～4 個主幹）**：涵蓋原文核心痛點、機制診斷、系統架構與基礎處方。
+     - **(b) 批判延伸與跨域遷移分支（Critical & Extended Synthesis Branches，1～4+ 個延伸分支）**：完整保留 Step 3 的假設失效邊界、反面警示案例、組織政治阻力，以及 Step 4 的跨領域同構基模與深度追問結論。
+  3. **詢問確認與 Phase 2 無損擴展交接**：詢問使用者確認架構並指定輸出格式（格式 A～E）。使用者確認後，立即讀取 [`../phase2_output/phase2_output_router.md`](../phase2_output/phase2_output_router.md) 進入第二階段，並以**「拆圖（`01` 主幹圖、`02` 機制圖、`03+` 批判延伸與跨域遷移圖）、擴章、加頁」**方式 100% 無損輸出所有分支！
+

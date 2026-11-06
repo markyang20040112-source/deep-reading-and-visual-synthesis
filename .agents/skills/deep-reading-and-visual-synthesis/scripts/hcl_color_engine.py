@@ -305,6 +305,46 @@ class SessionColorContract:
             "synth": self.purple,
         }
 
+    def _as_dict(self) -> Dict[str, object]:
+        return {
+            "bg_canvas": self.neutral_surface,
+            "bg_card": "#FFFFFF",
+            "border_card": "#CBD5E1",
+            "ink_primary": self.neutral_dark,
+            "ink_secondary": "#334155",
+            "ink_muted": self.neutral_muted,
+            "primary_accent": self.blue.accent_dark,
+            "primary_tint": self.blue.surface_tint,
+            "warn_accent": self.ochre.accent_dark,
+            "warn_tint": self.ochre.surface_tint,
+            "success_accent": self.teal.accent_dark,
+            "success_tint": self.teal.surface_tint,
+            "danger_accent": self.rose.accent_dark,
+            "danger_tint": self.rose.surface_tint,
+            "synth_accent": self.purple.accent_dark,
+            "synth_tint": self.purple.surface_tint,
+            "gephi_qualitative_4": list(GEPHI_QUALITATIVE_HEX),
+            "gephi_badge_tints_4": list(GEPHI_LIGHT_BADGE_TINTS),
+            "gephi_other": GEPHI_DISCRETE_NEUTRALS["other_aggregated"],
+            "gephi_na": GEPHI_DISCRETE_NEUTRALS["na_missing"],
+        }
+
+    def __getitem__(self, key: str) -> object:
+        d = self._as_dict()
+        if key in d:
+            return d[key]
+        if key in self.mapping:
+            return self.mapping[key]
+        if hasattr(self, key):
+            return getattr(self, key)
+        raise KeyError(f"Unknown key '{key}' in SessionColorContract")
+
+    def get(self, key: str, default: object = None) -> object:
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
     def get_sequential_ladder(self, steps: int = 3, base_h: float = 245.0) -> List[Tuple[str, str, str]]:
         """Returns a sequence of (border, badge_fill, surface_tint) with monotonic luminance."""
         ladder = []
@@ -428,6 +468,7 @@ def get_sequential_color(
     v_max: float,
     scale: str = "orange",
     discrete_steps: bool = False,
+    scale_key: Optional[str] = None,
 ) -> str:
     """
     Map a continuous or ordinal value to one of the 4 locked 5-node sequential scales.
@@ -437,13 +478,14 @@ def get_sequential_color(
     v = _parse_numeric_or_na(value)
     if v is None:
         return GEPHI_DISCRETE_NEUTRALS["na_missing"]
-    scale_key = _SEQUENTIAL_SCALE_ALIASES.get(str(scale).strip().lower())
-    if scale_key is None:
+    chosen_scale = scale_key if scale_key is not None else scale
+    resolved_key = _SEQUENTIAL_SCALE_ALIASES.get(str(chosen_scale).strip().lower())
+    if resolved_key is None:
         raise ValueError(
-            f"Unknown sequential scale '{scale}'. Locked palette only permits: "
+            f"Unknown sequential scale '{chosen_scale}'. Locked palette only permits: "
             f"{list(GEPHI_SEQUENTIAL_SCALES.keys())}"
         )
-    nodes = GEPHI_SEQUENTIAL_SCALES[scale_key]
+    nodes = GEPHI_SEQUENTIAL_SCALES[resolved_key]
     if v_max <= v_min:
         return nodes[2]
     p = max(0.0, min(1.0, (v - float(v_min)) / (float(v_max) - float(v_min))))
@@ -526,5 +568,105 @@ def bind_qualitative_colors(
     if allow_top4_aggregation:
         bound[other_label] = GEPHI_DISCRETE_NEUTRALS["other_aggregated"]
     return bound
+
+
+# 7. Zero-Alpha Light Badge Tints (0.00 nodes of the 4 sequential scales)
+GEPHI_LIGHT_BADGE_TINTS: List[str] = [
+    "#FFF3EA",  # 1. 主色暖杏橘系 0.00 極淺底色
+    "#EBF7F9",  # 2. 次色霧靄藍系 0.00 極淺底色
+    "#FFF0F5",  # 3. 第三色落櫻粉系 0.00 極淺底色
+    "#F1F7EE",  # 4. 第四色鼠尾草綠系 0.00 極淺底色
+]
+
+GEPHI_LIGHT_BADGE_TINTS_MAP: Dict[str, str] = {
+    "0": "#FFF3EA",
+    "1": "#EBF7F9",
+    "2": "#FFF0F5",
+    "3": "#F1F7EE",
+    "orange": "#FFF3EA",
+    "primary": "#FFF3EA",
+    "primary_orange": "#FFF3EA",
+    "#ECA072": "#FFF3EA",
+    "blue": "#EBF7F9",
+    "secondary": "#EBF7F9",
+    "secondary_blue": "#EBF7F9",
+    "#5DBACD": "#EBF7F9",
+    "pink": "#FFF0F5",
+    "tertiary": "#FFF0F5",
+    "tertiary_pink": "#FFF0F5",
+    "#E89BB6": "#FFF0F5",
+    "green": "#F1F7EE",
+    "quaternary": "#F1F7EE",
+    "quaternary_green": "#F1F7EE",
+    "#8FBA88": "#F1F7EE",
+}
+
+
+def get_category_badge_tint(
+    cat_or_key: object,
+    category_color_map: Optional[Dict[str, str]] = None,
+) -> str:
+    """
+    Return the zero-alpha light badge surface tint (#FFF3EA, #EBF7F9, #FFF0F5, #F1F7EE)
+    corresponding to the 0.00 node of the 4 locked sequential scales.
+    Falls back to #F1F5F9 for aggregated 'other' or neutral items.
+    """
+    if isinstance(cat_or_key, int):
+        if 0 <= cat_or_key < 4:
+            return GEPHI_LIGHT_BADGE_TINTS[cat_or_key]
+        return "#F1F5F9"
+    key_str = str(cat_or_key).strip()
+    if category_color_map and key_str in category_color_map:
+        mapped_hex = category_color_map[key_str].upper()
+        if mapped_hex in GEPHI_LIGHT_BADGE_TINTS_MAP:
+            return GEPHI_LIGHT_BADGE_TINTS_MAP[mapped_hex]
+    lookup = GEPHI_LIGHT_BADGE_TINTS_MAP.get(key_str) or GEPHI_LIGHT_BADGE_TINTS_MAP.get(key_str.upper()) or GEPHI_LIGHT_BADGE_TINTS_MAP.get(key_str.lower())
+    return lookup if lookup else "#F1F5F9"
+
+
+def despine_axes(
+    ax: object,
+    grid_axis: Optional[str] = "y",
+    grid_color: str = "#CBD5E1",
+    grid_linestyle: str = "--",
+    grid_alpha: float = 0.65,
+    spine_color: str = "#CBD5E1",
+) -> None:
+    """
+    Apply publication-grade despined axis formatting to a Matplotlib Axes object:
+    - Hides top and right spines.
+    - Colors bottom and left spines with `spine_color`.
+    - Enables subtle dashed reference grid on `grid_axis` ('x', 'y', 'both', or None).
+    """
+    if hasattr(ax, "spines"):
+        if "top" in ax.spines:
+            ax.spines["top"].set_visible(False)
+        if "right" in ax.spines:
+            ax.spines["right"].set_visible(False)
+        for side in ("bottom", "left"):
+            if side in ax.spines:
+                ax.spines[side].set_color(spine_color)
+                ax.spines[side].set_linewidth(1.0)
+    if grid_axis in ("x", "y", "both") and hasattr(ax, "grid"):
+        ax.grid(False)
+        ax.grid(axis=grid_axis, linestyle=grid_linestyle, color=grid_color, alpha=grid_alpha, zorder=0)
+
+
+def export_gephi_palette_js(output_path: str) -> str:
+    """
+    Export the standalone pure-JS Gephi · pastel CIELAB color engine (`gephi_palette.js`)
+    to `output_path` so Format E web dashboards share 100% identical color math with Python.
+    """
+    from pathlib import Path
+    src_js = Path(__file__).resolve().parent / "gephi_palette.js"
+    out_file = Path(output_path).resolve()
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    if src_js.exists():
+        content = src_js.read_text(encoding="utf-8")
+        out_file.write_text(content, encoding="utf-8")
+    else:
+        raise FileNotFoundError(f"Master gephi_palette.js not found at {src_js}")
+    return str(out_file)
+
 
 

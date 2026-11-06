@@ -14,12 +14,20 @@ Grounded in empirical design & cognitive science studies:
 """
 
 import argparse
+import os
 import re
+import sys
 import unicodedata
+from pathlib import Path
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
-from matplotlib.path import Path
+from matplotlib.path import Path as MplPath
+
+_SCRIPT_DIR = str(Path(__file__).resolve().parent)
+if _SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, _SCRIPT_DIR)
+from hcl_color_engine import GLOBAL_COLOR_CONTRACT
 
 NO_START_CHARS = set("），。、；：！？）」』】〉》%),.;:?!)]}")
 NO_END_CHARS = set("（「『【〈《([")
@@ -48,32 +56,60 @@ def sanitize_cjk_glyphs(text):
 
 
 # ==============================================================================
-# 1. CURATED SCIENTIFIC THEME PALETTES (75-20-5 Preattentive Allocation)
+# 1. CURATED SCIENTIFIC THEME PALETTES (75-20-5 Preattentive Allocation + HCL Contract)
 # ==============================================================================
+_HCL_ACCENTS = {
+    role: {"main": hcl_obj.accent_dark, "pill_bg": hcl_obj.surface_tint, "badge_fill": hcl_obj.badge_fill}
+    for role, hcl_obj in GLOBAL_COLOR_CONTRACT.mapping.items()
+}
+
 THEMES = {
     "swiss_editorial": {
-        "name": "Swiss Editorial (Default)",
-        "canvas_bg": "#F8FAFC",
+        "name": "Swiss Editorial (Default, HCL Calibrated)",
+        "canvas_bg": GLOBAL_COLOR_CONTRACT.neutral_surface,
         "zone_bg": "#F1F5F9",
         "zone_border": "#CBD5E1",
         "card_bg": "#FFFFFF",
         "card_border": "#CBD5E1",
-        "shadow": "#0F172A",
-        "text_title": "#0F172A",
+        "shadow": GLOBAL_COLOR_CONTRACT.neutral_dark,
+        "text_title": GLOBAL_COLOR_CONTRACT.neutral_dark,
         "text_body": "#1E293B",
         "muted_ink": "#64748B",
         "edge_line": "#94A3B8",
-        "hub_bg": "#0F172A",
+        "hub_bg": GLOBAL_COLOR_CONTRACT.neutral_dark,
         "hub_border": "#38BDF8",
         "hub_text": "#F8FAFC",
         "hub_sub": "#38BDF8",
         "accents": {
-            "primary": {"main": "#0284C7", "pill_bg": "#E0F2FE"},
-            "danger":  {"main": "#DC2626", "pill_bg": "#FEE2E2"},
-            "success": {"main": "#059669", "pill_bg": "#D1FAE5"},
-            "warn":    {"main": "#D97706", "pill_bg": "#FEF3C7"},
-            "synth":   {"main": "#4F46E5", "pill_bg": "#E0E7FF"},
-        }
+            "primary": {"main": "#0284C7", "pill_bg": "#E0F2FE", "hcl_main": _HCL_ACCENTS["primary"]["main"]},
+            "danger":  {"main": "#DC2626", "pill_bg": "#FEE2E2", "hcl_main": _HCL_ACCENTS["danger"]["main"]},
+            "success": {"main": "#059669", "pill_bg": "#D1FAE5", "hcl_main": _HCL_ACCENTS["success"]["main"]},
+            "warn":    {"main": "#D97706", "pill_bg": "#FEF3C7", "hcl_main": _HCL_ACCENTS["warn"]["main"]},
+            "synth":   {"main": "#4F46E5", "pill_bg": "#E0E7FF", "hcl_main": _HCL_ACCENTS["synth"]["main"]},
+        },
+        "hcl_contract": _HCL_ACCENTS,
+    },
+    "hcl_scientific": {
+        "name": "CIELUV HCL Equal-Chroma Scientific",
+        "canvas_bg": GLOBAL_COLOR_CONTRACT.neutral_surface,
+        "zone_bg": "#F1F5F9",
+        "zone_border": GLOBAL_COLOR_CONTRACT.neutral_border,
+        "card_bg": "#FFFFFF",
+        "card_border": GLOBAL_COLOR_CONTRACT.neutral_border,
+        "shadow": GLOBAL_COLOR_CONTRACT.neutral_dark,
+        "text_title": GLOBAL_COLOR_CONTRACT.neutral_dark,
+        "text_body": "#1E293B",
+        "muted_ink": GLOBAL_COLOR_CONTRACT.neutral_muted,
+        "edge_line": "#94A3B8",
+        "hub_bg": GLOBAL_COLOR_CONTRACT.neutral_dark,
+        "hub_border": _HCL_ACCENTS["primary"]["badge_fill"],
+        "hub_text": "#F8FAFC",
+        "hub_sub": "#7DD3FC",
+        "accents": {
+            role: {"main": val["main"], "pill_bg": val["pill_bg"]}
+            for role, val in _HCL_ACCENTS.items()
+        },
+        "hcl_contract": _HCL_ACCENTS,
     },
     "mckinsey_executive": {
         "name": "McKinsey Executive",
@@ -97,7 +133,8 @@ THEMES = {
             "success": {"main": "#0F766E", "pill_bg": "#CCFBF1"},
             "warn":    {"main": "#B45309", "pill_bg": "#FEF3C7"},
             "synth":   {"main": "#1D4ED8", "pill_bg": "#DBEAFE"},
-        }
+        },
+        "hcl_contract": _HCL_ACCENTS,
     },
     "nature_academic": {
         "name": "Nature Academic (Okabe-Ito CVD Safe)",
@@ -121,7 +158,8 @@ THEMES = {
             "success": {"main": "#009E73", "pill_bg": "#E8F8F5"},
             "warn":    {"main": "#E69F00", "pill_bg": "#FEF9E7"},
             "synth":   {"main": "#CC79A7", "pill_bg": "#FDEDEC"},
-        }
+        },
+        "hcl_contract": _HCL_ACCENTS,
     },
     "warm_humanist": {
         "name": "Warm Humanist",
@@ -145,9 +183,11 @@ THEMES = {
             "success": {"main": "#3B6E5C", "pill_bg": "#EFF6F3"},
             "warn":    {"main": "#B06D27", "pill_bg": "#FDF8F0"},
             "synth":   {"main": "#6B4C7A", "pill_bg": "#F5F0F7"},
-        }
+        },
+        "hcl_contract": _HCL_ACCENTS,
     }
 }
+
 
 
 # ==============================================================================
@@ -437,9 +477,9 @@ def draw_hierarchical_trunk_fork(ax, p_start, p_card1, p_card2, trunk_label, the
         (split_x - dx_trunk * 0.50, split_y),
         (split_x, split_y)
     ]
-    t_codes = [Path.MOVETO, Path.CURVE4, Path.CURVE4, Path.CURVE4]
+    t_codes = [MplPath.MOVETO, MplPath.CURVE4, MplPath.CURVE4, MplPath.CURVE4]
     trunk_patch = patches.PathPatch(
-        Path(t_verts, t_codes), facecolor="none", edgecolor=line_color,
+        MplPath(t_verts, t_codes), facecolor="none", edgecolor=line_color,
         linewidth=lw + 0.6, alpha=0.92, zorder=2
     )
     ax.add_patch(trunk_patch)
@@ -449,9 +489,9 @@ def draw_hierarchical_trunk_fork(ax, p_start, p_card1, p_card2, trunk_label, the
         p1 = (split_x + dx * 0.48, split_y)
         p2 = (tx - dx * 0.48, ty)
         verts = [(split_x, split_y), p1, p2, (tx, ty)]
-        codes = [Path.MOVETO, Path.CURVE4, Path.CURVE4, Path.CURVE4]
+        codes = [MplPath.MOVETO, MplPath.CURVE4, MplPath.CURVE4, MplPath.CURVE4]
         patch = patches.PathPatch(
-            Path(verts, codes), facecolor="none", edgecolor=line_color,
+            MplPath(verts, codes), facecolor="none", edgecolor=line_color,
             linewidth=lw, alpha=0.88, zorder=2
         )
         ax.add_patch(patch)
@@ -492,8 +532,8 @@ def draw_labeled_bezier(ax, p0, p3, label_text=None, theme=None,
     p2 = (x3 - dx * 0.48, y3)
 
     verts = [p0, p1, p2, p3]
-    codes = [Path.MOVETO, Path.CURVE4, Path.CURVE4, Path.CURVE4]
-    path = Path(verts, codes)
+    codes = [MplPath.MOVETO, MplPath.CURVE4, MplPath.CURVE4, MplPath.CURVE4]
+    path = MplPath(verts, codes)
     patch = patches.PathPatch(
         path, facecolor="none", edgecolor=line_color,
         linewidth=width, alpha=alpha, zorder=2
@@ -545,6 +585,205 @@ def draw_labeled_arrow(ax, p0, p1, label_text=None, theme=None,
         )
 
 
+# ==============================================================================
+# 4. HIGH-LEVEL TOPOLOGY LAYOUT HELPERS (T1 - T5)
+# ==============================================================================
+def draw_spine_hub_module(
+    ax, x, y, width, height, step_badge, title, subtitle_lines,
+    theme=None, accent_key="primary"
+):
+    """
+    T1 / T5 Helper: Draws a high-contrast central spine module or top-level focus problem hub.
+    Returns (x, y, width, height) for trunk-fork or downward arrow anchoring.
+    """
+    if theme is None:
+        theme = THEMES["swiss_editorial"]
+    accent = theme["accents"].get(accent_key, theme["accents"]["primary"])
+    border_col = accent["main"]
+
+    hub_box = FancyBboxPatch(
+        (x, y), width, height,
+        boxstyle="round,pad=0.25,rounding_size=1.0",
+        facecolor=theme["hub_bg"], edgecolor=border_col,
+        linewidth=2.0, zorder=3
+    )
+    ax.add_patch(hub_box)
+
+    top_y = y + height - 2.0
+    if step_badge:
+        ax.text(
+            x + width / 2.0, top_y, f" {sanitize_cjk_glyphs(step_badge)} ",
+            fontsize=10.4, fontweight="bold", color=theme["hub_bg"],
+            ha="center", va="center", zorder=4,
+            bbox=dict(boxstyle="round,pad=0.22,rounding_size=0.4", facecolor=theme["hub_sub"], edgecolor="none")
+        )
+        title_y = top_y - 2.6
+    else:
+        title_y = y + height - 2.4
+
+    ax.text(
+        x + width / 2.0, title_y, sanitize_cjk_glyphs(title),
+        fontsize=14.6, fontweight="bold", color=theme["hub_text"],
+        ha="center", va="center", zorder=4
+    )
+
+    lines = subtitle_lines if isinstance(subtitle_lines, (list, tuple)) else str(subtitle_lines).split("\n")
+    start_sub_y = title_y - 2.5
+    for idx, line in enumerate(lines):
+        ax.text(
+            x + width / 2.0, start_sub_y - idx * 1.95, sanitize_cjk_glyphs(line),
+            fontsize=11.5, color=theme["hub_sub"],
+            ha="center", va="center", zorder=4
+        )
+    return (x, y, width, height)
+
+
+def draw_3x3_pipeline_grid(
+    ax, columns_spec, theme=None, horizontal_links=None, vertical_links=None,
+    fig_width_in=28.0, font_pt=12.0
+):
+    """
+    T2 Helper: Draws a 3-Column Pipeline / 3x3 Wiring Grid.
+    - columns_spec: list of 3 dicts:
+        [{"zone_title": str, "accent_key": str, "cards": [{"title": str, "badge": str, "bullets": [...]}, ...]}, ...]
+    - horizontal_links: optional list of ((col_i, row_j), (col_i2, row_j2), label, accent_key)
+    - vertical_links: optional list of (col_i, row_j, row_j2, label, accent_key)
+    Returns a 3x3 matrix of card bounding boxes `grid_boxes[col_idx][row_idx]`.
+    """
+    if theme is None:
+        theme = THEMES["swiss_editorial"]
+    col_x = [3.5, 36.2, 68.9]
+    col_w = 27.6
+    zone_y, zone_h = 12.2, 77.2
+    row_tops = [84.2, 59.8, 35.4]
+    card_h = 20.8
+
+    grid_boxes = [[None for _ in range(3)] for _ in range(3)]
+
+    for c_i, col in enumerate(columns_spec[:3]):
+        zx = col_x[c_i]
+        accent_key = col.get("accent_key", "primary")
+        draw_macro_zone(ax, zx, zone_y, col_w, zone_h, col.get("zone_title", ""), theme, accent_key=accent_key)
+        cards = col.get("cards", [])
+        for r_i, card in enumerate(cards[:3]):
+            cx = zx + 1.0
+            cw = col_w - 2.0
+            cy = row_tops[r_i] - card_h
+            box = draw_modern_card(
+                ax, cx, cy, cw,
+                title=card.get("title", ""),
+                bullets=card.get("bullets", []),
+                theme=theme,
+                accent_key=card.get("accent_key", accent_key),
+                badge_text=card.get("badge"),
+                fixed_height=card_h,
+                fig_width_in=fig_width_in,
+                font_pt=font_pt
+            )
+            grid_boxes[c_i][r_i] = box
+
+    if horizontal_links:
+        for (c1, r1), (c2, r2), lbl, acc in horizontal_links:
+            b1, b2 = grid_boxes[c1][r1], grid_boxes[c2][r2]
+            if b1 and b2:
+                p0 = (b1[0] + b1[2], b1[1] + b1[3] / 2.0)
+                p1 = (b2[0], b2[1] + b2[3] / 2.0)
+                draw_labeled_arrow(ax, p0, p1, label_text=lbl, theme=theme, accent_key=acc or "primary", rad=0.0)
+
+    if vertical_links:
+        for c_i, r1, r2, lbl, acc in vertical_links:
+            b1, b2 = grid_boxes[c_i][r1], grid_boxes[c_i][r2]
+            if b1 and b2:
+                p0 = (b1[0] + b1[2] / 2.0, b1[1])
+                p1 = (b2[0] + b2[2] / 2.0, b2[1] + b2[3])
+                draw_labeled_arrow(ax, p0, p1, label_text=lbl, theme=theme, accent_key=acc or "primary", rad=0.0)
+
+    return grid_boxes
+
+
+def draw_feedback_loop_pair(
+    ax, left_box, right_box, top_loop_label, bottom_loop_label,
+    theme=None, top_accent="primary", bottom_accent="success", rad=-0.26
+):
+    """
+    T3 Helper: Connects two central system boxes with a symmetric upper & lower feedback loop
+    annotated with '+ 增強 / - 調節' Novak relational pills.
+    """
+    if theme is None:
+        theme = THEMES["swiss_editorial"]
+    lx, ly, lw, lh = left_box
+    rx, ry, rw, rh = right_box
+
+    p_top_start = (lx + lw * 0.75, ly + lh)
+    p_top_end = (rx + rw * 0.25, ry + rh)
+    draw_labeled_arrow(ax, p_top_start, p_top_end, label_text=top_loop_label, theme=theme, accent_key=top_accent, rad=rad)
+
+    p_bot_start = (rx + rw * 0.25, ry)
+    p_bot_end = (lx + lw * 0.75, ly)
+    draw_labeled_arrow(ax, p_bot_start, p_bot_end, label_text=bottom_loop_label, theme=theme, accent_key=bottom_accent, rad=rad)
+
+
+def draw_2x2_matrix_quadrants(
+    ax, x_axis_label, y_axis_label, quadrants_spec,
+    theme=None, fig_width_in=28.0, font_pt=12.0
+):
+    """
+    T4 Helper: Draws an orthogonal 2x2 strategic quadrant matrix on the 0-100 canvas.
+    - quadrants_spec: list of 4 dicts in order [Top-Left (Q2), Top-Right (Q1 Spotlight), Bottom-Left (Q3), Bottom-Right (Q4)]
+      each containing {"zone_title": str, "accent_key": str, "is_dashed": bool, "card": {"title": str, "badge": str, "bullets": [...]}}
+    Returns list of 4 drawn card bounding boxes.
+    """
+    if theme is None:
+        theme = THEMES["swiss_editorial"]
+    cx, cy = 50.0, 50.5
+    ax.annotate(
+        "", xy=(96.5, cy), xytext=(3.5, cy),
+        arrowprops=dict(arrowstyle="->,head_width=0.5,head_length=0.7", lw=2.2, color=theme["muted_ink"]),
+        zorder=2
+    )
+    ax.annotate(
+        "", xy=(cx, 89.5), xytext=(cx, 12.0),
+        arrowprops=dict(arrowstyle="->,head_width=0.5,head_length=0.7", lw=2.2, color=theme["muted_ink"]),
+        zorder=2
+    )
+    ax.text(
+        96.2, cy + 1.2, sanitize_cjk_glyphs(x_axis_label),
+        fontsize=11.8, fontweight="bold", color=theme["text_title"], ha="right", va="bottom", zorder=5,
+        bbox=dict(boxstyle="round,pad=0.22,rounding_size=0.4", facecolor="#FFFFFF", edgecolor=theme["card_border"])
+    )
+    ax.text(
+        cx + 1.0, 89.2, sanitize_cjk_glyphs(y_axis_label),
+        fontsize=11.8, fontweight="bold", color=theme["text_title"], ha="left", va="top", zorder=5,
+        bbox=dict(boxstyle="round,pad=0.22,rounding_size=0.4", facecolor="#FFFFFF", edgecolor=theme["card_border"])
+    )
+
+    q_coords = [
+        (4.5, 53.0, 43.2, 34.5),   # Top-Left
+        (52.3, 53.0, 43.2, 34.5),  # Top-Right
+        (4.5, 13.5, 43.2, 34.5),   # Bottom-Left
+        (52.3, 13.5, 43.2, 34.5),  # Bottom-Right
+    ]
+    drawn_boxes = []
+    for idx, q in enumerate(quadrants_spec[:4]):
+        qx, qy, qw, qh = q_coords[idx]
+        acc = q.get("accent_key", "primary")
+        draw_macro_zone(ax, qx, qy, qw, qh, q.get("zone_title", ""), theme, accent_key=acc, is_dashed=q.get("is_dashed", False))
+        card = q.get("card", {})
+        c_box = draw_modern_card(
+            ax, qx + 1.2, qy + 1.4, qw - 2.4,
+            title=card.get("title", ""),
+            bullets=card.get("bullets", []),
+            theme=theme,
+            accent_key=card.get("accent_key", acc),
+            badge_text=card.get("badge"),
+            fixed_height=qh - 5.2,
+            fig_width_in=fig_width_in,
+            font_pt=font_pt
+        )
+        drawn_boxes.append(c_box)
+    return drawn_boxes
+
+
 def draw_canvas_header_and_footer(ax, title, subtitle, takeaway_title, takeaway_body=None, theme=None, takeaway_lines=None):
     """Draws the standardized Swiss-grid header and full-width bottom synthesis banner."""
     if theme is None:
@@ -552,12 +791,12 @@ def draw_canvas_header_and_footer(ax, title, subtitle, takeaway_title, takeaway_
     if takeaway_body is None and takeaway_lines is not None:
         takeaway_body = takeaway_lines
     ax.text(
-        3.5, 97.2, title,
+        3.5, 97.2, sanitize_cjk_glyphs(title),
         fontsize=23.5, fontweight="bold", color=theme["text_title"],
         ha="left", va="top", zorder=4
     )
     ax.text(
-        3.5, 93.4, subtitle,
+        3.5, 93.4, sanitize_cjk_glyphs(subtitle),
         fontsize=13.0, fontweight="bold", color=theme["muted_ink"],
         ha="left", va="top", zorder=4
     )
@@ -572,7 +811,7 @@ def draw_canvas_header_and_footer(ax, title, subtitle, takeaway_title, takeaway_
     )
     ax.add_patch(banner)
     ax.text(
-        5.2, banner_y + banner_h - 1.55, takeaway_title,
+        5.2, banner_y + banner_h - 1.55, sanitize_cjk_glyphs(takeaway_title),
         fontsize=14.4, fontweight="bold", color=theme["hub_sub"],
         ha="left", va="center", zorder=4
     )
@@ -583,25 +822,46 @@ def draw_canvas_header_and_footer(ax, title, subtitle, takeaway_title, takeaway_
     for idx, line in enumerate(lines):
         ly = banner_y + banner_h - 4.40 - idx * 2.15
         ax.text(
-            5.2, ly, line,
+            5.2, ly, sanitize_cjk_glyphs(line),
             fontsize=12.4, color=theme["hub_text"],
             ha="left", va="center", zorder=4
         )
 
 
-def save_publication_figure(fig, output_path, theme, dpi=240):
-    """Saves high-DPI figure with zero chroma subsampling for razor-sharp CJK text."""
+def setup_publication_canvas(figsize=(28.0, 18.5), dpi=240, theme="swiss_editorial"):
+    """
+    Creates a standardized 0-100 coordinate publication canvas with configured CJK fonts.
+    Returns (fig, ax, theme_dict).
+    """
+    configure_cjk_fonts()
+    theme_dict = THEMES.get(theme, THEMES["swiss_editorial"]) if isinstance(theme, str) else (theme or THEMES["swiss_editorial"])
+    fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+    fig.patch.set_facecolor(theme_dict["canvas_bg"])
+    ax.set_facecolor(theme_dict["canvas_bg"])
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 100)
+    ax.axis("off")
+    return fig, ax, theme_dict
+
+
+def save_publication_figure(fig, output_path, theme=None, dpi=240):
+    """Saves high-DPI lossless PNG figure for razor-sharp CJK text."""
+    if theme is None:
+        theme_dict = THEMES["swiss_editorial"]
+    elif isinstance(theme, str):
+        theme_dict = THEMES.get(theme, THEMES["swiss_editorial"])
+    else:
+        theme_dict = theme
     plt.subplots_adjust(left=0.01, right=0.99, top=0.98, bottom=0.02)
     fig.savefig(
         output_path,
         dpi=dpi,
         bbox_inches="tight",
         pad_inches=0.3,
-        facecolor=theme["canvas_bg"],
-        pil_kwargs={"quality": 98, "subsampling": 0}
+        facecolor=theme_dict["canvas_bg"]
     )
     plt.close(fig)
-    print(f"[OK] Saved publication-grade diagram: {output_path} (Theme: {theme['name']}, DPI: {dpi})")
+    print(f"[OK] Saved publication-grade diagram: {output_path} (Theme: {theme_dict['name']}, DPI: {dpi})")
 
 
 if __name__ == "__main__":
@@ -612,3 +872,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     configure_cjk_fonts()
     print(f"Visual Diagram Engine Ready. Available Themes: {list(THEMES.keys())}")
+
