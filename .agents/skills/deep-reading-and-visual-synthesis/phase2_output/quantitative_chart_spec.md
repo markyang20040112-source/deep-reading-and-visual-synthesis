@@ -50,21 +50,22 @@
 
 ---
 
-## 三、 鎖定版圖表配色設定集與跨圖色階連動規範（Locked Color Specification — Format D & Format E SSOT）
+## 三、 鎖定版圖表配色設定集與跨圖色階連動規範（Locked Color Specification — Format D & Format E 唯一權威 SSOT）
 
 > **權威設定集來源**：[我的圖表配色設定（Google Doc 權威規範檔）](https://docs.google.com/document/d/1puNpLGR7hYcyvZL1DZMdUpmP9fXM-TQcxu1N6QyGb1E/edit?usp=sharing)
-> **理論與衍生說明**：源自 `ggsci` 之 `Gephi · pastel`（[scale_gephi](https://nanx.me/ggsci/reference/scale_gephi.html)），以原色盤四個基礎類別色系為靈感，在色彩感知空間（CIELAB / HCL）中進行明度（Lightness $L^* \approx 72$）與彩度（Chroma）均衡校正，提升白底圖表清晰度；循序色階採物理感知等差階梯計算生成，發散色階保持雙向視覺重量對稱。程式實作統一調用 [`scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)。
+> **理論與衍生說明**：源自 `ggsci` 之 `Gephi · pastel`（[scale_gephi](https://nanx.me/ggsci/reference/scale_gephi.html)），以原色盤四個基礎類別色系為靈感，在色彩感知空間（CIELAB / HCL）中進行明度（Lightness $L^* \approx 72$）與彩度（Chroma）均衡校正，提升白底圖表清晰度；循序色階採物理感知等差階梯計算生成，發散色階保持雙向視覺重量對稱。
+> **單一事實來源（SSOT）**：本節為 Format D 與 Format E **唯一完整色票表格定義處**；Python 實作強制匯入 [`scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)，Web 前端 JS 強制載入 [`scripts/gephi_palette.js`](../scripts/gephi_palette.js)。
 
-### 1. 無序類別固定色序（Qualitative Fixed Color Order）
-當資料為無序類別（Qualitative）時，依下列固定順序綁定類別（對應 `GEPHI_QUALITATIVE_HEX` 與 `bind_qualitative_colors()`），**同名類別在跨圖表、跨面板或互動篩選／排序切換時必須保持完全相同的色碼，絕不得隨機指派或因資料順序變動而換色**：
+### 1. 無序類別固定色序與零 Alpha 徽章淺底色（Qualitative Fixed Color Order & Zero-Alpha Badge Tints）
+當資料為無序類別（Qualitative）時，依下列固定順序綁定類別（對應 `GEPHI_QUALITATIVE_HEX`、`GEPHI_LIGHT_BADGE_TINTS` 與 `bind_qualitative_colors()`），**同名類別在跨圖表、跨面板或互動篩選／排序切換時必須保持完全相同的色碼，絕不得隨機指派或因資料順序變動而換色**：
 
-| 色序順位 | 角色定位 | 顏色描述 | 鎖定 HEX 色碼 | 跨圖表／跨視角綁定規範 |
-| :---: | :---: | :---: | :---: | :--- |
-| **1** | **主色** | 暖杏蜜橘 | **`#ECA072`** | 第一主類別、預設單指標主視覺 |
-| **2** | **次色** | 霧靄青藍 | **`#5DBACD`** | 第二類別、雙指標對比之第二維度 |
-| **3** | **第三色** | 落櫻粉黛 | **`#E89BB6`** | 第三類別 |
-| **4** | **第四色** | 鼠尾草綠 | **`#8FBA88`** | 第四類別 |
-| *(擴充/收斂)* | **長尾聚合 / 缺失值** | 典雅淺灰 / 中性灰 | **`#CBD5E1`** / **`#D9D9D9`** | 絕不自行發明新色或隨機補色；若類別數 $> 4$，必先向使用者確認擴充方式，或採「**智慧 4+1 聚焦聚合**」將前四大綁定四色、長尾合計歸入 `#CBD5E1`；缺失值（NA/Null）統一標記為 `#D9D9D9`。 |
+| 色序順位 | 角色定位 | 顏色描述 | 鎖定 HEX 色碼 | 零 Alpha 徽章/表格淺底色 (`0.00` 節點) | 跨圖表／跨視角綁定規範 |
+| :---: | :---: | :---: | :---: | :---: | :--- |
+| **1** | **主色** | 暖杏蜜橘 | **`#ECA072`** | **`#FFF3EA`** | 第一主類別、預設單指標主視覺 |
+| **2** | **次色** | 霧靄青藍 | **`#5DBACD`** | **`#EBF7F9`** | 第二類別、雙指標對比之第二維度 |
+| **3** | **第三色** | 落櫻粉黛 | **`#E89BB6`** | **`#FFF0F5`** | 第三類別 |
+| **4** | **第四色** | 鼠尾草綠 | **`#8FBA88`** | **`#F1F7EE`** | 第四類別 |
+| *(擴充/收斂)* | **長尾聚合 / 缺失值** | 典雅淺灰 / 中性灰 | **`#CBD5E1`** / **`#D9D9D9`** | **`#F1F5F9`** | 絕不自行發明新色或隨機補色；若類別數 $> 4$，必先向使用者確認擴充方式（如切換為單一循序色階之橫向排行圖），或採「**智慧 4+1 聚焦聚合**」將前四大綁定四色、長尾歸入 `#CBD5E1`（**嚴禁將 5 階循序色階拿去模除循環 `idx % 5` 塗抹 30 個無序類別**！）；缺失值（NA/Null）統一標記為 `#D9D9D9`。 |
 
 ### 2. 四組五階循序色階（Sequential 5-Node Scales：低值淺 `0.00` $\rightarrow$ 高值深 `1.00`）
 用於有序等級（如五級量表、成熟度階段）或同質連續數值圖表（對應 `GEPHI_SEQUENTIAL_SCALES` 與 `get_sequential_color()`）：
@@ -76,9 +77,9 @@
 | **(3) 第三色循序（落櫻粉系）** | 第三維度數值分布或專題序列 | `#FFF0F5` | `#F9CEE0` | `#E89BB6` | `#C46487` | `#8D3658` |
 | **(4) 第四色循序（鼠尾草綠系）** | 第四維度數值分布或專題序列 | `#F1F7EE` | `#D0E5CC` | `#8FBA88` | `#5E8F56` | `#396032` |
 
-- **連續數值平滑插值規則**：
-  - 連續變數依正規化位置 $p = (v - v_{\min}) / (v_{\max} - v_{\min})$，依據上述 5 個等距節點在 **CIELAB / HCL 感知空間中進行分段線性插值（Piecewise Linear Interpolation，調用 `lab_interpolate()`）**。
-  - **嚴格禁止使用透明度（Alpha channel）冒充深淺明度**！
+- **連續數值平滑插值規則與正規化公式**：
+  - 連續變數**必須嚴格依正規化位置 $p = (v - v_{\min}) / (v_{\max} - v_{\min})$ 計算**（嚴禁直接用 $v / v_{\max}$ 導致最低值無法對應淺端點），並依據上述 5 個等距節點在 **CIELAB / HCL 感知空間中進行分段線性插值（調用 `get_sequential_color()` 或 `lab_interpolate()`）**。
+  - **嚴格禁止使用透明度（Alpha channel，如 `rgba(...)` 或 `#ECA07220`）冒充深淺明度或表格膠囊底色**！
 - **單圖同質漸層 vs. 雙圖橫向並排色相區隔（$1 + 1 > 2$ 敘事接力）**：
   - **單一圖表內部**：衡量同質連續維度時，嚴禁混用多色相彩虹色，預設採用 **(1) 主色循序（暖杏橘系 `#FFF3EA` $\leftrightarrow$ `#97481B`）** 隨數值高低調整明度與彩度。
   - **雙圖橫向並排（`ncols=2`）**：左圖使用 **(1) 主色循序（暖杏橘系）** 呈現宏觀留存斷崖，右圖換用 **(2) 次色循序（霧靄藍系 `#EBF7F9` $\leftrightarrow$ `#0E5B6B`）** 拆解子階段分佈，共用相同 Y 軸比例尺並以跨面板引導標註連通，確保視覺維度瞬間區隔且形成 $1 + 1 > 2$ 閉環故事。
@@ -96,23 +97,44 @@
 - **製圖時自動檢核或向使用者確認之 6 項條件**：
   1. **實際變數與類別欄位名稱**。
   2. **數值單位**（如 `mm`, `%`, `億元`, `元/人`, `人` 等）。
-  3. **數值尺度之上下限範圍（Min / Max）**。
+  3. **數值尺度之上下限範圍（`Min / Max`）**。
   4. **發散色階之中心數值**（預設尋求業務基準值，如 `0` 或 `100%`）。
-  5. **缺失值（NA / Null）**：預設統一以中性淺灰 **`#D9D9D9`** 標記。
+  5. **缺失值（`NA / Null`）**：預設統一以中性淺灰 **`#D9D9D9`** 標記。
   6. **超界值之處理**：Clamp 至端點色（`#0E5B6B` / `#884725` 或循序端點）或保留警示標註。
 - **五大套用執行鐵律**：
   1. 無論使用 `matplotlib`、`ggplot2`、`ECharts` 或其他繪圖套件，本規範色碼一律同時適用於 `colour`（線條/邊框）與 `fill`（填充）。
   2. 類別資料嚴格按照「固定色序」依序分配，同名類別跨圖表保持完全相同色碼，絕不隨機指派或因排序變動而換色。
   3. 數值圖表預設採用主色循序尺度（暖杏橘系，低值淺、高值深）；若為對比雙指標或次面板，則使用次色循序（霧靄藍系）。
-  4. 發散圖表嚴格以指定中立基準為中心（對應 `#F5F6F7`），兩側採對稱數值跨度映射至藍端與橘端。
+  4. 發散圖表嚴格以指定中立基準為中心（對應 `#F5F6F7`），兩側採對稱數值跨度映射至藍端與橘端（嚴禁簡化為非黑即白的雙色二元判斷）。
   5. 絕不自行發明新色或隨機補色；若類別數超過 4 個，必須先向使用者確認擴充方式（或啟用 4+1 聚焦聚合）。
 
 ---
 
-## 四、 去邊框極簡座標軸與出版級排版細節（Despined Axes & Publication Polish）
+## 四、 黑盒引擎 API 簽名、去邊框極簡座標軸與出版級排版細節（Black-Box Engine API & Publication Polish）
 
-1. **極簡座標軸與水平基準網格**：隱藏頂部與右側邊框（`ax.spines['top'].set_visible(False)`, `ax.spines['right'].set_visible(False)`）；當數據高度在 Y 軸時，網格線設為**極淡的水平輔助虛線（`ax.yaxis.grid(True, linestyle='--', color='#CBD5E1', alpha=0.65)`）**，關閉垂直網格線（反之若為橫向排行圖，則僅開啟 X 軸極淡垂直輔助格線）。
+> [!IMPORTANT]
+> **【底層引擎黑盒呼叫鐵律（Black-Box API Rule）】**：所有 Format D 與 Format E 的 Python 繪圖腳本**必須直接 `import hcl_color_engine`** 調用鎖定色票、CIELAB 插值與座標軸去框函數，**嚴禁在腳本中手動硬編碼簡化版二元色或呼叫 `view_file` / `read_file` 讀取 `scripts/hcl_color_engine.py` 原始碼**（除非除錯需要）！
+
+```python
+# === scripts/hcl_color_engine.py Black-Box API Signatures ===
+from hcl_color_engine import (
+    GEPHI_QUALITATIVE_HEX,      # ["#ECA072", "#5DBACD", "#E89BB6", "#8FBA88"]
+    GEPHI_LIGHT_BADGE_TINTS,    # ["#FFF3EA", "#EBF7F9", "#FFF0F5", "#F1F7EE"] (Zero-alpha 0.00 nodes)
+    GEPHI_SEQUENTIAL_SCALES,    # Dict["orange"|"blue"|"pink"|"green", List[5 hex nodes]]
+    GEPHI_DIVERGING_SCALE,      # List[9 hex nodes: #0E5B6B .. #F5F6F7 .. #884725]
+    GEPHI_DISCRETE_NEUTRALS,    # {"diverging_center": "#F5F6F7", "na_missing": "#D9D9D9", "other_aggregated": "#CBD5E1"}
+    get_sequential_color,       # (value, v_min, v_max, scale="orange", discrete_steps=False) -> str (True CIELAB interpolation)
+    get_diverging_color,        # (value, center=0.0, max_span=None, discrete_steps=False) -> str (Symmetric 9-node mapping)
+    bind_qualitative_colors,    # (categories, allow_top4_aggregation=False, other_label="其他項目合計") -> Dict[str, str]
+    get_category_badge_tint,    # (cat_or_key, category_color_map=None) -> str (Returns #FFF3EA / #EBF7F9 / #FFF0F5 / #F1F7EE)
+    despine_axes,               # (ax, grid_axis="y", grid_color="#CBD5E1", grid_linestyle="--", grid_alpha=0.65) -> None
+    export_gephi_palette_js,    # (output_path) -> str (Copies standalone gephi_palette.js into a Format E web project)
+)
+```
+
+1. **極簡座標軸與水平基準網格**：調用 `despine_axes(ax, grid_axis="y")`（橫向長條圖則傳入 `grid_axis="x"`）隱藏頂部與右側邊框並設定極淡輔助虛線，輸出解析度統一為 **`dpi=300`**。
 2. **節點上方直接數據標註與陡降折線右偏避讓（Direct Node Callouts & Steep-Slope Offset）**：每個折線圓點或長條末端直接標註粗體數值／百分比（`10~13pt Bold`），並預留軸線安全空間（如 `ax.set_ylim(0, 108)` 或 `ax.set_xlim(0, max_val * 1.18)`）。若為大斜率陡降折線，中間下降節點的標籤必須設定為**向右上微偏（`x + 0.14, y + 2.5, ha='left'`）**，嚴防左上至右下的折線直接穿過數字中央。
 3. **零 Emoji 鐵律（Zero-Emoji Rule for FreeType / Microsoft JhengHei）**：Windows `Microsoft JhengHei`（微軟正黑體）不支援彩色 Emoji（如 `⚠️`、`🟢`、`🔴`、`✅`），在 `matplotlib` 渲染時必產生缺字方框（Tofu Box `□`）。圖表內所有文字、圖例與標註膠囊**絕對禁止使用任何 Emoji**，一律改用微軟正黑體原生內建之幾何符號（`▲`、`●`、`■`、`★`）。
 4. **頂部斷言主標題與底部方法論註腳**：頂部配置 `16~20pt Bold` 完整核心斷言主標題與 `11.5~12.5pt` 導讀副標題；底部附註完整調查來源、樣本數、單位與指標換算口徑說明。
+
 

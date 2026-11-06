@@ -33,16 +33,17 @@
 
 ```text
 20261031_全國預算比較儀表板/
-├── index.html                        # 主頁面（響應式 UI、控制列、KPI 卡與圖表容器，採 ./ 純相對路徑）
+├── index.html                        # 主頁面（響應式 UI、控制列、KPI 卡與圖表容器，採 ./ 純相對路徑，無 Runtime Tailwind CDN）
 ├── css/
-│   └── style.css                     # 配色規範 CSS 變數與微調樣式
+│   └── style.css                     # 自包含本機版面樣式、Gephi·pastel CSS 變數與零透明度標籤色票
 ├── js/
+│   ├── gephi_palette.js              # 鎖定版 Gephi·pastel CIELAB 插值、類別色碼鎖定與 0-Alpha 徽章色彩引擎
 │   └── dashboard.js                  # 資料處理引擎、全域固定類別色碼映射、ECharts 驅動與狀態管理
 ├── data/
 │   ├── budget_data.js                # 預編譯離線資料包（保證雙擊 index.html 即可本機秒開）
 │   └── budget_data.json              # 標準結構化 JSON 資料
-├── generate_chart.py                 # 出版級靜態全景儀表板圖生成腳本（Matplotlib GridSpec）
-├── 全台預算比較儀表板_視覺化圖表.png  # 出版級高解析度靜態全景儀表板圖
+├── generate_chart.py                 # 出版級靜態全景儀表板圖生成腳本（引用 hcl_color_engine.py，300 DPI）
+├── 全台預算比較儀表板_視覺化圖表.png  # 出版級高解析度靜態全景儀表板圖（24"×14", 300 DPI）
 ├── .nojekyll                         # GitHub Pages 免 Jekyll 編譯加速標記檔
 ├── .gitignore                        # Git 獨立版控忽略設定清單
 └── README.md                         # 專案說明與獨立 Git 網站發布指南

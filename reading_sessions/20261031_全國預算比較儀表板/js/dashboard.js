@@ -6,38 +6,18 @@
 (function () {
   'use strict';
 
-  // 配色規範常量
-  const PALETTE = {
-    // 類別四色 (Categorical)
-    categories: [
-      '#ECA072', // 1. 主色 (暖杏蜜橘)
-      '#5DBACD', // 2. 次色 (霧靄青藍)
-      '#E89BB6', // 3. 第三色 (落櫻粉黛)
-      '#8FBA88', // 4. 第四色 (鼠尾草綠)
-    ],
-    other: '#CBD5E1', // 其他/長尾聚合 (雅灰)
-
-    // 循序色階 (主色暖橘系)
+  // 引用共用 GephiPalette CIELAB 色彩引擎（與 Python hcl_color_engine.py 100% 同步）
+  const GP = window.GephiPalette;
+  const PALETTE = GP ? GP.PALETTE : {
+    categories: ['#ECA072', '#5DBACD', '#E89BB6', '#8FBA88'],
+    badgeTints: ['#FFF3EA', '#EBF7F9', '#FFF0F5', '#F1F7EE'],
+    other: '#CBD5E1',
+    na: '#D9D9D9',
     seqOrange: ['#FFF3EA', '#FBD8C0', '#ECA072', '#CA6F35', '#97481B'],
-    // 循序色階 (次色霧藍系)
-    seqBlue: ['#EBF7F9', '#BCE2EB', '#5DBACD', '#2C8B9F', '#0E5B6B'],
-    // 循序色階 (落櫻粉系)
-    seqPink: ['#FFF0F5', '#F9CEE0', '#E89BB6', '#C46487', '#8D3658'],
-    // 循序色階 (鼠尾綠系)
-    seqGreen: ['#F1F7EE', '#D0E5CC', '#8FBA88', '#5E8F56', '#396032'],
-
-    // 發散色階 (9 階)
-    diverging: [
-      { pos: -1.0, color: '#0E5B6B', label: '深墨青 (-100%)' },
-      { pos: -0.75, color: '#257F92', label: '中深青 (-75%)' },
-      { pos: -0.5, color: '#5DBACD', label: '青藍 (-50%)' },
-      { pos: -0.25, color: '#B2DFE9', label: '淡青 (-25%)' },
-      { pos: 0.0, color: '#F5F6F7', label: '中立灰 (0%)' },
-      { pos: 0.25, color: '#FBD9C2', label: '淡杏 (+25%)' },
-      { pos: 0.5, color: '#ECA072', label: '暖杏 (+50%)' },
-      { pos: 0.75, color: '#B4693A', label: '中深橘 (+75%)' },
-      { pos: 1.0, color: '#884725', label: '深栗橘 (+100%)' }
-    ]
+    seqBlue:   ['#EBF7F9', '#BCE2EB', '#5DBACD', '#2C8B9F', '#0E5B6B'],
+    seqPink:   ['#FFF0F5', '#F9CEE0', '#E89BB6', '#C46487', '#8D3658'],
+    seqGreen:  ['#F1F7EE', '#D0E5CC', '#8FBA88', '#5E8F56', '#396032'],
+    divergingHex: ['#0E5B6B', '#257F92', '#5DBACD', '#B2DFE9', '#F5F6F7', '#FBD9C2', '#ECA072', '#B4693A', '#884725']
   };
 
   // 全域狀態
@@ -46,7 +26,7 @@
     io: 'exp', // 'exp' (歲出) | 'rev' (歲入)
     metric: 'total', // 'total' (億元) | 'perCapita' (元/人) | 'ratio' (%) | 'diff' (年增減)
     group: 'all', // 'all' | 'six' | 'nonSix' | 'islands' | 'withCentral'
-    colorMode: 'top4', // 'top4' (智慧 4+1) | 'all' (全細項)
+    colorMode: 'top4', // 'top4' (智慧 4+1) | 'all' (全細項展開：前四大鎖定色 + 長尾雅灰懸停高亮)
     activeTab: 'stacked', // 'stacked' | 'ranking' | 'diverging' | 'deepdive'
     deepdiveCategory: '',
     sortOrder: 'desc', // 'desc' | 'asc' | 'default'
@@ -92,14 +72,24 @@
     }
   }
 
-  // 初始化 ECharts
+  // 初始化 ECharts（含離線無網路環境安全降級，確保 KPI 卡與資料明細表 100% 正常渲染）
   function initChart() {
     const chartDom = document.getElementById('main-chart');
     if (!chartDom) return;
-    state.chartInstance = echarts.init(chartDom, null, { renderer: 'canvas' });
-    window.addEventListener('resize', () => {
-      if (state.chartInstance) state.chartInstance.resize();
-    });
+    if (typeof window.echarts !== 'undefined' && window.echarts && typeof window.echarts.init === 'function') {
+      state.chartInstance = window.echarts.init(chartDom, null, { renderer: 'canvas' });
+      window.addEventListener('resize', () => {
+        if (state.chartInstance) state.chartInstance.resize();
+      });
+    } else {
+      state.chartInstance = {
+        _lastOption: null,
+        setOption: function (opt) { this._lastOption = opt; },
+        resize: function () {},
+        on: function () {},
+        off: function () {}
+      };
+    }
   }
 
   // 全國 22 地方縣市固定基準清單
@@ -129,30 +119,26 @@
     return list;
   }
 
-  // 取得發散顏色 (依據變化率或正負數值)
+  // 取得發散顏色 (依據變化率或正負數值，使用 GephiPalette 9 階 CIELAB 對稱插值)
   function getDivergingColor(value, maxAbs) {
-    if (maxAbs === 0 || value === 0) return PALETTE.diverging[4].color;
+    if (GP && typeof GP.getDivergingColor === 'function') {
+      return GP.getDivergingColor(value, 0.0, maxAbs, false);
+    }
+    if (maxAbs === 0 || value === 0) return '#F5F6F7';
     const ratio = Math.max(-1, Math.min(1, value / maxAbs));
-    // 映射至 9 個節點
-    if (ratio < -0.75) return PALETTE.diverging[0].color;
-    if (ratio < -0.5) return PALETTE.diverging[1].color;
-    if (ratio < -0.25) return PALETTE.diverging[2].color;
-    if (ratio < -0.05) return PALETTE.diverging[3].color;
-    if (ratio <= 0.05) return PALETTE.diverging[4].color;
-    if (ratio <= 0.25) return PALETTE.diverging[5].color;
-    if (ratio <= 0.5) return PALETTE.diverging[6].color;
-    if (ratio <= 0.75) return PALETTE.diverging[7].color;
-    return PALETTE.diverging[8].color;
+    const idx = Math.max(0, Math.min(8, Math.round((0.5 + 0.5 * ratio) * 8)));
+    return PALETTE.divergingHex[idx];
   }
 
-  // 取得循序階梯顏色 (0~1)
-  function getSequentialColor(ratio, paletteSeq = PALETTE.seqOrange) {
-    const p = Math.max(0, Math.min(1, ratio));
-    if (p <= 0.2) return paletteSeq[0];
-    if (p <= 0.4) return paletteSeq[1];
-    if (p <= 0.6) return paletteSeq[2];
-    if (p <= 0.8) return paletteSeq[3];
-    return paletteSeq[4];
+  // 取得循序色階顏色 (嚴格執行 (val - minVal) / (maxVal - minVal) 正規化與 CIELAB 插值)
+  function getSequentialColor(val, minVal, maxVal, scaleKey = 'orange') {
+    if (GP && typeof GP.getSequentialColor === 'function') {
+      return GP.getSequentialColor(val, minVal, maxVal, scaleKey, false);
+    }
+    const span = maxVal > minVal ? (maxVal - minVal) : 1;
+    const p = Math.max(0, Math.min(1, (val - minVal) / span));
+    const idx = Math.max(0, Math.min(4, Math.round(p * 4)));
+    return (scaleKey === 'blue' ? PALETTE.seqBlue : PALETTE.seqOrange)[idx];
   }
 
   // 計算並整理當前檢視所需的資料集
@@ -173,14 +159,26 @@
     });
 
     const sortedCats = Object.keys(globalCategoryTotals).sort((a, b) => globalCategoryTotals[b] - globalCategoryTotals[a]);
-    const top4Cats = sortedCats.slice(0, 4);
-    const otherCats = sortedCats.slice(4);
-    const categoryColorMap = {};
-    sortedCats.forEach((cat, idx) => {
-      categoryColorMap[cat] = idx < 4 ? PALETTE.categories[idx] : PALETTE.seqOrange[idx % 5];
-    });
+    const binding = GP && typeof GP.bindQualitativeColors === 'function'
+      ? GP.bindQualitativeColors(sortedCats, true, '其他項目合計')
+      : null;
 
-    // 建立每個縣市的詳細彙整
+    const top4Cats = binding ? binding.top4Categories : sortedCats.slice(0, 4);
+    const otherCats = binding ? binding.otherCategories : sortedCats.slice(4);
+    const categoryColorMap = binding ? { ...binding.colorMap } : {};
+    const badgeTintMap = binding ? { ...binding.badgeTintMap } : {};
+    if (!binding) {
+      sortedCats.forEach((cat, idx) => {
+        categoryColorMap[cat] = idx < 4 ? PALETTE.categories[idx] : PALETTE.other;
+        badgeTintMap[cat] = idx < 4 ? PALETTE.badgeTints[idx] : '#F1F5F9';
+      });
+    }
+
+    if (!state.deepdiveCategory || !sortedCats.includes(state.deepdiveCategory)) {
+      state.deepdiveCategory = sortedCats[0] || '';
+    }
+
+    // 建立每個縣市的詳細彙整（識別缺失值 NA 縣市）
     const countyDataList = counties.map(county => {
       const cRec = yearRecords[county] || {};
       const pop = rawData.population[county] || 1;
@@ -196,6 +194,8 @@
         catMap[cat] = b;
       });
 
+      const isNA = Object.keys(cRec).length === 0 || totalBudget <= 0;
+
       // 4+1 聚合計算
       const top4Map = {};
       let top4Sum = 0;
@@ -208,29 +208,40 @@
 
       return {
         county,
+        isNA,
         population: pop,
         totalBudget,
         totalDiff,
-        diffRate: (totalBudget - totalDiff) > 0 ? (totalDiff / (totalBudget - totalDiff)) * 100 : 0,
-        perCapita: totalBudget / pop,
+        diffRate: (!isNA && (totalBudget - totalDiff) > 0) ? (totalDiff / (totalBudget - totalDiff)) * 100 : 0,
+        perCapita: !isNA ? (totalBudget / pop) : 0,
         catMap,
         top4Map,
         otherSum
       };
     });
 
-    // 排序
+    // 排序（NA 缺失值縣市固定置底，確保有效數值排序清晰）
+    const getSortMetricValue = item => {
+      if (state.activeTab === 'diverging') return item.totalDiff;
+      if (state.activeTab === 'deepdive' && state.deepdiveCategory) {
+        return item.catMap[state.deepdiveCategory] || 0;
+      }
+      if (state.metric === 'perCapita') return item.perCapita;
+      if (state.metric === 'diff' && state.activeTab !== 'ranking' && state.activeTab !== 'stacked') {
+        return item.totalDiff;
+      }
+      return item.totalBudget;
+    };
+
     if (state.sortOrder === 'desc') {
       countyDataList.sort((a, b) => {
-        if (state.metric === 'perCapita') return b.perCapita - a.perCapita;
-        if (state.metric === 'diff') return b.totalDiff - a.totalDiff;
-        return b.totalBudget - a.totalBudget;
+        if (a.isNA !== b.isNA) return a.isNA ? 1 : -1;
+        return getSortMetricValue(b) - getSortMetricValue(a);
       });
     } else if (state.sortOrder === 'asc') {
       countyDataList.sort((a, b) => {
-        if (state.metric === 'perCapita') return a.perCapita - b.perCapita;
-        if (state.metric === 'diff') return a.totalDiff - b.totalDiff;
-        return a.totalBudget - b.totalBudget;
+        if (a.isNA !== b.isNA) return a.isNA ? 1 : -1;
+        return getSortMetricValue(a) - getSortMetricValue(b);
       });
     }
 
@@ -240,7 +251,8 @@
       sortedCats,
       top4Cats,
       otherCats,
-      categoryColorMap
+      categoryColorMap,
+      badgeTintMap
     };
   }
 
@@ -248,23 +260,28 @@
   function renderKPICards(data) {
     if (!data) return;
     const { countyDataList, sortedCats } = data;
+    const validCounties = countyDataList.filter(c => !c.isNA);
 
     // 總預算
-    const grandTotal = countyDataList.reduce((acc, cur) => acc + cur.totalBudget, 0);
-    const grandDiff = countyDataList.reduce((acc, cur) => acc + cur.totalDiff, 0);
+    const grandTotal = validCounties.reduce((acc, cur) => acc + cur.totalBudget, 0);
+    const grandDiff = validCounties.reduce((acc, cur) => acc + cur.totalDiff, 0);
     const baseTotal = grandTotal - grandDiff;
     const grandDiffRate = baseTotal > 0 ? (grandDiff / baseTotal) * 100 : 0;
 
-    // 人均中位數 (排除中央)
-    const localCounties = countyDataList.filter(c => c.county !== '中央');
+    // 人均中位數 (排除中央與 NA 缺失值縣市)
+    const localCounties = validCounties.filter(c => c.county !== '中央');
     const perCapitas = localCounties.map(c => c.perCapita).sort((a, b) => a - b);
-    const medianPerCapita = perCapitas.length > 0
-      ? perCapitas[Math.floor(perCapitas.length / 2)]
-      : 0;
+    let medianPerCapita = 0;
+    if (perCapitas.length > 0) {
+      const mid = Math.floor(perCapitas.length / 2);
+      medianPerCapita = perCapitas.length % 2 === 0
+        ? (perCapitas[mid - 1] + perCapitas[mid]) / 2
+        : perCapitas[mid];
+    }
 
     // 前第一大項目與佔比
     const topCatName = sortedCats[0] || '無';
-    const topCatTotal = countyDataList.reduce((acc, cur) => acc + (cur.catMap[topCatName] || 0), 0);
+    const topCatTotal = validCounties.reduce((acc, cur) => acc + (cur.catMap[topCatName] || 0), 0);
     const topCatRatio = grandTotal > 0 ? (topCatTotal / grandTotal) * 100 : 0;
 
     // 人均最高縣市
@@ -289,7 +306,7 @@
     document.getElementById('kpi-top-category-ratio').textContent = `${(topCatTotal / 1e8).toFixed(0)} 億元 (佔 ${topCatRatio.toFixed(1)}%)`;
   }
 
-  // 渲染 Tab 1: 結構堆疊圖 (4+1 簡潔聚焦)
+  // 渲染 Tab 1: 結構堆疊圖 (預設 4+1 智慧聚焦；展開全細項時前四大保持鎖定色、長尾細項以雅灰呈現並支援懸停高亮)
   function renderStackedChart(data) {
     const { counties, countyDataList, top4Cats, sortedCats, categoryColorMap } = data;
     const isTop4Mode = state.colorMode === 'top4';
@@ -298,14 +315,20 @@
     const series = [];
 
     activeCats.forEach((cat, idx) => {
-      const color = isTop4Mode ? (categoryColorMap[cat] || PALETTE.categories[idx]) : PALETTE.seqOrange[idx % 5];
+      const isTop4Cat = idx < 4;
+      const color = isTop4Cat ? (categoryColorMap[cat] || PALETTE.categories[idx]) : PALETTE.other;
       series.push({
         name: cat,
         type: 'bar',
         stack: 'total',
-        emphasis: { focus: 'series' },
+        emphasis: {
+          focus: 'series',
+          itemStyle: isTop4Cat ? {} : { color: '#64748B' }
+        },
         itemStyle: {
           color: color,
+          borderColor: '#FFFFFF',
+          borderWidth: isTop4Mode ? 0.5 : 0.8,
           borderRadius: 2
         },
         data: countyDataList.map(item => {
@@ -406,21 +429,34 @@
     state.chartInstance.setOption(option, true);
   }
 
-  // 渲染 Tab 2: 縣市排行榜 (循序色階漸進)
+  // 渲染 Tab 2: 縣市排行榜 (循序色階漸進，排除 NA 後使用真實 (val - minVal) / (maxVal - minVal) 正規化)
   function renderRankingChart(data) {
     const { counties, countyDataList } = data;
     const isPerCapita = state.metric === 'perCapita';
-    const values = countyDataList.map(item => isPerCapita ? item.perCapita : item.totalBudget / 1e8);
-    const maxVal = Math.max(...values, 1);
+    const validValues = countyDataList
+      .filter(item => !item.isNA)
+      .map(item => isPerCapita ? item.perCapita : item.totalBudget / 1e8);
+    const minVal = validValues.length > 0 ? Math.min(...validValues) : 0;
+    const maxVal = validValues.length > 0 ? Math.max(...validValues) : 1;
     const unitText = isPerCapita ? '元/人' : '億元';
 
     const seriesData = countyDataList.map(item => {
+      if (item.isNA) {
+        return {
+          value: 0,
+          isNA: true,
+          itemStyle: {
+            color: PALETTE.na,
+            borderRadius: [0, 4, 4, 0]
+          }
+        };
+      }
       const val = isPerCapita ? item.perCapita : item.totalBudget / 1e8;
-      const ratio = val / maxVal;
       return {
         value: Number(val.toFixed(2)),
+        isNA: false,
         itemStyle: {
-          color: getSequentialColor(ratio, PALETTE.seqOrange),
+          color: getSequentialColor(val, minVal, maxVal, 'orange'),
           borderRadius: [0, 4, 4, 0]
         }
       };
@@ -433,6 +469,9 @@
         axisPointer: { type: 'shadow' },
         formatter: function (params) {
           const p = params[0];
+          if (p.data && p.data.isNA) {
+            return `<div class="font-bold text-sm">${p.axisValue}</div><div class="text-xs text-slate-500 mt-1">NA（該年度資料未納編 · #D9D9D9）</div>`;
+          }
           return `
             <div class="font-bold text-sm">${p.axisValue}</div>
             <div class="text-xs text-slate-600 mt-1">
@@ -468,7 +507,9 @@
           label: {
             show: true,
             position: 'right',
-            formatter: '{c} ' + unitText,
+            formatter: function (params) {
+              return (params.data && params.data.isNA) ? 'NA (未納編)' : `${params.value} ${unitText}`;
+            },
             color: '#64748B',
             fontSize: 11
           }
@@ -482,14 +523,23 @@
   // 渲染 Tab 3: 發散色階 (年增減差異分析)
   function renderDivergingChart(data) {
     const { counties, countyDataList } = data;
-    const diffs = countyDataList.map(item => item.totalDiff / 1e8);
+    const diffs = countyDataList.filter(item => !item.isNA).map(item => item.totalDiff / 1e8);
     const maxAbs = Math.max(...diffs.map(Math.abs), 1);
 
     const seriesData = countyDataList.map(item => {
+      if (item.isNA) {
+        return {
+          value: 0,
+          isNA: true,
+          rate: 'NA',
+          itemStyle: { color: PALETTE.na, borderRadius: [0, 4, 4, 0] }
+        };
+      }
       const val = Number((item.totalDiff / 1e8).toFixed(2));
       const color = getDivergingColor(val, maxAbs);
       return {
         value: val,
+        isNA: false,
         rate: item.diffRate.toFixed(1),
         itemStyle: {
           color: color,
@@ -505,9 +555,12 @@
         axisPointer: { type: 'shadow' },
         formatter: function (params) {
           const p = params[0];
+          const raw = p.data;
+          if (raw && raw.isNA) {
+            return `<div class="font-bold text-sm">${p.axisValue}</div><div class="text-xs text-slate-500 mt-1">NA（該年度資料未納編 · #D9D9D9）</div>`;
+          }
           const val = p.value;
           const sign = val >= 0 ? '+' : '';
-          const raw = p.data;
           return `
             <div class="font-bold text-sm">${p.axisValue}</div>
             <div class="text-xs text-slate-600 mt-1">
@@ -550,6 +603,7 @@
               return params.value >= 0 ? 'right' : 'left';
             },
             formatter: function (params) {
+              if (params.data && params.data.isNA) return 'NA (未納編)';
               const sign = params.value >= 0 ? '+' : '';
               return `${sign}${params.value} 億`;
             },
@@ -563,7 +617,7 @@
     state.chartInstance.setOption(option, true);
   }
 
-  // 渲染 Tab 4: 單一項目深鑽 (Deep-dive)
+  // 渲染 Tab 4: 單一項目深鑽 (Deep-dive，排除 NA 後使用真實 (val - minVal) / (maxVal - minVal) 正規化)
   function renderDeepdiveChart(data) {
     const { counties, countyDataList, sortedCats } = data;
     if (!state.deepdiveCategory || !sortedCats.includes(state.deepdiveCategory)) {
@@ -584,17 +638,32 @@
     }
 
     const catName = state.deepdiveCategory;
-    const catValues = countyDataList.map(item => (item.catMap[catName] || 0) / 1e8);
-    const maxVal = Math.max(...catValues, 0.01);
+    const validCatValues = countyDataList
+      .filter(item => !item.isNA && (item.catMap[catName] || 0) > 0)
+      .map(item => (item.catMap[catName] || 0) / 1e8);
+    const minVal = validCatValues.length > 0 ? Math.min(...validCatValues) : 0;
+    const maxVal = validCatValues.length > 0 ? Math.max(...validCatValues, 0.01) : 0.01;
 
     const seriesData = countyDataList.map(item => {
+      if (item.isNA) {
+        return {
+          value: 0,
+          isNA: true,
+          ratio: 'NA',
+          itemStyle: {
+            color: PALETTE.na,
+            borderRadius: [0, 4, 4, 0]
+          }
+        };
+      }
       const val = Number(((item.catMap[catName] || 0) / 1e8).toFixed(2));
       const ratio = item.totalBudget > 0 ? ((item.catMap[catName] || 0) / item.totalBudget * 100).toFixed(1) : 0;
       return {
         value: val,
+        isNA: false,
         ratio: ratio,
         itemStyle: {
-          color: getSequentialColor(val / maxVal, PALETTE.seqBlue),
+          color: getSequentialColor(val, minVal, maxVal, 'blue'),
           borderRadius: [0, 4, 4, 0]
         }
       };
@@ -608,6 +677,9 @@
         formatter: function (params) {
           const p = params[0];
           const raw = p.data;
+          if (raw && raw.isNA) {
+            return `<div class="font-bold text-sm">${p.axisValue}</div><div class="text-xs text-slate-500 mt-1">NA（該年度資料未納編 · #D9D9D9）</div>`;
+          }
           return `
             <div class="font-bold text-sm">${p.axisValue}</div>
             <div class="text-xs text-slate-700 mt-1">
@@ -646,7 +718,9 @@
           label: {
             show: true,
             position: 'right',
-            formatter: '{c} 億',
+            formatter: function (params) {
+              return (params.data && params.data.isNA) ? 'NA (未納編)' : `${params.value} 億`;
+            },
             color: '#64748B',
             fontSize: 11
           }
@@ -657,11 +731,11 @@
     state.chartInstance.setOption(option, true);
   }
 
-  // 渲染底部資料表格
+  // 渲染底部資料表格 (使用零透明度 0.00 端點實色 #FFF3EA / #EBF7F9 / #FFF0F5 / #F1F7EE 作為標籤底色，NA 以 #D9D9D9 標記)
   function renderTable(data) {
     const tbody = document.getElementById('table-body');
     if (!tbody || !data) return;
-    const { countyDataList, top4Cats } = data;
+    const { countyDataList, top4Cats, badgeTintMap } = data;
 
     // 關鍵字搜尋過濾
     const kw = state.searchKeyword.trim().toLowerCase();
@@ -673,6 +747,21 @@
     filteredList.forEach(item => {
       const tr = document.createElement('tr');
       tr.className = 'border-b border-slate-100 hover:bg-slate-50/80 transition-colors text-xs';
+
+      if (item.isNA) {
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-bold text-slate-800">${item.county}</td>
+          <td class="py-3 px-4 font-mono text-slate-600 text-right">${item.population.toLocaleString()}</td>
+          <td class="py-3 px-4 font-mono text-slate-500 text-right">NA</td>
+          <td class="py-3 px-4 font-mono text-slate-500 text-right">NA</td>
+          <td class="py-3 px-4 font-mono text-slate-500 text-right">NA</td>
+          <td class="py-3 px-4 text-slate-600">
+            <span class="px-2 py-0.5 rounded text-[10px] font-medium" style="background:${PALETTE.na};color:#334155;border:1px solid #94A3B8;">NA（該年度資料未納編 · #D9D9D9）</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+        return;
+      }
 
       const sign = item.totalDiff >= 0 ? '+' : '';
       const diffColorClass = item.totalDiff >= 0 ? 'text-amber-700' : 'text-cyan-700';
@@ -688,7 +777,11 @@
             ${top4Cats.map((cat, idx) => {
               const amt = item.catMap[cat] || 0;
               const ratio = item.totalBudget > 0 ? (amt / item.totalBudget * 100).toFixed(0) : 0;
-              return `<span class="px-1.5 py-0.5 rounded text-[10px] font-medium" style="background:${PALETTE.categories[idx]}20;color:#1E293B;">${cat} ${ratio}%</span>`;
+              const tintHex = (GP && typeof GP.getCategoryBadgeTint === 'function')
+                ? GP.getCategoryBadgeTint(cat, badgeTintMap)
+                : PALETTE.badgeTints[idx];
+              const borderHex = PALETTE.categories[idx];
+              return `<span class="px-1.5 py-0.5 rounded text-[10px] font-medium" style="background:${tintHex};color:#1E293B;border:1px solid ${borderHex};">${cat} ${ratio}%</span>`;
             }).join('')}
           </div>
         </td>

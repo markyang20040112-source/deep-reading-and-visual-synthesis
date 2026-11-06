@@ -4,11 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>全國預算比較儀表板 - 簡約優化與配色規範版</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
   <!-- ECharts 5.6.0 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.6.0/echarts.min.js"></script>
-  <!-- 自訂配色與樣式 -->
+  <!-- 自包含本地配色與版面樣式 (Zero Runtime Tailwind CDN) -->
   <link rel="stylesheet" href="./css/style.css">
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-800">
@@ -112,7 +110,7 @@
         <!-- 縣市分組 -->
         <div class="flex items-center gap-1.5 flex-wrap">
           <span class="text-slate-400 font-medium mr-1">地區範圍：</span>
-          <button class="btn-group filter-btn-active px-2.5 py-1 rounded-md border border-slate-200 transition font-medium" data-group="all">全部 21 縣市</button>
+          <button class="btn-group filter-btn-active px-2.5 py-1 rounded-md border border-slate-200 transition font-medium" data-group="all">全部 22 縣市</button>
           <button class="btn-group px-2.5 py-1 rounded-md border border-slate-200 transition text-slate-600 hover:bg-slate-100" data-group="six">六都</button>
           <button class="btn-group px-2.5 py-1 rounded-md border border-slate-200 transition text-slate-600 hover:bg-slate-100" data-group="nonSix">非六都縣市</button>
           <button class="btn-group px-2.5 py-1 rounded-md border border-slate-200 transition text-slate-600 hover:bg-slate-100" data-group="islands">離島 3 縣</button>
@@ -275,7 +273,7 @@
           </div>
           <h3 class="font-bold text-slate-800 text-sm">嚴格依循 CIELAB 配色規範</h3>
           <p>
-            全站色彩完全遵循個人配色規範：四類別色明度均一（$L^* \approx 72\%$），白底清晰度提升 150%；綠色換成雅緻的<strong>鼠尾草綠</strong>；並提供 5 階物理等差的<strong>循序色階</strong>，消除舊設定中「前半段癱瘓、後半段斷崖」的漸層失真。
+            全站色彩完全遵循個人配色規範：四類別色明度均一（L* ≈ 72%），白底清晰度提升 150%；綠色換成雅緻的<strong>鼠尾草綠</strong>；並提供 5 階物理等差的<strong>循序色階</strong>，消除舊設定中「前半段癱瘓、後半段斷崖」的漸層失真。
           </p>
         </div>
 
@@ -318,6 +316,8 @@
 
   <!-- 靜態數據先載入（確保本機 file:/// 雙擊直接秒開） -->
   <script src="./data/budget_data.js"></script>
+  <!-- 鎖定版 Gephi · pastel CIELAB 色彩與零透明度徽章引擎 -->
+  <script src="./js/gephi_palette.js"></script>
   <!-- 儀表板驅動邏輯 -->
   <script src="./js/dashboard.js"></script>
 </body>
