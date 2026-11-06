@@ -28,7 +28,7 @@
   3. **獨立公式展示塊（Display Equation Box）**：凡涉及數學、統計或邏輯關係式，一律抽離為獨立置中的展示區塊，並在下方緊接「白話直覺翻譯（Plain-Language Walkthrough）」，逐項解釋每個符號的真實業務意義。
 
 ### 2. 原創精煉圖表嵌入與零孤立原則（Seamless Visual Integration）
-- 報告必須直接嵌入 Phase 2 生成的高解析度資訊圖譜（Format A）與量化實證圖表（Format D），使用 `<figure>` 搭配完整圖說（Caption）。
+- 報告必須直接嵌入 Phase 2 生成的高解析度資訊圖譜（Format A）與量化實證圖表（Format D，或數據儀表板靜態全景圖 Format E），使用 `<figure>` 搭配完整圖說（Caption）。
 - **圖文互文導讀**：每張圖表前後的正文必須明確引導讀者觀察圖中的關鍵落差或轉折，嚴禁「只貼圖不解說」。
 
 ---

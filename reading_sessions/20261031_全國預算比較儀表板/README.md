@@ -33,16 +33,19 @@
 
 ```text
 20261031_全國預算比較儀表板/
-├── index.html              # 主頁面（響應式 UI、控制列、KPI 卡與圖表容器）
+├── index.html                        # 主頁面（響應式 UI、控制列、KPI 卡與圖表容器，採 ./ 純相對路徑）
 ├── css/
-│   └── style.css           # 配色規範 CSS 變數與微調樣式
+│   └── style.css                     # 配色規範 CSS 變數與微調樣式
 ├── js/
-│   └── dashboard.js        # 資料處理引擎、ECharts 圖表驅動、狀態管理
+│   └── dashboard.js                  # 資料處理引擎、全域固定類別色碼映射、ECharts 驅動與狀態管理
 ├── data/
-│   ├── budget_data.js      # 預編譯離線資料包（保證雙擊 index.html 即可本機秒開）
-│   └── budget_data.json    # 標準結構化 JSON 資料
-├── README.md               # 專案說明與 Git 發布指南
-└── .gitignore              # Git 忽略設定
+│   ├── budget_data.js                # 預編譯離線資料包（保證雙擊 index.html 即可本機秒開）
+│   └── budget_data.json              # 標準結構化 JSON 資料
+├── generate_chart.py                 # 出版級靜態全景儀表板圖生成腳本（Matplotlib GridSpec）
+├── 全台預算比較儀表板_視覺化圖表.png  # 出版級高解析度靜態全景儀表板圖
+├── .nojekyll                         # GitHub Pages 免 Jekyll 編譯加速標記檔
+├── .gitignore                        # Git 獨立版控忽略設定清單
+└── README.md                         # 專案說明與獨立 Git 網站發布指南
 ```
 
 ---
@@ -50,7 +53,7 @@
 ## 🚀 本機預覽方式
 
 ### 方式 A：直接雙擊開啟（最簡單，零安裝）
-因為本專案已將預算資料預先載入至 `data/budget_data.js`，您可以**直接在檔案總管中雙擊 `index.html`**，瀏覽器便能直接離線運行所有圖表與互動功能！
+因為本專案已將預算資料預先載入至 `./data/budget_data.js`，並全面採用 `./` 純相對路徑，您可以**直接在檔案總管中雙擊 `index.html`**，瀏覽器便能直接離線運行所有圖表與互動功能！
 
 ### 方式 B：使用靜態本機伺服器
 若您習慣在本地 HTTP 伺服器預覽，可在本專案目錄下執行：
@@ -65,34 +68,63 @@ npx serve .
 
 ---
 
-## 🌐 如何上傳到全新 Git 儲存庫並架設成網站
+## 🌐 如何綁定獨立 Git 儲存庫並架設成網站（GitHub Pages / Vercel）
 
-本專案已經完全準備好上傳至任何新的 Git 儲存庫（例如 GitHub、GitLab 或 Gitee）。以下為發布至 **GitHub Pages** 的快速步驟：
+本專案已封裝為 **Git-Ready 零後端靜態網站結構**（內含 `.nojekyll`、`.gitignore` 與 `./` 純相對路徑），完美相容於 GitHub Pages 子路徑（`https://<username>.github.io/<repo-name>/`）與根網域。以下提供三種標準部署方式：
 
-### 第一步：在 GitHub 上建立全新儲存庫
-1. 前往 [GitHub](https://github.com/) 點擊 **New repository**。
-2. 命名為 `taiwan-budget-dashboard`（或任何您喜歡的名稱），設為 **Public**，不要勾選初始化 README。
-
-### 第二步：推送到全新 Git 儲存庫
-在終端機中切換至本專案目錄：
+### 方式一：使用 GitHub CLI (`gh`) 一鍵自動建庫＋開通 GitHub Pages（最快）
+若您的終端機已安裝並登入 GitHub CLI（`gh auth status`），只需執行：
 ```bash
 cd "reading_sessions/20261031_全國預算比較儀表板"
 
-# 初始化 Git
 git init
-git add .
-git commit -m "feat: initial commit of taiwan budget comparison dashboard"
-
-# 連結遠端並推播（請將下方 URL 換成您新開的儲存庫網址）
-git remote add origin https://github.com/<您的使用者名稱>/taiwan-budget-dashboard.git
+git config user.name "markyang20040112-source"
+git config user.email "markyang20040112-source@users.noreply.github.com"
+git add -A
+git commit -m "feat(dashboard): initial release of taiwan budget comparison dashboard"
 git branch -M main
-git push -u origin main
+
+# 自動在 GitHub 建立公開儲存庫並推送
+gh repo create taiwan-budget-dashboard --public --source=. --remote=origin --push
+
+# 一鍵啟用 GitHub Pages（參數加引號相容 PowerShell 與 Bash）
+gh api repos/{owner}/{repo}/pages -X POST -F build_type=legacy -F "source[branch]=main" -F "source[path]=/"
+
+# 【雙倉庫防衝突護欄】若本目錄同時位於外層知識庫主倉庫內，推送後請立即移除內層 .git 避免外層產生 gitlink 空指標：
+# PowerShell: Remove-Item -Recurse -Force .git
+# Bash:       rm -rf .git
 ```
 
-### 第三步：開啟 GitHub Pages 免費網站
-1. 進入該 GitHub 專案頁面 ➔ 點擊 **Settings** ➔ 選擇左側 **Pages**。
-2. 在 **Build and deployment** 下方的 **Branch** 選擇 `main`，路徑選擇 `/(root)` ➔ 點擊 **Save**。
-3. 等待約 1 分鐘，GitHub 就會產生專屬的網站網址（例如：`https://<您的帳號>.github.io/taiwan-budget-dashboard/`），任何人點擊即可使用！
+### 方式二：手動綁定新建的空白 Git 儲存庫（支援 `main` 或 `gh-pages` 分支）
+1. 前往 [GitHub](https://github.com/new) 建立空白 Public 儲存庫（例如 `taiwan-budget-dashboard`，不要勾選初始化 README）。
+2. 於終端機執行推送：
+```bash
+cd "reading_sessions/20261031_全國預算比較儀表板"
+
+git init
+git config user.name "markyang20040112-source"
+git config user.email "markyang20040112-source@users.noreply.github.com"
+git add -A
+git commit -m "feat(dashboard): initial commit of taiwan budget comparison dashboard"
+git branch -M main
+git remote add origin https://github.com/<您的使用者名稱>/taiwan-budget-dashboard.git
+
+# 推送至 main 分支（若欲推送至 gh-pages 分支可改用 git push -u origin main:gh-pages --force）
+git push -u origin main
+
+# 【雙倉庫防衝突護欄】若本目錄位於外層主倉庫內，推送成功後請移除內層 .git 以確保外層主倉庫完整備份所有前端檔案：
+# PowerShell: Remove-Item -Recurse -Force .git
+# Bash:       rm -rf .git
+```
+3. 進入該 GitHub 專案頁面 ➔ **Settings** ➔ **Pages** ➔ **Branch** 選擇 `main`（或 `gh-pages`）與 `/(root)` ➔ **Save**，約 1 分鐘後即可造訪 `https://<您的使用者名稱>.github.io/taiwan-budget-dashboard/`！
+
+### 方式三：從外層主倉庫直接執行 `git subtree` 推送（零內層 `.git`）
+若本專案已先 commit 至外層 `deep-reading-and-visual-synthesis` 主倉庫，可直接在外層根目錄執行：
+```bash
+git subtree split --prefix="reading_sessions/20261031_全國預算比較儀表板" -b dashboard-deploy
+git push https://github.com/<您的使用者名稱>/taiwan-budget-dashboard.git dashboard-deploy:main --force
+git branch -D dashboard-deploy
+```
 
 *(備註：亦完全支援直接匯入 Vercel 或 Netlify，只需選擇該 Git Repo，無須任何建置指令即可一鍵發布。)*
 

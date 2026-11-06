@@ -70,7 +70,7 @@
       rawData = window.BUDGET_DATA;
     } else {
       try {
-        const res = await fetch('data/budget_data.json');
+        const res = await fetch('./data/budget_data.json');
         rawData = await res.json();
       } catch (err) {
         console.error('無法載入 budget_data.json:', err);
@@ -102,27 +102,29 @@
     });
   }
 
+  // 全國 22 地方縣市固定基準清單
+  const ALL_LOCAL_COUNTIES = [
+    '臺北市', '新北市', '桃園市', '臺中市', '臺南市', '高雄市',
+    '基隆市', '新竹市', '新竹縣', '宜蘭縣', '苗栗縣', '彰化縣',
+    '南投縣', '雲林縣', '嘉義市', '嘉義縣', '屏東縣', '花蓮縣',
+    '臺東縣', '澎湖縣', '金門縣', '連江縣'
+  ];
+
   // 取得篩選後縣市名單
   function getFilteredCounties() {
     if (!rawData) return [];
     let list = [];
-    const all21 = [
-      '臺北市', '新北市', '桃園市', '臺中市', '臺南市', '高雄市',
-      '基隆市', '新竹市', '新竹縣', '宜蘭縣', '苗栗縣', '彰化縣',
-      '南投縣', '雲林縣', '嘉義市', '嘉義縣', '屏東縣', '花蓮縣',
-      '臺東縣', '澎湖縣', '金門縣', '連江縣'
-    ];
 
     if (state.group === 'six') {
       list = rawData.county_groups['六都'] || [];
     } else if (state.group === 'nonSix') {
-      list = all21.filter(c => !rawData.county_groups['六都'].includes(c));
+      list = ALL_LOCAL_COUNTIES.filter(c => !rawData.county_groups['六都'].includes(c));
     } else if (state.group === 'islands') {
       list = rawData.county_groups['離島'] || [];
     } else if (state.group === 'withCentral') {
-      list = ['中央', ...all21];
+      list = ['中央', ...ALL_LOCAL_COUNTIES];
     } else {
-      list = all21;
+      list = ALL_LOCAL_COUNTIES;
     }
     return list;
   }
@@ -160,18 +162,23 @@
     const yearRecords = rawData.records[key] || {};
     const counties = getFilteredCounties();
 
-    // 統計各政事別在所選縣市的加總金額，找出 Top 4
-    const categoryTotals = {};
-    counties.forEach(county => {
+    // 依全體地方縣市（固定基準）統計各政事別總額以鎖定全域 Top 4 與固定色碼映射，
+    // 確保切換「全部／六都／非六都／離島／含中央」或切換排序時，同名政事別永遠保持 100% 相同顏色！
+    const globalCategoryTotals = {};
+    ALL_LOCAL_COUNTIES.forEach(county => {
       const cRec = yearRecords[county] || {};
       Object.keys(cRec).forEach(cat => {
-        categoryTotals[cat] = (categoryTotals[cat] || 0) + (cRec[cat].budget || 0);
+        globalCategoryTotals[cat] = (globalCategoryTotals[cat] || 0) + (cRec[cat].budget || 0);
       });
     });
 
-    const sortedCats = Object.keys(categoryTotals).sort((a, b) => categoryTotals[b] - categoryTotals[a]);
+    const sortedCats = Object.keys(globalCategoryTotals).sort((a, b) => globalCategoryTotals[b] - globalCategoryTotals[a]);
     const top4Cats = sortedCats.slice(0, 4);
     const otherCats = sortedCats.slice(4);
+    const categoryColorMap = {};
+    sortedCats.forEach((cat, idx) => {
+      categoryColorMap[cat] = idx < 4 ? PALETTE.categories[idx] : PALETTE.seqOrange[idx % 5];
+    });
 
     // 建立每個縣市的詳細彙整
     const countyDataList = counties.map(county => {
@@ -232,7 +239,8 @@
       countyDataList,
       sortedCats,
       top4Cats,
-      otherCats
+      otherCats,
+      categoryColorMap
     };
   }
 
@@ -283,14 +291,14 @@
 
   // 渲染 Tab 1: 結構堆疊圖 (4+1 簡潔聚焦)
   function renderStackedChart(data) {
-    const { counties, countyDataList, top4Cats, sortedCats } = data;
+    const { counties, countyDataList, top4Cats, sortedCats, categoryColorMap } = data;
     const isTop4Mode = state.colorMode === 'top4';
     const activeCats = isTop4Mode ? top4Cats : sortedCats;
 
     const series = [];
 
     activeCats.forEach((cat, idx) => {
-      const color = isTop4Mode ? PALETTE.categories[idx] : PALETTE.seqOrange[idx % 5];
+      const color = isTop4Mode ? (categoryColorMap[cat] || PALETTE.categories[idx]) : PALETTE.seqOrange[idx % 5];
       series.push({
         name: cat,
         type: 'bar',

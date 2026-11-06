@@ -10,6 +10,8 @@ Implements:
 4. lab_interpolate(hex_list, t) for sequential and diverging scales in CIELAB space.
 5. AreaScaledHCL: Size-dependent Tri-tier scaling (Accent L=38, Badge L=46, Surface Tint L=96.5).
 6. SessionColorContract: Cross-format semantic color lock (primary, warn, success, danger, synth).
+7. Gephi · pastel Locked Chart & Data Dashboard Palette (Format D <-> Format E SSOT):
+   Fixed 4-color qualitative binding, four 5-node CIELAB sequential scales, and 9-node symmetric diverging scale.
 """
 
 import math
@@ -322,3 +324,207 @@ class SessionColorContract:
 
 
 GLOBAL_COLOR_CONTRACT = SessionColorContract()
+
+
+# -------------------------------------------------------------------------
+# Locked Chart & Data Dashboard Color Specification (Format D <-> Format E SSOT)
+# Source: https://docs.google.com/document/d/1puNpLGR7hYcyvZL1DZMdUpmP9fXM-TQcxu1N6QyGb1E/edit?usp=sharing
+# Derived from ggsci Gephi · pastel (CIELAB / HCL L*≈72 balanced)
+# -------------------------------------------------------------------------
+
+LOCKED_CHART_PALETTE_URL = (
+    "https://docs.google.com/document/d/1puNpLGR7hYcyvZL1DZMdUpmP9fXM-TQcxu1N6QyGb1E/edit?usp=sharing"
+)
+
+# 2. Fixed Qualitative Palette (4 base categories in strict binding order)
+GEPHI_QUALITATIVE_HEX: List[str] = [
+    "#ECA072",  # 1. 主色：暖杏蜜橘 (Warm Apricot Orange)
+    "#5DBACD",  # 2. 次色：霧靄青藍 (Misty Cyan-Blue)
+    "#E89BB6",  # 3. 第三色：落櫻粉黛 (Sakura Rose Pink)
+    "#8FBA88",  # 4. 第四色：鼠尾草綠 (Sage Green)
+]
+
+GEPHI_QUALITATIVE_NAMED: Dict[str, str] = {
+    "primary_orange": "#ECA072",
+    "secondary_blue": "#5DBACD",
+    "tertiary_pink": "#E89BB6",
+    "quaternary_green": "#8FBA88",
+}
+
+# 3. Four 5-Node Sequential Scales (0.00, 0.25, 0.50, 0.75, 1.00; low=light -> high=dark)
+GEPHI_SEQUENTIAL_SCALES: Dict[str, List[str]] = {
+    "orange": ["#FFF3EA", "#FBD8C0", "#ECA072", "#CA6F35", "#97481B"],  # (1) 主色循序（暖杏橘系，預設數值尺度）
+    "blue":   ["#EBF7F9", "#BCE2EB", "#5DBACD", "#2C8B9F", "#0E5B6B"],  # (2) 次色循序（霧靄藍系，對比雙指標／深鑽尺度）
+    "pink":   ["#FFF0F5", "#F9CEE0", "#E89BB6", "#C46487", "#8D3658"],  # (3) 第三色循序（落櫻粉系）
+    "green":  ["#F1F7EE", "#D0E5CC", "#8FBA88", "#5E8F56", "#396032"],  # (4) 第四色循序（鼠尾草綠系）
+}
+
+# 5. 9-Node Symmetric Diverging Scale (0.000 to 1.000, center=0.500 -> #F5F6F7)
+GEPHI_DIVERGING_SCALE: List[str] = [
+    "#0E5B6B",  # 0.000 (-100% 偏差極端：負向極值深墨青)
+    "#257F92",  # 0.125 (-75% 偏差：負向中深)
+    "#5DBACD",  # 0.250 (-50% 偏差：負向中度)
+    "#B2DFE9",  # 0.375 (-25% 偏差：負向輕度)
+    "#F5F6F7",  # 0.500 (0% 偏差：中立基準中心)
+    "#FBD9C2",  # 0.625 (+25% 偏差：正向輕度)
+    "#ECA072",  # 0.750 (+50% 偏差：正向中度)
+    "#B4693A",  # 0.875 (+75% 偏差：正向中深)
+    "#884725",  # 1.000 (+100% 偏差極端：正向極值深栗橘)
+]
+
+# 6. Neutral & Special Semantic Colors
+GEPHI_DISCRETE_NEUTRALS: Dict[str, str] = {
+    "diverging_center": "#F5F6F7",  # 發散中心（極低彩度中性冷灰）
+    "na_missing": "#D9D9D9",        # 缺失值（NA / Null）預設標記色
+    "other_aggregated": "#CBD5E1",  # 4+1 長尾聚合「其他項目」典雅淺灰
+}
+
+
+def _parse_numeric_or_na(value: object) -> Optional[float]:
+    """Return float(value) if valid finite number, or None if missing/NA/NaN."""
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, str):
+        s = value.strip()
+        if not s or s.lower() in {"na", "n/a", "null", "none", "nan", "-", "—"}:
+            return None
+        try:
+            v = float(s)
+        except ValueError:
+            return None
+    else:
+        try:
+            v = float(value)  # Handles int, float, np.floating, Decimal, etc.
+        except (TypeError, ValueError):
+            return None
+    if math.isnan(v):
+        return None
+    return v
+
+
+_SEQUENTIAL_SCALE_ALIASES: Dict[str, str] = {
+    "orange": "orange",
+    "primary": "orange",
+    "primary_orange": "orange",
+    "1": "orange",
+    "blue": "blue",
+    "secondary": "blue",
+    "secondary_blue": "blue",
+    "2": "blue",
+    "pink": "pink",
+    "tertiary": "pink",
+    "tertiary_pink": "pink",
+    "3": "pink",
+    "green": "green",
+    "quaternary": "green",
+    "quaternary_green": "green",
+    "4": "green",
+}
+
+
+def get_sequential_color(
+    value: object,
+    v_min: float,
+    v_max: float,
+    scale: str = "orange",
+    discrete_steps: bool = False,
+) -> str:
+    """
+    Map a continuous or ordinal value to one of the 4 locked 5-node sequential scales.
+    - Uses CIELAB piecewise linear interpolation (no alpha channel manipulation).
+    - Returns #D9D9D9 for None, NaN, np.nan, or 'NA'/'null' strings.
+    """
+    v = _parse_numeric_or_na(value)
+    if v is None:
+        return GEPHI_DISCRETE_NEUTRALS["na_missing"]
+    scale_key = _SEQUENTIAL_SCALE_ALIASES.get(str(scale).strip().lower())
+    if scale_key is None:
+        raise ValueError(
+            f"Unknown sequential scale '{scale}'. Locked palette only permits: "
+            f"{list(GEPHI_SEQUENTIAL_SCALES.keys())}"
+        )
+    nodes = GEPHI_SEQUENTIAL_SCALES[scale_key]
+    if v_max <= v_min:
+        return nodes[2]
+    p = max(0.0, min(1.0, (v - float(v_min)) / (float(v_max) - float(v_min))))
+    if discrete_steps:
+        idx = int(round(p * 4.0))
+        return nodes[max(0, min(4, idx))]
+    return lab_interpolate(nodes, p)
+
+
+def get_diverging_color(
+    value: object,
+    center: float = 0.0,
+    max_span: Optional[float] = None,
+    discrete_steps: bool = False,
+) -> str:
+    """
+    Map a value with a meaningful reference center (e.g., 0% growth or 100% target achievement)
+    symmetrically onto the 9-node diverging scale (Blue <- #F5F6F7 -> Orange).
+    - Returns #D9D9D9 for None, NaN, np.nan, or 'NA'/'null' strings.
+    """
+    v = _parse_numeric_or_na(value)
+    if v is None:
+        return GEPHI_DISCRETE_NEUTRALS["na_missing"]
+    span = abs(float(max_span)) if (max_span is not None and abs(float(max_span)) > 0) else 1.0
+    deviation = (v - float(center)) / span
+    clamped_dev = max(-1.0, min(1.0, deviation))
+    p = 0.5 + 0.5 * clamped_dev  # Maps [-1, +1] symmetrically to [0.0, 1.0] with 0 -> 0.5
+    if discrete_steps:
+        idx = int(round(p * 8.0))
+        return GEPHI_DIVERGING_SCALE[max(0, min(8, idx))]
+    return lab_interpolate(GEPHI_DIVERGING_SCALE, p)
+
+
+def bind_qualitative_colors(
+    categories: List[object],
+    allow_top4_aggregation: bool = False,
+    other_label: str = "其他項目合計",
+) -> Dict[str, str]:
+    """
+    Bind unordered categories to fixed qualitative colors in strict order (#ECA072, #5DBACD, #E89BB6, #8FBA88).
+    - Deduplicates categories in order of first appearance so repeated occurrences in data rows
+      never overwrite an already-bound category or inflate the unique category count.
+    - Maps missing/NA category markers ('NA', 'Null', None, '') to #D9D9D9 without consuming a slot.
+    - If unique valid categories > 4 and allow_top4_aggregation is False, raises ValueError to enforce
+      confirming expansion strategy with the user first.
+    - If allow_top4_aggregation is True, binds the first 4 unique categories to the 4 primary colors and
+      maps remaining categories (plus `other_label`) to #CBD5E1.
+    """
+    bound: Dict[str, str] = {}
+    unique_valid: List[str] = []
+    na_tokens = {"na", "n/a", "null", "none", "nan", ""}
+
+    for raw_cat in categories:
+        if raw_cat is None:
+            bound["NA"] = GEPHI_DISCRETE_NEUTRALS["na_missing"]
+            continue
+        cat = str(raw_cat).strip()
+        if cat.lower() in na_tokens:
+            bound[cat or "NA"] = GEPHI_DISCRETE_NEUTRALS["na_missing"]
+            continue
+        if cat == other_label:
+            bound[cat] = GEPHI_DISCRETE_NEUTRALS["other_aggregated"]
+            continue
+        if cat not in unique_valid:
+            unique_valid.append(cat)
+
+    if len(unique_valid) > 4 and not allow_top4_aggregation:
+        raise ValueError(
+            f"Unique category count ({len(unique_valid)}) exceeds the 4 locked qualitative colors. "
+            "Per color specification Rule 5 & 7.5, either confirm expansion mode with the user "
+            "or enable Smart 4+1 aggregation (allow_top4_aggregation=True)."
+        )
+
+    for idx, cat in enumerate(unique_valid):
+        if idx < 4:
+            bound[cat] = GEPHI_QUALITATIVE_HEX[idx]
+        else:
+            bound[cat] = GEPHI_DISCRETE_NEUTRALS["other_aggregated"]
+
+    if allow_top4_aggregation:
+        bound[other_label] = GEPHI_DISCRETE_NEUTRALS["other_aggregated"]
+    return bound
+
+
