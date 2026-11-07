@@ -55,8 +55,9 @@ from pdf_report_engine import (
     compile_html_to_pdf,    # (html_content_or_path, output_pdf_path, cleanup_temp_html=True) -> str (Auto-removes temp .html)
 )
 from verify_visual_outputs import (
-    render_pdf_to_pngs,        # (pdf_path, out_dir=None, dpi=180) -> List[str] (Generates _preview_<stem>_p01.png, ...)
-    cleanup_preview_artifacts, # (target_dir) -> List[str] (Removes _preview_*.png, _tmp_*.html, test_*.png)
+    render_pdf_to_pngs,          # (pdf_path, out_dir=None, dpi=180) -> List[str] (Generates _preview_<stem>_p01.png, ...)
+    cleanup_preview_artifacts,   # (target_dir) -> List[str] (Removes _preview_*.png, _tmp_*.html, test_*.png)
+    verify_medium_article_words, # (md_path_or_text, max_body_words=1000) -> dict (Separates body vs. `---` footer, checks <=1,000 words & Medium syntax)
 )
 ```
 
@@ -102,16 +103,16 @@ from verify_visual_outputs import (
 ### 2. 文末「原始官方資料來源與授權聲明」正確性鐵律 ＋ 字數分離計算規則（關鍵強制規範）
 - **水平分隔線隔離**：在文章正文第 7 步結尾後，必須以水平分隔線 `---` 隔開，附上精簡的 **「資料來源與授權聲明」** 附註區塊。
 - **內容正確性鐵律（100% 忠實呈現 CSV 原始公開資料集之官方資訊）**：
-  - 該區塊**必須 100% 忠實呈現該份 CSV 原始公開資料集的官方資訊**——直接從《資料說明書》第 1 章与第 5 章中提取標註為 **`【官方已說明】`** 的：
+  - 該區塊**必須 100% 忠實呈現該份 CSV 原始公開資料集的官方資訊**——直接從《資料說明書》第 1 章與第 5 章中提取標註為 **`【官方已說明】`** 的：
     1. **原始發布機關與資料集正式名稱**
-    2. **官方原始頁面網址（URL）与時間戳記（資料涵蓋期間、平臺更新日期、下載日期）**
+    2. **官方原始頁面網址（URL）與時間戳記（資料涵蓋期間、平臺更新日期、下載日期）**
     3. **官方授權條款名稱與連結**（如 `政府資料開放授權條款－第 1 版` 或 `CC BY 4.0`）
   - **絕對禁止將使用者自己生成的「資料說明書」寫成資料來源！**
   - **防捏造鐵律**：若《資料說明書》第 5 章之授權條款標註為 `【未查得】` 或 `【不適用】`，則僅如實列出已確認的官方資料來源機關、資料集名稱與原始網址，**絕不自行捏造授權條款**。
 - **字數分離計算規則（不列入正文 1,000 字計算內）**：
   - 此 `---` 下方的「資料來源與授權聲明」附註區塊，**不計入正文 1,000 字額度內**。
   - `---` 上方的**正文（含主副標題、內文段落、引言塊與圖說）嚴格控制在 `650～900` 繁體中文字（絕對 `<= 1,000` 字）**。
-  - 在文稿最底部自動輸出**雙軌字數統計**：
+  - 完稿後可調用 `verify_visual_outputs.verify_medium_article_words("02_medium_article.md")`（或執行 `python scripts/verify_visual_outputs.py --verify-medium 02_medium_article.md`）自動檢驗，並在文稿最底部自動輸出**雙軌字數統計**：
     > `📊 字數統計：正文共 XXX 字（不含文末資料來源與授權聲明，符合 <= 1,000 字規範；若含文末聲明共 YYY 字）。`
 
 ### 3. GitHub 單一檔案協作紀錄自動推送與課堂 Google Doc 繳交懶人區塊

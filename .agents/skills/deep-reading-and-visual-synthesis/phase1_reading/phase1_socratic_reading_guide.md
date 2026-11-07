@@ -4,7 +4,7 @@
 > **階段鐵律**：
 > 1. 只要使用者未明確要求「跳過第一階段／直接生成」，**絕對禁止**在使用者表達個人初步觀點前輸出全文罐頭摘要、重點條列或最終圖表！
 > 2. 第一階段互動期間，**嚴禁提前讀取 `../phase2_output/`**。
-> 3. 若使用者**明確下令跳過引導直接生成**，先將原文存入 `00_source_article.md`，直接切換讀取 [`../phase2_output/phase2_output_router.md`](../phase2_output/phase2_output_router.md)。
+> 3. 若使用者**明確下令跳過引導直接生成**，先將原文存入 `00_source_article.md`（若含原始 CSV 則原封不動存入 `data/<原檔名>.csv`），直接切換讀取 [`../phase2_output/phase2_output_router.md`](../phase2_output/phase2_output_router.md)。
 > 4. **靈感暫存守則**：互動中若產生任何技能優化靈感，嚴格遵循 [`../SKILL.md`](../SKILL.md) 第三節規定，僅寫入 `reading_sessions/_pending_skill_inspirations.md` 暫存，嚴禁中斷閱讀流程或私自改檔。
 
 ---
@@ -137,7 +137,7 @@
      - 原始 CSV 檔案**原封不動**存入 `reading_sessions/<YYYYMMDD_主題簡稱>/data/<原檔名>.csv`（嚴守規範第 5 節「保留原始 CSV 檔案絕對不改動」）。
      - 《資料說明書》存入 `reading_sessions/<YYYYMMDD_主題簡稱>/00_source_article.md`（與輸入模式 2 完全相容）。
 2. **零 CSV Token 浪費鐵律 ＋ 繼承說明書第 4 節防呆分流 ＋ 兩段式安全轉型（Two-Stage Safe Casting）**：
-   - **零 CSV Token 浪費鐵律**：**嚴禁直接以 LLM 上下文讀取大型 CSV 原文消耗 Token**，一律透過背景 Python (`pandas`) 腳本進行讀取與統計掃描，僅輸出 **200～300 字的精確統計摘要**供對話使用。
+   - **零 CSV Token 浪費鐵律**：**嚴禁直接以 LLM 上下文讀取大型 CSV 原文消耗 Token**，一律透過背景 Python 腳本（直接黑盒呼叫 `hcl_color_engine.load_and_split_csv(csv_path, numeric_cols=...)`，自動支援 `pandas` 或內建 `csv`+`numpy` 零外部依賴 `_LiteDataFrame`）進行讀取與統計掃描，僅輸出 **200～300 字的精確統計摘要**供對話使用。
    - **繼承說明書第 4 節防呆前處理**：沿用嚴格編碼探測（`utf-8-sig` $\rightarrow$ `utf-8` $\rightarrow$ `cp950` $\rightarrow$ `big5`）、欄名首尾空白與內嵌 BOM（`\ufeff`）清理、以及初始 `dtype=str` 字串保護（防止行政區／機構代碼前置零被吞掉）。
    - **兩段式安全轉型（修補原稽核腳本遇合法空值即報錯中止的陷阱）**：
      1. **第一段（合法缺漏顯式映射）**：先對照《資料說明書》第 4 章資料字典之「可否為空（官方規格）」與「本檔觀察缺漏」，將已知合法缺漏符號（如空字串 `''`、`'-'`、`'—'`、`'...'`、`'N/A'`、`'NA'`、`'＊'`、`'*'`）顯式映射為 `np.nan`（同步統計 `NA` 筆數，並供後續圖表統一標記為 **`#D9D9D9`**）。
