@@ -116,12 +116,13 @@ from verify_visual_outputs import (
 
 ### 3. GitHub 單一檔案協作紀錄自動推送與課堂 Google Doc 繳交懶人區塊
 - 將 Phase 1 從「廣角候選切角選單 $\rightarrow$ 互動延伸討論 $\rightarrow$ 漏斗收束定案」的完整討論過程詳實寫入 `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`。
-- 自動執行 `git add`、`git commit` 與 `git push` 上傳至公開 GitHub 倉庫（`https://github.com/s12161144/deep-reading-and-visual-synthesis`），並在回覆結尾直接印出符合課堂 Google Doc（[每週一圖：作業範例](https://docs.google.com/document/d/1ZQUB9kwHqW162xjAFyPbVNEs-kJQteMvxohhGVhCad0/edit?usp=sharing)）格式的一鍵複製繳交區塊（含該次 `01_phase1_socratic_log.md` 的 **GitHub 單一檔案 `blob/main/...` 完整網址**）：
+- 自動執行 `git add`、`git commit` 與 `git push` 上傳至公開 GitHub 倉庫（`https://github.com/s12161144/deep-reading-and-visual-synthesis`，或依 `git remote get-url origin` 實際綁定之公開倉庫網址如 `https://github.com/markyang20040112-source/deep-reading-and-visual-synthesis`），並在回覆結尾直接印出符合課堂 Google Doc（[每週一圖：作業範例](https://docs.google.com/document/d/1ZQUB9kwHqW162xjAFyPbVNEs-kJQteMvxohhGVhCad0/edit?usp=sharing)）格式的一鍵複製繳交區塊（含該次 `01_phase1_socratic_log.md` 的 **GitHub 單一檔案 `blob/main/...` 完整網址**）：
   ```text
   {學號} {姓名}
   {您的 medium.com 報導連結}
   {您在 Gemini 網頁版製作資料說明書的分享連結 (AI 對話 1)}
   https://github.com/s12161144/deep-reading-and-visual-synthesis/blob/main/reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md
   ```
+
 
 
