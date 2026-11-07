@@ -226,19 +226,9 @@ def draw_chart_01_hook(datasets, out_path):
     for d in industries:
         if d["is_other"]:
             left_colors.append(gray_other)
-            left_edges.append("#94A3B8")
+            left_edges.append("#64748B")
             right_colors.append("#E2E8F0")
-            right_edges.append("#94A3B8")
-        elif d["key"] == "生物技術":
-            left_colors.append(orange_deep)
-            left_edges.append(orange_dark)
-            right_colors.append(blue_main)
-            right_edges.append(blue_deep)
-        elif d["key"] == "積體電路":
-            left_colors.append(orange_main)
-            left_edges.append(orange_deep)
-            right_colors.append(blue_deep)
-            right_edges.append(blue_dark)
+            right_edges.append("#64748B")
         else:
             left_colors.append(orange_main)
             left_edges.append(orange_deep)
@@ -249,7 +239,7 @@ def draw_chart_01_hook(datasets, out_path):
     rev_pcts = [d["rev_pct"] for d in industries]
 
     # 為焦點「生物技術」繪製極淡暖杏背景高亮帶 (#FFF3EA 零 Alpha 節點色)
-    ax.axvspan(-0.48, 0.48, color=GEPHI_LIGHT_BADGE_TINTS[0], zorder=0)
+    ax.axvspan(-0.54, 0.54, color=GEPHI_LIGHT_BADGE_TINTS[0], zorder=0)
     ax.text(
         0.0, 95.5, "★ 全區家數雙料冠軍",
         ha="center", va="center", fontsize=10.2, fontweight="bold", color=orange_dark,
@@ -259,12 +249,12 @@ def draw_chart_01_hook(datasets, out_path):
 
     ax.bar(
         x - width / 2, reg_pcts, width=width,
-        color=left_colors, edgecolor=left_edges, linewidth=1.4, zorder=3,
+        color=left_colors, edgecolor=left_edges, linewidth=1.45, zorder=3,
         label="已入區登記廠商家數占比（%，全國共 984 家）"
     )
     ax.bar(
         x + width / 2, rev_pcts, width=width,
-        color=right_colors, edgecolor=right_edges, linewidth=1.4, zorder=3,
+        color=right_colors, edgecolor=right_edges, linewidth=1.45, zorder=3,
         label="全年營業額占比（%，全國共 58,010.23 億元）"
     )
 
@@ -341,8 +331,8 @@ def draw_chart_01_hook(datasets, out_path):
         "  處臨床與高階研發期\n"
         "  (竹科進口年增+28.2%)",
         xy=(x_bio_l, 33.8), xytext=(0.0, 62.5),
-        ha="center", va="center", fontsize=9.3, color="#1E293B", linespacing=1.35,
-        bbox=dict(boxstyle="round,pad=0.42", facecolor="#FFFFFF", edgecolor=orange_deep, linewidth=1.5),
+        ha="center", va="center", fontsize=9.1, color="#1E293B", linespacing=1.34,
+        bbox=dict(boxstyle="round,pad=0.38", facecolor="#FFFFFF", edgecolor=orange_deep, linewidth=1.5),
         arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=0.0", color=orange_deep, lw=1.6),
         zorder=6
     )
@@ -413,7 +403,7 @@ def draw_chart_01_hook(datasets, out_path):
 
     footnote_text = (
         "資料來源：國家科學及技術委員會《國家科學及技術委員會科學園區產業類別及家數統計》(政府資料開放平臺 dataset/7596) 及《國家科學及技術委員會科學園區產業營業額統計表》(dataset/7597)。\n"
-        "時間戳記：營業額涵蓋期間為 2025 年（民國 114 年）全年（平臺更新：2026-06-22）；廠商家數為最新存量快照（平臺更新：2026-09-29）；本次檢視與分析日期：2026-11-07。\n"
+        "三重時間戳記：營業額涵蓋期間為 2025 年（民國 114 年）全年（平臺更新：2026-06-22）；廠商家數為最新累計存量快照（平臺更新：2026-09-29）；資料下載日期：未查得（本次檢視與分析日期：2026-11-07）。\n"
         "統計樣本與雙重消歧說明：全數依剔除園區合計與全區總計列後之純子園區明細重算（家數明細 N = 17 子園區，已入區總計 984 家、有效核准總計 1,181 家；營業額明細 N = 15 子園區，總計 58,010.23 億元；\n"
         "最右側【原表其他】為官方原表未歸入六大核心產業之園區事業合計：已入區 42 家占 4.27%、營業額 294.39 億元占 0.51%，以中性淺灰 #CBD5E1 獨立標示）。授權條款：政府資料開放授權條款－第 1 版。"
     )
@@ -516,11 +506,17 @@ def draw_chart_02_drilldown(datasets, out_path):
     )
 
     despine_axes(ax, grid_axis="x", grid_color="#CBD5E1", grid_linestyle="--", grid_alpha=0.65)
-    ax.set_xlim(0, 15.8)
+    ax.set_xlim(0, 14.8)
     ax.set_ylim(-0.65, len(merged) - 0.25)
-    ax.set_xlabel("博士學歷從業員工占比（% = 博士人數 ÷ 該子園區從業員工總人數）", fontsize=11.5, fontweight="bold", color="#1E293B", labelpad=8)
     ax.set_xticks([0, 1, 2, 3, 4, 5, 6, 7])
     ax.set_xticklabels(["0%", "1%", "2%", "3%", "4%", "5%", "6%", "7%"], fontsize=10.5, color="#334155")
+    # 讓底部 X 軸實線精準收束於數據量尺區間 (0% ~ 7.5%)，不延伸至右側文字解說區
+    ax.spines["bottom"].set_bounds(0, 7.5)
+    ax.text(
+        3.75, -1.65,
+        "博士學歷從業員工占比（% = 博士人數 ÷ 該子園區從業員工總人數）",
+        fontsize=11.2, fontweight="bold", color="#1E293B", ha="center", va="top", clip_on=False
+    )
 
     ax.set_yticks(y)
     y_labels = [r["label"] for r in merged]
@@ -557,7 +553,7 @@ def draw_chart_02_drilldown(datasets, out_path):
             ax.text(
                 0.28, y[idx],
                 f"NA（0 / 0 人）  {role_txt}",
-                ha="left", va="center", fontsize=9.2, color="#64748B", fontweight="normal",
+                ha="left", va="center", fontsize=9.15, color="#64748B", fontweight="normal",
                 bbox=dict(boxstyle="square,pad=0.06", facecolor="#FFFFFF", edgecolor="none"),
                 zorder=5
             )
@@ -565,7 +561,7 @@ def draw_chart_02_drilldown(datasets, out_path):
             is_top2 = val >= 6.0
             is_fab = lbl in ("南科・臺南園區", "中科・台中園區")
             val_str = f"{val:.2f}%（{phd_n:,} / {tot_n:,}人）"
-            text_x = float(val) + 0.14
+            text_x = float(val) + 0.13
 
             # 對跨越 x=1.99% 基準虛線的文字加上純白微底襯，防止虛線穿字
             txt_bg = "#EBF7F9" if is_top2 else "#FFFFFF"
@@ -573,16 +569,16 @@ def draw_chart_02_drilldown(datasets, out_path):
                 text_x, y[idx],
                 f"{val_str}  {role_txt}",
                 ha="left", va="center",
-                fontsize=9.6 if (is_top2 or is_fab) else 9.15,
+                fontsize=9.45 if (is_top2 or is_fab) else 9.05,
                 fontweight="bold" if (is_top2 or is_fab) else "normal",
                 color="#0E5B6B" if is_top2 else ("#97481B" if is_fab else "#1E293B"),
                 bbox=dict(boxstyle="square,pad=0.06", facecolor=txt_bg, edgecolor="none"),
                 zorder=5
             )
 
-    # 右下角空白區（x=10.05 ~ 15.6, y=0.3 ~ 5.3，此處各列文字最右僅到 x=9.5）放置「雙腦分工」科普解讀卡
+    # 右下角空白區放置「雙腦分工」科普解讀卡
     ax.text(
-        9.95, 2.55,
+        9.15, 2.55,
         "★ 科學園區「雙腦分工」科普解讀：\n"
         "1.【高純度研發大腦】（中興 6.99%、新竹生醫 6.85%）\n"
         "   • 博士密度達全國均值 (1.99%) 的 3.5 倍、臺南園區 7.7 倍！\n"
@@ -591,8 +587,8 @@ def draw_chart_02_drilldown(datasets, out_path):
         "2.【巨型先進量產基地】（臺南 0.90%、台中 0.72%）\n"
         "   • 兩大園區撐起全國 64.5% 產值（合計逾 3.74 兆元），\n"
         "     且台中 (115.4億) 與臺南 (113.0億) 亦包辦生技產值冠亞軍！",
-        fontsize=9.25, color="#0F172A", ha="left", va="center", linespacing=1.35,
-        bbox=dict(boxstyle="round,pad=0.48", facecolor="#FFFFFF", edgecolor="#2C8B9F", linewidth=1.5),
+        fontsize=9.15, color="#0F172A", ha="left", va="center", linespacing=1.35,
+        bbox=dict(boxstyle="round,pad=0.46", facecolor="#FFFFFF", edgecolor="#2C8B9F", linewidth=1.5),
         zorder=6
     )
 
@@ -615,7 +611,7 @@ def draw_chart_02_drilldown(datasets, out_path):
 
     footnote_text = (
         "資料來源：國家科學及技術委員會《國家科學及技術委員會科學園區從業員工數統計》(政府資料開放平臺 dataset/7599)、《科學園區產業營業額統計表》(dataset/7597) 及《科學園區產業類別及家數統計》(dataset/7596)。\n"
-        "時間戳記：從業員工數與廠商家數平臺更新日期為 2026-09-29（在職存量快照）；營業額涵蓋期間為 2025 年（民國 114 年）全年（平臺更新：2026-06-22）；本次檢視與分析日期：2026-11-07。\n"
+        "三重時間戳記：從業員工數與廠商家數為最新在職／存量快照（平臺更新：2026-09-29）；營業額涵蓋期間為 2025 年（民國 114 年）全年（平臺更新：2026-06-22）；資料下載日期：未查得（本次檢視與分析日期：2026-11-07）。\n"
         "統計樣本與前處理說明：依剔除合計／總計列後之純子園區明細重算（員工數與家數明細 N = 17 子園區，其中 16 處有在職人員［Min = 0.00% 橋頭、Max = 6.99% 中興、Median = 0.80%］，屏東園區總人數為 0 故博士占比為 NA 缺漏，\n"
         "依規範以 #D9D9D9 標記；嘉義與屏東園區為新設子園區，尚未列入 2025 年營業額統計表之 15 個子園區中）。注意：官方定義從業員工數含園區事業、育成中心與研究機構人員，不含營造廠或承攬商僱用人員。"
     )
