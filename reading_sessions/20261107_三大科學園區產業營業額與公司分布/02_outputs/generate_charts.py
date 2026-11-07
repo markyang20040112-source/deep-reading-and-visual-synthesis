@@ -205,11 +205,11 @@ def draw_chart_01_hook(datasets, out_path):
         d["app_pct"] = d["app_cnt"] / total_app * 100.0
         d["rev_pct"] = d["rev_val"] / total_rev * 100.0
 
-    # 建立單面板畫布 (14.2" x 8.6", 300 DPI) —— 底部說明精簡後釋放垂直空間，擴大主體繪圖區域
+    # 建立單面板畫布 (14.2" x 8.6", 300 DPI) —— 底部邊界預留足夠緩衝空間，杜絕標籤與底註重疊
     fig, ax = plt.subplots(figsize=(14.2, 8.6), dpi=300)
     fig.patch.set_facecolor("#F8FAFC")
     ax.set_facecolor("#FFFFFF")
-    plt.subplots_adjust(left=0.068, right=0.965, top=0.835, bottom=0.155)
+    plt.subplots_adjust(left=0.068, right=0.965, top=0.835, bottom=0.17)
 
     x = np.arange(len(industries))
     width = 0.35
@@ -406,8 +406,8 @@ def draw_chart_01_hook(datasets, out_path):
         "　　　　　2. 國家科學及技術委員會《科學園區產業營業額統計表》｜官方資料集網址：https://data.gov.tw/dataset/7597 ｜ 資料涵蓋期間：2025 年（民國 114 年）全年"
     )
     fig.text(
-        0.04, 0.018, footnote_text,
-        fontsize=9.2, color="#475569", ha="left", va="bottom", linespacing=1.36
+        0.04, 0.015, footnote_text,
+        fontsize=8.8, color="#475569", ha="left", va="bottom", linespacing=1.28
     )
 
     fig.savefig(out_path, dpi=300)
@@ -473,8 +473,8 @@ def draw_chart_02_drilldown(datasets, out_path):
     fig, ax = plt.subplots(figsize=(14.8, 9.8), dpi=300)
     fig.patch.set_facecolor("#F8FAFC")
     ax.set_facecolor("#FFFFFF")
-    # 底部說明精簡後釋放垂直空間，擴大主體長條圖與文字解說高度 (bottom 0.155 -> 0.105, top 0.79 -> 0.815)
-    plt.subplots_adjust(left=0.14, right=0.965, top=0.815, bottom=0.105)
+    # 底部邊界設為 0.145，預留足夠呼吸空間，杜絕 X 軸標籤與文末底註重疊
+    plt.subplots_adjust(left=0.14, right=0.965, top=0.815, bottom=0.145)
 
     y = np.arange(len(merged))
     bar_height = 0.64
@@ -512,9 +512,10 @@ def draw_chart_02_drilldown(datasets, out_path):
     # 讓底部 X 軸實線精準收束於數據量尺區間 (0% ~ 7.5%)，不延伸至右側文字解說區
     ax.spines["bottom"].set_bounds(0, 7.5)
     ax.text(
-        3.75, -1.65,
+        3.75 / 14.8, -0.072,
         "博士學歷從業員工占比（% = 博士人數 ÷ 該子園區從業員工總人數）",
-        fontsize=11.2, fontweight="bold", color="#1E293B", ha="center", va="top", clip_on=False
+        transform=ax.transAxes,
+        fontsize=10.8, fontweight="bold", color="#1E293B", ha="center", va="top", clip_on=False
     )
 
     ax.set_yticks(y)
@@ -614,8 +615,8 @@ def draw_chart_02_drilldown(datasets, out_path):
         "　　　　　3. 國家科學及技術委員會《科學園區產業類別及家數統計》｜官方資料集網址：https://data.gov.tw/dataset/7596 ｜ 資料涵蓋期間：截至最新統計基準日之累計存量快照"
     )
     fig.text(
-        0.04, 0.015, footnote_text,
-        fontsize=8.8, color="#475569", ha="left", va="bottom", linespacing=1.35
+        0.04, 0.014, footnote_text,
+        fontsize=8.2, color="#475569", ha="left", va="bottom", linespacing=1.25
     )
 
     fig.savefig(out_path, dpi=300)
