@@ -205,11 +205,11 @@ def draw_chart_01_hook(datasets, out_path):
         d["app_pct"] = d["app_cnt"] / total_app * 100.0
         d["rev_pct"] = d["rev_val"] / total_rev * 100.0
 
-    # 建立單面板畫布 (14.2" x 8.6", 300 DPI)
+    # 建立單面板畫布 (14.2" x 8.6", 300 DPI) —— 底部說明精簡後釋放垂直空間，擴大主體繪圖區域
     fig, ax = plt.subplots(figsize=(14.2, 8.6), dpi=300)
     fig.patch.set_facecolor("#F8FAFC")
     ax.set_facecolor("#FFFFFF")
-    plt.subplots_adjust(left=0.068, right=0.965, top=0.80, bottom=0.22)
+    plt.subplots_adjust(left=0.068, right=0.965, top=0.835, bottom=0.155)
 
     x = np.arange(len(industries))
     width = 0.35
@@ -402,14 +402,12 @@ def draw_chart_01_hook(datasets, out_path):
     )
 
     footnote_text = (
-        "資料來源：國家科學及技術委員會《國家科學及技術委員會科學園區產業類別及家數統計》(政府資料開放平臺 dataset/7596) 及《國家科學及技術委員會科學園區產業營業額統計表》(dataset/7597)。\n"
-        "三重時間戳記：營業額涵蓋期間為 2025 年（民國 114 年）全年（平臺更新：2026-06-22）；廠商家數為最新累計存量快照（平臺更新：2026-09-29）；資料下載日期：未查得（本次檢視與分析日期：2026-11-07）。\n"
-        "統計樣本與雙重消歧說明：全數依剔除園區合計與全區總計列後之純子園區明細重算（家數明細 N = 17 子園區，已入區總計 984 家、有效核准總計 1,181 家；營業額明細 N = 15 子園區，總計 58,010.23 億元；\n"
-        "最右側【原表其他】為官方原表未歸入六大核心產業之園區事業合計：已入區 42 家占 4.27%、營業額 294.39 億元占 0.51%，以中性淺灰 #CBD5E1 獨立標示）。授權條款：政府資料開放授權條款－第 1 版。"
+        "資料來源：1. 國家科學及技術委員會《科學園區產業類別及家數統計》｜官方資料集網址：https://data.gov.tw/dataset/7596 ｜ 資料涵蓋期間：截至最新統計基準日之累計存量快照\n"
+        "　　　　　2. 國家科學及技術委員會《科學園區產業營業額統計表》｜官方資料集網址：https://data.gov.tw/dataset/7597 ｜ 資料涵蓋期間：2025 年（民國 114 年）全年"
     )
     fig.text(
-        0.04, 0.015, footnote_text,
-        fontsize=8.8, color="#475569", ha="left", va="bottom", linespacing=1.32
+        0.04, 0.018, footnote_text,
+        fontsize=9.2, color="#475569", ha="left", va="bottom", linespacing=1.36
     )
 
     fig.savefig(out_path, dpi=300)
@@ -475,7 +473,8 @@ def draw_chart_02_drilldown(datasets, out_path):
     fig, ax = plt.subplots(figsize=(14.8, 9.8), dpi=300)
     fig.patch.set_facecolor("#F8FAFC")
     ax.set_facecolor("#FFFFFF")
-    plt.subplots_adjust(left=0.14, right=0.965, top=0.79, bottom=0.155)
+    # 底部說明精簡後釋放垂直空間，擴大主體長條圖與文字解說高度 (bottom 0.155 -> 0.105, top 0.79 -> 0.815)
+    plt.subplots_adjust(left=0.14, right=0.965, top=0.815, bottom=0.105)
 
     y = np.arange(len(merged))
     bar_height = 0.64
@@ -593,31 +592,30 @@ def draw_chart_02_drilldown(datasets, out_path):
     )
 
     fig.text(
-        0.04, 0.848,
+        0.04, 0.852,
         "■ 色階編碼（Gephi · pastel 霧靄藍 5 階 CIELAB 循序插值）：極淺藍 #EBF7F9 (0.00% 最低) --> 基準青藍 #5DBACD --> 極深墨青 #0E5B6B (6.99% 最高) ｜ ■ 中性淺灰 #D9D9D9：分母為 0 之 NA 缺漏（屏東園區）",
         fontsize=9.15, fontweight="bold", color="#2C8B9F", ha="left", va="center"
     )
 
     fig.text(
-        0.04, 0.94,
+        0.04, 0.942,
         "產值小卻是最高純度研發大腦！中興與新竹生醫園區博士密度近 7% 稱霸全國",
         fontsize=17.5, fontweight="bold", color="#0F172A", ha="left", va="top"
     )
     fig.text(
-        0.04, 0.892,
+        0.04, 0.895,
         "三大科學園區轄下 17 個子園區「博士研發人才占比（%）」排行與產值結構交叉對照 —— 揭開「實驗室研發聚落 vs. 晶圓量產巨艦」的人才密度反差",
         fontsize=11.5, fontweight="normal", color="#475569", ha="left", va="top"
     )
 
     footnote_text = (
-        "資料來源：國家科學及技術委員會《國家科學及技術委員會科學園區從業員工數統計》(政府資料開放平臺 dataset/7599)、《科學園區產業營業額統計表》(dataset/7597) 及《科學園區產業類別及家數統計》(dataset/7596)。\n"
-        "三重時間戳記：從業員工數與廠商家數為最新在職／存量快照（平臺更新：2026-09-29）；營業額涵蓋期間為 2025 年（民國 114 年）全年（平臺更新：2026-06-22）；資料下載日期：未查得（本次檢視與分析日期：2026-11-07）。\n"
-        "統計樣本與前處理說明：依剔除合計／總計列後之純子園區明細重算（員工數與家數明細 N = 17 子園區，其中 16 處有在職人員［Min = 0.00% 橋頭、Max = 6.99% 中興、Median = 0.80%］，屏東園區總人數為 0 故博士占比為 NA 缺漏，\n"
-        "依規範以 #D9D9D9 標記；嘉義與屏東園區為新設子園區，尚未列入 2025 年營業額統計表之 15 個子園區中）。注意：官方定義從業員工數含園區事業、育成中心與研究機構人員，不含營造廠或承攬商僱用人員。"
+        "資料來源：1. 國家科學及技術委員會《科學園區從業員工數統計》｜官方資料集網址：https://data.gov.tw/dataset/7599 ｜ 資料涵蓋期間：截至最新統計基準日之在職從業員工快照\n"
+        "　　　　　2. 國家科學及技術委員會《科學園區產業營業額統計表》｜官方資料集網址：https://data.gov.tw/dataset/7597 ｜ 資料涵蓋期間：2025 年（民國 114 年）全年\n"
+        "　　　　　3. 國家科學及技術委員會《科學園區產業類別及家數統計》｜官方資料集網址：https://data.gov.tw/dataset/7596 ｜ 資料涵蓋期間：截至最新統計基準日之累計存量快照"
     )
     fig.text(
-        0.04, 0.012, footnote_text,
-        fontsize=8.7, color="#475569", ha="left", va="bottom", linespacing=1.32
+        0.04, 0.015, footnote_text,
+        fontsize=8.8, color="#475569", ha="left", va="bottom", linespacing=1.35
     )
 
     fig.savefig(out_path, dpi=300)
