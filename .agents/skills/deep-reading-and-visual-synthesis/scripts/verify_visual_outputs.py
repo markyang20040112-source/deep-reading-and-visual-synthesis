@@ -301,6 +301,98 @@ def cleanup_preview_artifacts(target_dir: str) -> List[str]:
     return removed
 
 
+def _count_cjk_and_words(markdown_segment: str) -> int:
+    """
+    Count words in a Traditional Chinese + English Markdown segment (matching Google Docs / MS Word convention):
+    - Replaces `![alt](url)` with `alt` (preserving image captions while stripping file paths).
+    - Replaces `[text](url)` with `text` (preserving link text while stripping raw URLs).
+    - Counts each CJK character (and CJK punctuation) + each contiguous ASCII alphanumeric/number token.
+    """
+    import re
+    text = re.sub(r"!\[([^\]]*)\]\([^)]*\)", r"\1", markdown_segment)
+    text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"https?://\S+", "", text)
+    # Strip markdown structural markers (#, >, *, `, ~, -, |)
+    text = re.sub(r"(?m)^\s*[#>*-]+\s*", "", text)
+    text = re.sub(r"[*_`~]", "", text)
+    cjk_chars = re.findall(r"[\u4e00-\u9fff\u3400-\u4dbf\u3000-\u303f\uff00-\uffef]", text)
+    ascii_words = re.findall(r"[A-Za-z0-9]+(?:[.\-%/][A-Za-z0-9]+)*", text)
+    return len(cjk_chars) + len(ascii_words)
+
+
+def verify_medium_article_words(
+    md_path_or_text: str,
+    max_body_words: int = 1000,
+) -> dict:
+    """
+    Verify a Format B Genre 5 Medium Data Storytelling Column (`02_medium_article.md`):
+    1. Splits body text from the trailing `---` official source & license declaration block.
+    2. Computes `body_words` (excluding the `---` source/license block) and `total_words` (including it).
+    3. Verifies `body_words <= max_body_words` (<= 1,000 words).
+    4. Verifies 100% Medium-native syntax (zero `<div`, `.card-grid-2`, `<table`, `<figure`, or Markdown tables).
+    5. Verifies chart count is 1 or 2 (`![...](...)`).
+    6. Verifies the source declaration does NOT falsely cite `資料說明書` as the official data source.
+    Returns a dict with `passed`, `body_words`, `footer_words`, `total_words`, `chart_count`, `issues`, and `stats_line`.
+    """
+    import re
+    p = Path(md_path_or_text)
+    if p.exists() and p.is_file():
+        raw_text = p.read_text(encoding="utf-8")
+    else:
+        raw_text = str(md_path_or_text)
+
+    # Remove existing word-count summary line so re-runs are idempotent
+    cleaned_text = re.sub(r"(?m)^>?\s*📊\s*字數統計：.*$", "", raw_text).strip()
+
+    # Split at the horizontal rule `---` separating body from official source & license block
+    hr_parts = re.split(r"(?m)^\s*---\s*$", cleaned_text)
+    if len(hr_parts) >= 2:
+        body_md = "\n---\n".join(hr_parts[:-1]).strip()
+        footer_md = hr_parts[-1].strip()
+        has_hr_footer = True
+    else:
+        body_md = cleaned_text
+        footer_md = ""
+        has_hr_footer = False
+
+    body_words = _count_cjk_and_words(body_md)
+    footer_words = _count_cjk_and_words(footer_md)
+    total_words = body_words + footer_words
+
+    issues: List[str] = []
+    if not has_hr_footer:
+        issues.append("缺少文末 `---` 水平分隔線與「資料來源與授權聲明」附註區塊。")
+    if body_words > max_body_words:
+        issues.append(f"正文字數 ({body_words} 字) 超過 Medium 專欄上限 ({max_body_words} 字)！")
+    if re.search(r"<(div|table|figure)\b|\.card-grid-2", cleaned_text, re.IGNORECASE):
+        issues.append("偵測到 Medium 不支援之自訂 HTML 標籤 (`<div>` / `<table>` / `<figure>` / `.card-grid-2`)。")
+    if re.search(r"(?m)^\s*\|.*\|.*\n\s*\|\s*[-:]+", body_md):
+        issues.append("偵測到 Medium 不支援之 Markdown 表格 (`|---|`)。")
+
+    charts = re.findall(r"!\[[^\]]*\]\([^)]+\)", body_md)
+    chart_count = len(charts)
+    if chart_count < 1 or chart_count > 2:
+        issues.append(f"圖表數量 ({chart_count} 張) 不符合『至少 1 張、至多 2 張』規定。")
+
+    if footer_md and re.search(r"(資料來源|數據來源|取自)\s*[：:]\s*[^\n]*資料說明書", footer_md):
+        issues.append("嚴禁將使用者自己生成的『資料說明書』寫成官方資料來源！必須填寫原始公開資料集之發布機關與名稱。")
+
+    status_str = f"符合 <= {max_body_words:,} 字規範" if body_words <= max_body_words else f"超過 <= {max_body_words:,} 字規範"
+    stats_line = (
+        f"📊 字數統計：正文共 {body_words} 字（不含文末資料來源與授權聲明，{status_str}；"
+        f"若含文末聲明共 {total_words} 字）。"
+    )
+    return {
+        "passed": len(issues) == 0,
+        "body_words": body_words,
+        "footer_words": footer_words,
+        "total_words": total_words,
+        "chart_count": chart_count,
+        "issues": issues,
+        "stats_line": stats_line,
+    }
+
+
 if __name__ == "__main__":
     import sys
     try:
@@ -308,9 +400,10 @@ if __name__ == "__main__":
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
-    parser = argparse.ArgumentParser(description="Render PDF/PPTX to temporary PNG previews and clean up `02_outputs/`.")
-    parser.add_argument("target", nargs="?", default=None, help="Optional positional path to .pdf/.pptx file or directory to clean up.")
+    parser = argparse.ArgumentParser(description="Render PDF/PPTX to temporary PNG previews, verify Medium articles, and clean up `02_outputs/`.")
+    parser.add_argument("target", nargs="?", default=None, help="Optional positional path to .pdf/.pptx/.md file or directory to clean up.")
     parser.add_argument("--input", "-i", type=str, default=None, help="Path to .pdf or .pptx file to render into preview PNGs.")
+    parser.add_argument("--verify-medium", "-m", type=str, default=None, help="Path to 02_medium_article.md to verify separated word count and Medium syntax.")
     parser.add_argument("--out-dir", "-o", type=str, default=None, help="Output directory for preview PNGs.")
     parser.add_argument("--dpi", type=int, default=180, help="DPI for PDF rasterization (default: 180).")
     parser.add_argument("--cleanup", "-c", nargs="?", const="__USE_TARGET__", default=None, help="Clean up temporary preview artifacts in target directory.")
@@ -318,6 +411,15 @@ if __name__ == "__main__":
 
     input_file = args.input
     cleanup_dir = None
+
+    if args.verify_medium:
+        report = verify_medium_article_words(args.verify_medium)
+        print(report["stats_line"])
+        if not report["passed"]:
+            for iss in report["issues"]:
+                print(f"[ISSUE] {iss}")
+            sys.exit(1)
+        sys.exit(0)
 
     if args.cleanup is not None:
         cleanup_dir = args.target if args.cleanup == "__USE_TARGET__" else args.cleanup
@@ -327,6 +429,13 @@ if __name__ == "__main__":
         t_path = Path(args.target).resolve()
         if t_path.is_dir():
             cleanup_dir = str(t_path)
+        elif t_path.suffix.lower() == ".md":
+            report = verify_medium_article_words(str(t_path))
+            print(report["stats_line"])
+            if not report["passed"]:
+                for iss in report["issues"]:
+                    print(f"[ISSUE] {iss}")
+                sys.exit(1)
         else:
             input_file = str(t_path)
 
@@ -345,4 +454,5 @@ if __name__ == "__main__":
     if cleanup_dir:
         deleted = cleanup_preview_artifacts(cleanup_dir)
         print(f"[CLEANUP] Removed {len(deleted)} temporary artifact(s) from {cleanup_dir}")
+
 

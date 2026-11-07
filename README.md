@@ -23,12 +23,12 @@ deep-reading-and-visual-synthesis/
 │   │   ├── quantitative_chart_spec.md                        # [特化格式 D：量化圖表] 鎖定版 Gephi·pastel 配色 SSOT、三層分流 assert、單面板跨檔接力與 hcl_color_engine.py API 契約
 │   │   └── data_dashboard_spec.md                            # [特化格式 E：數據儀表板] 動態圖表選型、自包含本地 CSS、gephi_palette.js API 契約與獨立 Git 網站發布規範
 │   └── scripts/                                              # 【底層黑盒渲染與驗證引擎 — 日常執行直接 import 呼叫，免讀原始碼】
-│       ├── hcl_color_engine.py                               # [Python 色彩引擎] CIELUV HCL 色彩空間、Gephi·pastel 色階、零透明度標籤底色與 CIELAB 插值
+│       ├── hcl_color_engine.py                               # [Python 色彩與分流引擎] Gephi·pastel 色階、0-Alpha 底色、CIELAB 插值與 CSV 三層分流 (load_and_split_csv)
 │       ├── gephi_palette.js                                  # [前端 JS 色彩引擎] 純 JS CIELAB 插值、類別色碼鎖定與 0-Alpha 標籤底色引擎 (UMD/Browser/Node)
 │       ├── generate_mindmap.py                               # [Format A 圖譜引擎] 出版級繁體中文知識圖譜渲染、避頭尾保護與 T1~T5 高階拓撲組件
 │       ├── pdf_report_engine.py                              # [Format B 報告引擎] A4 直向/橫向混合排版 CSS 生成器與 Playwright PDF 編譯引擎
 │       ├── pptx_slide_engine.py                              # [Format C 簡報引擎] 16:9 原生向量投影片組件、欄數自適應字級與版型防撞驗證引擎
-│       └── verify_visual_outputs.py                          # [視覺驗收與清理引擎] PDF/PPTX 自動轉 PNG 預覽檢驗與暫存中介檔一鍵清除工具
+│       └── verify_visual_outputs.py                          # [視覺驗收與清理引擎] PDF/PPTX 轉 PNG 預覽、Medium 專欄分離計字檢驗與暫存檔一鍵清除工具
 └── reading_sessions/                                         # 【閱讀專案與生成資產自動歸檔區】
     └── <YYYYMMDD_主題簡稱>/
         ├── data/<原檔名>.csv                                 # [原始數據層] 原始 CSV 檔案原封不動存檔（嚴守規範第 5 節絕對不改動原始檔）

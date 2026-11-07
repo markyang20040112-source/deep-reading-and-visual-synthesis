@@ -167,14 +167,26 @@
     );
   }
 
+  const KNOWN_NA_TOKENS = new Set([
+    'na', 'n/a', 'null', 'none', 'nan', '',
+    '-', '—', '--', '－', '...', '…', '＊', '*', '?', '？',
+    '無資料', '缺漏', '未公布'
+  ]);
+
+  const RESERVED_OTHER_TOKENS = new Set([
+    '其他', '其它', '未分類', '其他項', '其他類', '其他項目',
+    '其他項目合計', '其餘明細項目合計', '其餘明細與原表其他項合計',
+    'other', 'others', 'unclassified'
+  ]);
+
   function parseNumericOrNa(val) {
     if (val === null || val === undefined || typeof val === 'boolean') return null;
     if (typeof val === 'string') {
       const s = val.trim();
-      if (!s || ['na', 'n/a', 'null', 'none', 'nan', '-', '—'].includes(s.toLowerCase())) {
+      if (!s || KNOWN_NA_TOKENS.has(s.toLowerCase()) || KNOWN_NA_TOKENS.has(s)) {
         return null;
       }
-      const num = Number(s);
+      const num = Number(s.replace(/,/g, ''));
       return Number.isFinite(num) ? num : null;
     }
     const num = Number(val);
@@ -224,7 +236,7 @@
     const colorMap = {};
     const badgeTintMap = {};
     const uniqueValid = [];
-    const naTokens = new Set(['na', 'n/a', 'null', 'none', 'nan', '']);
+    const otherCategories = [];
 
     (categories || []).forEach(rawCat => {
       if (rawCat === null || rawCat === undefined) {
@@ -233,15 +245,19 @@
         return;
       }
       const cat = String(rawCat).trim();
-      if (naTokens.has(cat.toLowerCase())) {
+      const catLower = cat.toLowerCase();
+      if (KNOWN_NA_TOKENS.has(catLower) || KNOWN_NA_TOKENS.has(cat)) {
         const key = cat || 'NA';
         colorMap[key] = PALETTE.na;
         badgeTintMap[key] = '#F1F5F9';
         return;
       }
-      if (cat === otherLabel) {
+      if (cat === otherLabel || RESERVED_OTHER_TOKENS.has(cat) || RESERVED_OTHER_TOKENS.has(catLower)) {
         colorMap[cat] = PALETTE.other;
         badgeTintMap[cat] = '#F1F5F9';
+        if (cat !== otherLabel && !otherCategories.includes(cat)) {
+          otherCategories.push(cat);
+        }
         return;
       }
       if (!uniqueValid.includes(cat)) {
@@ -263,6 +279,9 @@
       } else {
         colorMap[cat] = PALETTE.other;
         badgeTintMap[cat] = '#F1F5F9';
+        if (!otherCategories.includes(cat)) {
+          otherCategories.push(cat);
+        }
       }
     });
 
@@ -275,7 +294,7 @@
       colorMap,
       badgeTintMap,
       top4Categories: uniqueValid.slice(0, 4),
-      otherCategories: uniqueValid.slice(4)
+      otherCategories
     };
   }
 

@@ -134,15 +134,16 @@ from hcl_color_engine import (
     GEPHI_DISCRETE_NEUTRALS,    # {"diverging_center": "#F5F6F7", "na_missing": "#D9D9D9", "other_aggregated": "#CBD5E1"}
     get_sequential_color,       # (value, v_min, v_max, scale="orange", discrete_steps=False) -> str (True CIELAB interpolation)
     get_diverging_color,        # (value, center=0.0, max_span=None, discrete_steps=False) -> str (Symmetric 9-node mapping)
-    bind_qualitative_colors,    # (categories, allow_top4_aggregation=False, other_label="其他項目合計") -> Dict[str, str]
+    bind_qualitative_colors,    # (categories, allow_top4_aggregation=False, other_label="其他項目合計") -> Dict[str, str] (Auto-maps '其他' to #CBD5E1)
     get_category_badge_tint,    # (cat_or_key, category_color_map=None) -> str (Returns #FFF3EA / #EBF7F9 / #FFF0F5 / #F1F7EE)
     despine_axes,               # (ax, grid_axis="y", grid_color="#CBD5E1", grid_linestyle="--", grid_alpha=0.65) -> None
     export_gephi_palette_js,    # (output_path) -> str (Copies standalone gephi_palette.js into a Format E web project)
+    load_and_split_csv,         # (csv_path, numeric_cols=None, label_cols=None, subtotal_keywords=None, other_keywords=None, known_na_tokens=None) -> (df_raw, df_detail, df_other, df_subtotal, stats_report)
 )
 ```
 
 1. **繪圖腳本防呆前處理、兩段式安全轉型與「標準化三層互斥分流」內嵌 `assert` 鐵律（Mandatory 3-Way Split & Safe Casting in Chart Scripts）**：
-   - 凡讀取 CSV 繪圖之 Python 腳本，開頭強制實作以下防呆工序：
+   - 凡讀取 CSV 繪圖之 Python 腳本，開頭強制實作以下防呆工序（可直接調用黑盒函數 `load_and_split_csv()` 或顯式內嵌）：
      1. **編碼與字串保護載入**：依序探測 `utf-8-sig` $\rightarrow$ `utf-8` $\rightarrow$ `cp950` $\rightarrow$ `big5`，初始以 `dtype=str` 讀取（保護行政區／機構代碼前置零），並清理欄名首尾空白與內嵌 `\ufeff` BOM。
      2. **兩段式安全轉型（Two-Stage Safe Casting）**：第一段先將《資料說明書》第 4 章記載之已知合法缺漏符號（如 `''`, `'-'`, `'—'`, `'...'`, `'N/A'`, `'NA'`, `'＊'`, `'*'`）顯式映射為 `np.nan`（統計 `NA` 筆數並於圖表標記為 `#D9D9D9`）；第二段對扣除已知缺漏後之數值字串（先清除千分位 `,`）執行嚴格數值轉型檢驗（若仍有未知非數值字元則報錯中止）。
      3. **三層互斥分流與 `assert` 檢核**：解析說明書第 2 章與第 4 節盤點之彙整列標籤，將 `df_raw` 強制拆解為三個互斥 DataFrame 並內嵌斷言：
