@@ -18,7 +18,7 @@ deep-reading-and-visual-synthesis/
 │   │   ├── phase2_output_router.md                           # [階段二總路由] 輸出分流總控台、「動態三軸視覺決策引擎」、「A2 無損分流擴展」與「Medium 專欄輕量路由」
 │   │   ├── visual_cognition_principles.md                    # [共通底層規範] 單畫布 4→2→3 vs 跨畫布擴展、由淺入深敘事、同步字級階梯總表與 HCL 色彩學
 │   │   ├── visual_diagram_matplotlib_spec.md                 # [特化格式 A：知識圖譜] 28"×18.5" 畫布、01/02/03+ 拆圖擴展、五大拓撲與 generate_mindmap.py API 契約
-│   │   ├── document_report_spec.md                           # [特化格式 B：深度報告與專欄] 五大體裁 (B1~B4 深度報告 + 文體5 Medium <=1,000字專欄) 與 pdf_report_engine.py API 契約
+│   │   ├── document_report_spec.md                           # [特化格式 B：深度報告與專欄] 五大體裁 (B1~B4 深度報告 + 文體5 Medium <=1,600字專欄) 與 pdf_report_engine.py API 契約
 │   │   ├── presentation_slide_spec.md                        # [特化格式 C：高階簡報] 三區架構、八大版型、2欄/3-4欄分級字級底線與 pptx_slide_engine.py API 契約
 │   │   ├── quantitative_chart_spec.md                        # [特化格式 D：量化圖表] 鎖定版 Gephi·pastel 配色 SSOT、三層分流 assert、單面板跨檔接力與 hcl_color_engine.py API 契約
 │   │   └── data_dashboard_spec.md                            # [特化格式 E：數據儀表板] 動態圖表選型、自包含本地 CSS、gephi_palette.js API 契約與獨立 Git 網站發布規範

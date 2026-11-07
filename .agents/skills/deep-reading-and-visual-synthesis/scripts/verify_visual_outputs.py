@@ -322,13 +322,13 @@ def _count_cjk_and_words(markdown_segment: str) -> int:
 
 def verify_medium_article_words(
     md_path_or_text: str,
-    max_body_words: int = 1000,
+    max_body_words: int = 1600,
 ) -> dict:
     """
     Verify a Format B Genre 5 Medium Data Storytelling Column (`02_medium_article.md`):
-    1. Splits body text from the trailing `---` official source & license declaration block.
-    2. Computes `body_words` (excluding the `---` source/license block) and `total_words` (including it).
-    3. Verifies `body_words <= max_body_words` (<= 1,000 words).
+    1. Splits body text from the trailing `---` official reference source block.
+    2. Computes `body_words` (excluding the `---` source block) and `total_words` (including it).
+    3. Verifies `body_words <= max_body_words` (<= 1,600 words).
     4. Verifies 100% Medium-native syntax (zero `<div`, `.card-grid-2`, `<table`, `<figure`, or Markdown tables).
     5. Verifies chart count is 1 or 2 (`![...](...)`).
     6. Verifies the source declaration does NOT falsely cite `資料說明書` as the official data source.
@@ -344,7 +344,7 @@ def verify_medium_article_words(
     # Remove existing word-count summary line so re-runs are idempotent
     cleaned_text = re.sub(r"(?m)^>?\s*📊\s*字數統計：.*$", "", raw_text).strip()
 
-    # Split at the horizontal rule `---` separating body from official source & license block
+    # Split at the horizontal rule `---` separating body from official source block
     hr_parts = re.split(r"(?m)^\s*---\s*$", cleaned_text)
     if len(hr_parts) >= 2:
         body_md = "\n---\n".join(hr_parts[:-1]).strip()
@@ -361,7 +361,7 @@ def verify_medium_article_words(
 
     issues: List[str] = []
     if not has_hr_footer:
-        issues.append("缺少文末 `---` 水平分隔線與「資料來源與授權聲明」附註區塊。")
+        issues.append("缺少文末 `---` 水平分隔線與「參考資料來源」附註區塊。")
     if body_words > max_body_words:
         issues.append(f"正文字數 ({body_words} 字) 超過 Medium 專欄上限 ({max_body_words} 字)！")
     if re.search(r"<(div|table|figure)\b|\.card-grid-2", cleaned_text, re.IGNORECASE):
@@ -379,8 +379,8 @@ def verify_medium_article_words(
 
     status_str = f"符合 <= {max_body_words:,} 字規範" if body_words <= max_body_words else f"超過 <= {max_body_words:,} 字規範"
     stats_line = (
-        f"📊 字數統計：正文共 {body_words} 字（不含文末資料來源與授權聲明，{status_str}；"
-        f"若含文末聲明共 {total_words} 字）。"
+        f"📊 字數統計：正文共 {body_words} 字（不含文末參考資料來源，{status_str}；"
+        f"若含文末來源共 {total_words} 字）。"
     )
     return {
         "passed": len(issues) == 0,

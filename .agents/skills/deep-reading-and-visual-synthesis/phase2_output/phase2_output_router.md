@@ -12,7 +12,7 @@
    - **【底層引擎黑盒呼叫鐵律（Black-Box Engine API Rule）】**：`scripts/*.py` 與 `scripts/*.js` 為已封裝完成之黑盒渲染引擎，其精簡函數簽名（10～15 行 API 契約）已直接記載於各對應 `phase2_output/*_spec.md` 規範檔中。**在正常執行流程中，AI 必須直接 `import` 並呼叫這些引擎，嚴禁對 `scripts/*.py` 原始碼執行 `read_file` / `view_file`（除非腳本執行拋出異常需要除錯）**，以極大化節省 Token 與注意力預算。
    - **必讀共用底層**：[`phase2_output/visual_cognition_principles.md`](visual_cognition_principles.md)
    - **Format A（知識圖譜 `.png`）**：讀取 [`phase2_output/visual_diagram_matplotlib_spec.md`](visual_diagram_matplotlib_spec.md) $\rightarrow$ 直接黑盒 `import` [`scripts/generate_mindmap.py`](../scripts/generate_mindmap.py)
-   - **Format B（結構化深度報告 `.md` + `.pdf` ／ 文體 5：Medium 數據敘事專欄 `.md`）**：讀取 [`phase2_output/document_report_spec.md`](document_report_spec.md) $\rightarrow$ 若為文體 1～4 深度報告則直接黑盒 `import` [`scripts/pdf_report_engine.py`](../scripts/pdf_report_engine.py)；**若為「文體 5：Medium 每週一圖數據敘事專欄（`<= 1,000` 字）」，則僅產出原生相容 `.md` 文稿，免除呼叫 `pdf_report_engine.py` 編譯 A4 PDF**
+   - **Format B（結構化深度報告 `.md` + `.pdf` ／ 文體 5：Medium 數據敘事專欄 `.md`）**：讀取 [`phase2_output/document_report_spec.md`](document_report_spec.md) $\rightarrow$ 若為文體 1～4 深度報告則直接黑盒 `import` [`scripts/pdf_report_engine.py`](../scripts/pdf_report_engine.py)；**若為「文體 5：Medium 每週一圖數據敘事專欄（`<= 1,600` 字）」，則僅產出原生相容 `.md` 文稿，免除呼叫 `pdf_report_engine.py` 編譯 A4 PDF**
    - **Format C（高階主管簡報 `.pptx`）**：讀取 [`phase2_output/presentation_slide_spec.md`](presentation_slide_spec.md) $\rightarrow$ 直接黑盒 `import` [`scripts/pptx_slide_engine.py`](../scripts/pptx_slide_engine.py)
    - **Format D（量化實證圖表 `.png`）**：讀取 [`phase2_output/quantitative_chart_spec.md`](quantitative_chart_spec.md) $\rightarrow$ 直接黑盒 `import` [`scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)
    - **Format E（數據儀表板 Web `.html`/`.css`/`.js` + 靜態全景圖 `.png`）**：讀取 [`phase2_output/data_dashboard_spec.md`](data_dashboard_spec.md) + [`phase2_output/quantitative_chart_spec.md`](quantitative_chart_spec.md) $\rightarrow$ 直接載入 [`scripts/gephi_palette.js`](../scripts/gephi_palette.js) 與 [`scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)（🔗 **雙向連動**：與 Format D 共用鎖定版 `Gephi · pastel` 配色設定集 SSOT，兩者共通部分若有改動須同步更新）
@@ -36,7 +36,7 @@
 | **B. 策略框架與商業管理**<br>*(Strategic / Management)* | 提出新管理模型、轉型路線或二元對立破局 | **雙軌對比匯流圖** 或 **4×2 階層組塊心智圖** | 1. **2×2 策略定位矩陣圖**<br>2. **多階段演進藍圖 / 閉環系統圖** | **Format B（文體 2：高階決策備忘錄）** + **Format C（簡報）** |
 | **C. 系統架構與工程方法**<br>*(System / Architecture)* | 聚焦技術堆疊、資料流向、演算法或治理管線 | **多層次雙腦/管線架構圖** | 1. **時序資料流 / 狀態轉換圖**<br>2. **失效模式與工程對策平行解剖圖** | **Format B（文體 3：方法論實踐藍圖）** + **Format C（簡報）** |
 | **D. 跨領域評論與長篇敘事**<br>*(Synthesis / Essay)* | 融合多學科視角、歷史演進與思維重構 | **核心脊椎 + 4 象限宏觀容器圖** | **跨領域類比結構映射對照圖** | **Format B（文體 1：深度綜合評論 或 文體 4：跨域知識卡片）** |
-| **E. Medium 每週一圖／輕量數據敘事專欄**<br>*(Medium Data Storytelling Column)* | 傳入 CSV 原始檔 ＋《資料說明書（Data Codebook）》，撰寫 `<= 1,000` 字、含 1～2 張統計圖之公開數據專欄 | **Format D 獨立單面板統計圖 1（`01_chart_hook.png`）**：暖杏蜜橘系（`#ECA072` / `orange`）呈現全局現象反差或偏態破題 | **Format D 獨立單面板統計圖 2（`02_chart_drilldown.png`，選配，總圖數限 1～2 張）**：霧靄青藍系（`#5DBACD` / `blue`）呈現結構拆解或交叉深挖（**禁止 `ncols=2` 並排子圖**） | **僅產出 Format D（1～2 張獨立單面板 `.png`）＋ Format B 文體 5（`02_medium_article.md` 短專欄）**；不產出 Format A / C / E，且**免除編譯 A4 PDF** |
+| **E. Medium 每週一圖／輕量數據敘事專欄**<br>*(Medium Data Storytelling Column)* | 傳入 CSV 原始檔 ＋《資料說明書（Data Codebook）》，撰寫 `<= 1,600` 字、含 1～2 張統計圖之公開數據專欄 | **Format D 獨立單面板統計圖 1（`01_chart_hook.png`）**：暖杏蜜橘系（`#ECA072` / `orange`）呈現全局現象反差或偏態破題 | **Format D 獨立單面板統計圖 2（`02_chart_drilldown.png`，選配，總圖數限 1～2 張）**：霧靄青藍系（`#5DBACD` / `blue`）呈現結構拆解或交叉深挖（**禁止 `ncols=2` 並排子圖**） | **僅產出 Format D（1～2 張獨立單面板 `.png`）＋ Format B 文體 5（`02_medium_article.md` 短專欄）**；不產出 Format A / C / E，且**免除編譯 A4 PDF** |
 
 ### 軸線二：核心溝通任務對映表（Task-to-Topology Mapping）
 
@@ -47,7 +47,7 @@
 | **批判邊界、反例壓力測試與跨域遷移** | **2×2 策略象限矩陣 / 跨領域結構映射專題圖**（`draw_2x2_matrix_quadrants`） | [`visual_diagram_matplotlib_spec.md`](visual_diagram_matplotlib_spec.md) |
 | **比較跨階段留存率遞減或同案雙指標反差** | **XY 軸空間重力折線＋直柱複合圖 / 共同基準線配對雙柱＋剪刀差標註圖**（`hcl_color_engine.py`） | [`quantitative_chart_spec.md`](quantitative_chart_spec.md) |
 | **拆解多階段成熟度分佈與跨圖接力** | **鎖定版 `Gephi · pastel` 5 階同質循序漸層 ＋ 雙圖跨面板色相區隔與視覺接力（1+1>2）** | [`quantitative_chart_spec.md`](quantitative_chart_spec.md) |
-| **撰寫 Medium 每週一圖／輕量數據新聞專欄（`<= 1,000` 字 ＋ 1～2 張圖）** | **1～2 張獨立單面板 `300 DPI` 統計圖（圖 1 橘色破題 $\rightarrow$ 圖 2 藍色深挖，內嵌三層分流 `assert` 與三重時間戳記官方圖註）＋ 文體 5 Medium 原生 Markdown 專欄（含官方來源授權分離計字）** | [`quantitative_chart_spec.md`](quantitative_chart_spec.md) + [`document_report_spec.md`](document_report_spec.md) |
+| **撰寫 Medium 每週一圖／輕量數據新聞專欄（`<= 1,600` 字 ＋ 1～2 張圖）** | **1～2 張獨立單面板 `300 DPI` 統計圖（圖 1 橘色破題 $\rightarrow$ 圖 2 藍色深挖，內嵌三層分流 `assert` 與精簡官方資料來源圖註［僅附：1.官方資料集網址、2.資料涵蓋期間］）＋ 文體 5 Medium 原生 Markdown 專欄（含文末參考資料來源分離計字）** | [`quantitative_chart_spec.md`](quantitative_chart_spec.md) + [`document_report_spec.md`](document_report_spec.md) |
 | **探索多維度數據集（總覽、篩選、排行、增減發散與深鑽明細）** | **不寫死圖表格式之動態數據儀表板（KPI 卡 + 動態多視角互動圖表 + 明細表與 CSV 匯出，引用 `gephi_palette.js`）** | [`data_dashboard_spec.md`](data_dashboard_spec.md) ⇄ [`quantitative_chart_spec.md`](quantitative_chart_spec.md) |
 | **提供高密度治理規範、審計清單與完整論述** | **A4 雙模態混合排版 PDF 報告**（`pdf_report_engine.py`：支援 A4 橫向滿版大圖跨頁與三線表） | [`document_report_spec.md`](document_report_spec.md) |
 | **進行高階主管會議簡報與決策提案** | **16:9 斷言-證據式（Assertion-Evidence）原生向量投影片**（`pptx_slide_engine.py`） | [`presentation_slide_spec.md`](presentation_slide_spec.md) |
@@ -70,7 +70,7 @@
   6. `dashboard/` 或獨立專案目錄（Format E：Git-Ready 零後端互動式 Web 儀表板 `index.html` + `css/style.css` + `js/gephi_palette.js` + `js/dashboard.js` + `data/` + `.nojekyll` + `.gitignore` + `README.md` 及對應靜態全景圖 `.png`）
 - **場景 2：若任務屬於「Medium 每週一圖／輕量數據敘事專欄模式」**，則啟動**單一故事線輕量路由（Single-Hook Lightweight Route）**，於 `02_outputs/` 僅生成：
   1. `01_chart_hook.png`（及選配之 `02_chart_drilldown.png`，嚴格限制 **1～2 張各自獨立的單面板 `300 DPI` `.png` 統計圖**與繪圖腳本 `generate_charts.py`，**禁止 `ncols=2` 並排雙子圖**）
-  2. `02_medium_article.md`（Format B 文體 5：正文 `650～900` 字、絕對 `<= 1,000` 字之 Medium 100% 原生相容專欄文稿，含 `---` 分隔之「原始官方資料來源與授權聲明」及雙軌字數統計，**免除編譯 PDF**）
+  2. `02_medium_article.md`（Format B 文體 5：正文絕對 `<= 1,600` 字之 Medium 100% 原生相容專欄文稿，含 `---` 分隔之「參考資料來源（僅附：1.官方資料集網址、2.資料涵蓋期間）」及雙軌字數統計，**免除編譯 PDF**）
   3. 透過 `view_file` 驗收 1～2 張 `.png` 圖表無誤後，自動將整個 session（含 `data/<原檔名>.csv`、`00_source_article.md`、`01_phase1_socratic_log.md` 與 `02_outputs/`）執行 `git add -A && git commit -m "..." && git push origin main`，並在回覆結尾印出課堂 Google Doc 一鍵複製繳交區塊。
 
 
