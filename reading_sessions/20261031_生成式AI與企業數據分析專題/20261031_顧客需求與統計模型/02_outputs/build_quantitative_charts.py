@@ -50,7 +50,7 @@ OUT_PATH = os.path.join(OUT_DIR, "03_quantitative_empirical_charts.png")
 
 def draw_capsule(ax, x, y, text, color="#0F172A", bg="#F1F5F9", border="#CBD5E1", fontsize=9.0):
     """繪製微型資訊膠囊標籤"""
-    bbox_props = dict(boxstyle="round,pad=0.28,rounding_size=0.25", fc=bg, ec=border, lw=0.9)
+    bbox_props = dict(boxstyle="round,pad=0.22,rounding_size=0.20", fc=bg, ec=border, lw=0.9)
     ax.text(x, y, text, ha="center", va="center", fontsize=fontsize, weight="bold",
             color=color, bbox=bbox_props, zorder=7)
 
@@ -85,65 +85,77 @@ def build_charts():
         "【溝通回饋】\n每週專案進度更新\n（製造商 ITI）",
         "【品質低價】\n規格符合與低報價\n（基本衛生因子門檻）",
     ]
-    x = np.arange(len(categories))
-    width = 0.30
+    spacing = 1.25
+    x = np.arange(len(categories)) * spacing
+    bar_w = 0.20
+    gap = 0.46
+    x_exec = x - gap/2 - bar_w/2
+    x_cust = x + gap/2 + bar_w/2
 
     # 數據（百分比）
     exec_estimate = [12.5, 2.3, 10.0, 42.0]     # 高管直覺預估重要度/提升感
     cust_actual   = [85.0, 19.5, 48.0, 4.0]      # 顧客實際提升潛力（Lift Potential）
 
     c_exec = GEPHI_QUALITATIVE_HEX[0]   # 主色暖杏橘 #ECA072 (高管直覺)
-    c_cust = GEPHI_QUALITATIVE_HEX[1]   # 次色霧靄藍 #5DBACD (顧客真實)
+    c_cust = GEPHI_QUALITATIVE_HEX[1]   # 次色霧靄青藍 #5DBACD (顧客真實)
     c_exec_edge = "#CA6F35"
     c_cust_edge = "#2C8B9F"
 
-    bars1 = ax_left.bar(x - width/2, exec_estimate, width, label="高管直覺預估／均分權重",
+    bars1 = ax_left.bar(x_exec, exec_estimate, bar_w, label="高管直覺預估／均分權重",
                         color=c_exec, edgecolor=c_exec_edge, linewidth=1.1, zorder=3)
-    bars2 = ax_left.bar(x + width/2, cust_actual, width, label="統計模型測出之顧客實際提升潛力",
+    bars2 = ax_left.bar(x_cust, cust_actual, bar_w, label="統計模型測出之顧客實際提升潛力",
                         color=c_cust, edgecolor=c_cust_edge, linewidth=1.1, zorder=3)
 
-    # 標註柱頂數值
+    # 標註柱頂數值（長方形柱身內部保持絕對純淨工整，僅保留柱頂數值標籤）
     for bar in bars1:
         h = bar.get_height()
         ax_left.text(bar.get_x() + bar.get_width()/2, h + 1.2, f"{h:.1f}%",
-                     ha="center", va="bottom", fontsize=9.0, weight="bold", color=c_exec_edge)
+                     ha="center", va="bottom", fontsize=8.8, weight="bold", color=c_exec_edge)
     for bar in bars2:
         h = bar.get_height()
         ax_left.text(bar.get_x() + bar.get_width()/2, h + 1.2, f"{h:.1f}%",
-                     ha="center", va="bottom", fontsize=9.0, weight="bold", color=c_cust_edge)
+                     ha="center", va="bottom", fontsize=8.8, weight="bold", color=c_cust_edge)
 
-    # 垂直雙向剪刀差標註帶（Explicit Gap Callouts：嚴格幾何上下對稱基準）
+    # 垂直雙向剪刀差標註帶（置於高矮兩柱之間的落差空隙，幾何上下絕對對稱，絕不重疊柱身）
     # 案例 0：24小時問題解決（85% vs 12.5% -> Δ = +72.5%）
-    # Y_center = (85.0 + 12.5) / 2 = 48.75，上下等距 34.75 展開
-    ax_left.plot([x[0] - width/2, x[0] + width/2], [12.5, 12.5], color="#94A3B8", linestyle=":", lw=1.2)
-    ax_left.annotate("", xy=(x[0] + width/2, 83.5), xytext=(x[0] + width/2, 14.0),
-                     arrowprops=dict(arrowstyle="<->", color="#0E5B6B", lw=1.4))
-    draw_capsule(ax_left, x[0] + width/2, 48.75, "Δ = +72.5%\n(暴增 6.8 倍)",
-                 color="#0E5B6B", bg="#EBF7F9", border="#5DBACD", fontsize=8.0)
+    y_low0, y_high0 = 12.5, 85.0
+    y_mid0 = (y_low0 + y_high0) / 2
+    ax_left.plot([x[0] - gap/2, x[0] + gap/2], [y_low0, y_low0], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
+    ax_left.plot([x[0] - gap/2, x[0] + gap/2], [y_high0, y_high0], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
+    ax_left.annotate("", xy=(x[0], y_high0 - 0.8), xytext=(x[0], y_low0 + 0.8),
+                     arrowprops=dict(arrowstyle="<->", color="#0E5B6B", lw=1.4), zorder=5)
+    draw_capsule(ax_left, x[0], y_mid0, "Δ = +72.5%\n(+6.8倍)",
+                 color="#0E5B6B", bg="#EBF7F9", border="#5DBACD", fontsize=7.2)
 
     # 案例 1：安全規範（19.5% vs 2.3% -> Δ = +17.2%）
-    # Y_center = (19.5 + 2.3) / 2 = 10.9，上下等距 7.6 展開 (3.3 至 18.5)
-    ax_left.plot([x[1] - width/2, x[1] + width/2], [2.3, 2.3], color="#94A3B8", linestyle=":", lw=1.2)
-    ax_left.annotate("", xy=(x[1] + width/2, 18.5), xytext=(x[1] + width/2, 3.3),
-                     arrowprops=dict(arrowstyle="<->", color="#0E5B6B", lw=1.4))
-    draw_capsule(ax_left, x[1] + width/2, 10.9, "Δ = +17.2%\n(暴增 8.5 倍)",
-                 color="#0E5B6B", bg="#EBF7F9", border="#5DBACD", fontsize=8.0)
+    y_low1, y_high1 = 2.3, 19.5
+    y_mid1 = (y_low1 + y_high1) / 2
+    ax_left.plot([x[1] - gap/2, x[1] + gap/2], [y_low1, y_low1], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
+    ax_left.plot([x[1] - gap/2, x[1] + gap/2], [y_high1, y_high1], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
+    ax_left.annotate("", xy=(x[1], y_high1 - 0.6), xytext=(x[1], y_low1 + 0.6),
+                     arrowprops=dict(arrowstyle="<->", color="#0E5B6B", lw=1.4), zorder=5)
+    draw_capsule(ax_left, x[1], y_mid1, "Δ = +17.2%\n(+8.5倍)",
+                 color="#0E5B6B", bg="#EBF7F9", border="#5DBACD", fontsize=7.2)
 
     # 案例 2：溝通進度（48% vs 10% -> Δ = +38.0%）
-    # Y_center = (48.0 + 10.0) / 2 = 29.0，上下等距 17.5 展開 (11.5 至 46.5)
-    ax_left.plot([x[2] - width/2, x[2] + width/2], [10.0, 10.0], color="#94A3B8", linestyle=":", lw=1.2)
-    ax_left.annotate("", xy=(x[2] + width/2, 46.5), xytext=(x[2] + width/2, 11.5),
-                     arrowprops=dict(arrowstyle="<->", color="#0E5B6B", lw=1.4))
-    draw_capsule(ax_left, x[2] + width/2, 29.0, "Δ = +38.0%\n(核心驅動)",
-                 color="#0E5B6B", bg="#EBF7F9", border="#5DBACD", fontsize=8.0)
+    y_low2, y_high2 = 10.0, 48.0
+    y_mid2 = (y_low2 + y_high2) / 2
+    ax_left.plot([x[2] - gap/2, x[2] + gap/2], [y_low2, y_low2], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
+    ax_left.plot([x[2] - gap/2, x[2] + gap/2], [y_high2, y_high2], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
+    ax_left.annotate("", xy=(x[2], y_high2 - 0.8), xytext=(x[2], y_low2 + 0.8),
+                     arrowprops=dict(arrowstyle="<->", color="#0E5B6B", lw=1.4), zorder=5)
+    draw_capsule(ax_left, x[2], y_mid2, "Δ = +38.0%\n(核心驅動)",
+                 color="#0E5B6B", bg="#EBF7F9", border="#5DBACD", fontsize=7.2)
 
     # 案例 3：品質低價（4% vs 42% -> 高管嚴重過度高估）
-    # Y_center = (42.0 + 4.0) / 2 = 23.0，上下等距 17.5 展開 (5.5 至 40.5)
-    ax_left.plot([x[3] - width/2, x[3] + width/2], [4.0, 4.0], color="#94A3B8", linestyle=":", lw=1.2)
-    ax_left.annotate("", xy=(x[3] - width/2, 40.5), xytext=(x[3] - width/2, 5.5),
-                     arrowprops=dict(arrowstyle="<->", color="#97481B", lw=1.4))
-    draw_capsule(ax_left, x[3] - width/2, 23.0, "Δ = -38.0%\n(衛生因子陷阱)",
-                 color="#97481B", bg="#FFF3EA", border="#ECA072", fontsize=8.0)
+    y_low3, y_high3 = 4.0, 42.0
+    y_mid3 = (y_low3 + y_high3) / 2
+    ax_left.plot([x[3] - gap/2, x[3] + gap/2], [y_low3, y_low3], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
+    ax_left.plot([x[3] - gap/2, x[3] + gap/2], [y_high3, y_high3], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
+    ax_left.annotate("", xy=(x[3], y_high3 - 0.8), xytext=(x[3], y_low3 + 0.8),
+                     arrowprops=dict(arrowstyle="<->", color="#97481B", lw=1.4), zorder=5)
+    draw_capsule(ax_left, x[3], y_mid3, "Δ = -38.0%\n(衛生因子)",
+                 color="#97481B", bg="#FFF3EA", border="#ECA072", fontsize=7.2)
 
     ax_left.set_title("圖 1A｜高階主管直覺預估 vs. 顧客實際提升潛力（雙維反差剪刀差）",
                       fontsize=11.0, weight="bold", color="#0F172A", pad=12)
@@ -151,7 +163,8 @@ def build_charts():
     ax_left.set_xticks(x)
     ax_left.set_xticklabels(categories, fontsize=8.4, linespacing=1.25)
     ax_left.tick_params(axis="x", pad=6)
-    ax_left.set_ylim(0, 100)
+    ax_left.set_xlim(-0.65, 3 * spacing + 0.65)
+    ax_left.set_ylim(0, 105)
     despine_axes(ax_left, grid_axis="y")
     ax_left.legend(loc="upper left", frameon=True, facecolor="#FFFFFF", edgecolor="#CBD5E1", fontsize=8.4)
 
