@@ -112,33 +112,37 @@ def build_charts():
         ax_left.text(bar.get_x() + bar.get_width()/2, h + 1.2, f"{h:.1f}%",
                      ha="center", va="bottom", fontsize=9.0, weight="bold", color=c_cust_edge)
 
-    # 垂直雙向剪刀差標註帶（Explicit Gap Callouts）
+    # 垂直雙向剪刀差標註帶（Explicit Gap Callouts：嚴格幾何上下對稱基準）
     # 案例 0：24小時問題解決（85% vs 12.5% -> Δ = +72.5%）
+    # Y_center = (85.0 + 12.5) / 2 = 48.75，上下等距 34.75 展開
     ax_left.plot([x[0] - width/2, x[0] + width/2], [12.5, 12.5], color="#94A3B8", linestyle=":", lw=1.2)
     ax_left.annotate("", xy=(x[0] + width/2, 83.5), xytext=(x[0] + width/2, 14.0),
                      arrowprops=dict(arrowstyle="<->", color="#0E5B6B", lw=1.4))
-    draw_capsule(ax_left, x[0] + width/2 + 0.02, 48.0, "Δ = +72.5%\n(暴增 6.8 倍)",
+    draw_capsule(ax_left, x[0] + width/2, 48.75, "Δ = +72.5%\n(暴增 6.8 倍)",
                  color="#0E5B6B", bg="#EBF7F9", border="#5DBACD", fontsize=8.0)
 
     # 案例 1：安全規範（19.5% vs 2.3% -> Δ = +17.2%）
+    # Y_center = (19.5 + 2.3) / 2 = 10.9，上下等距 7.6 展開 (3.3 至 18.5)
     ax_left.plot([x[1] - width/2, x[1] + width/2], [2.3, 2.3], color="#94A3B8", linestyle=":", lw=1.2)
-    ax_left.annotate("", xy=(x[1] + width/2, 18.5), xytext=(x[1] + width/2, 3.2),
+    ax_left.annotate("", xy=(x[1] + width/2, 18.5), xytext=(x[1] + width/2, 3.3),
                      arrowprops=dict(arrowstyle="<->", color="#0E5B6B", lw=1.4))
-    draw_capsule(ax_left, x[1] + width/2 + 0.02, 11.0, "Δ = +17.2%\n(暴增 8.5 倍)",
+    draw_capsule(ax_left, x[1] + width/2, 10.9, "Δ = +17.2%\n(暴增 8.5 倍)",
                  color="#0E5B6B", bg="#EBF7F9", border="#5DBACD", fontsize=8.0)
 
     # 案例 2：溝通進度（48% vs 10% -> Δ = +38.0%）
+    # Y_center = (48.0 + 10.0) / 2 = 29.0，上下等距 17.5 展開 (11.5 至 46.5)
     ax_left.plot([x[2] - width/2, x[2] + width/2], [10.0, 10.0], color="#94A3B8", linestyle=":", lw=1.2)
     ax_left.annotate("", xy=(x[2] + width/2, 46.5), xytext=(x[2] + width/2, 11.5),
                      arrowprops=dict(arrowstyle="<->", color="#0E5B6B", lw=1.4))
-    draw_capsule(ax_left, x[2] + width/2 + 0.02, 29.0, "Δ = +38.0%\n(核心驅動)",
+    draw_capsule(ax_left, x[2] + width/2, 29.0, "Δ = +38.0%\n(核心驅動)",
                  color="#0E5B6B", bg="#EBF7F9", border="#5DBACD", fontsize=8.0)
 
     # 案例 3：品質低價（4% vs 42% -> 高管嚴重過度高估）
+    # Y_center = (42.0 + 4.0) / 2 = 23.0，上下等距 17.5 展開 (5.5 至 40.5)
     ax_left.plot([x[3] - width/2, x[3] + width/2], [4.0, 4.0], color="#94A3B8", linestyle=":", lw=1.2)
-    ax_left.annotate("", xy=(x[3] - width/2, 40.5), xytext=(x[3] - width/2, 5.2),
+    ax_left.annotate("", xy=(x[3] - width/2, 40.5), xytext=(x[3] - width/2, 5.5),
                      arrowprops=dict(arrowstyle="<->", color="#97481B", lw=1.4))
-    draw_capsule(ax_left, x[3] - width/2 - 0.02, 23.0, "Δ = -38.0%\n(衛生因子陷阱)",
+    draw_capsule(ax_left, x[3] - width/2, 23.0, "Δ = -38.0%\n(衛生因子陷阱)",
                  color="#97481B", bg="#FFF3EA", border="#ECA072", fontsize=8.0)
 
     ax_left.set_title("圖 1A｜高階主管直覺預估 vs. 顧客實際提升潛力（雙維反差剪刀差）",

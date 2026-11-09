@@ -126,16 +126,27 @@ def build_report_content():
 </div>
 
 <!-- ========================================================================= -->
-<!-- 第 3 頁：心智圖全景專頁（嚴格控制單頁高度，杜絕斷頁裁切） -->
+<!-- 第 3 頁：心智圖全景專頁（橫版 16:9 寬幅嵌入與架構啟示） -->
 <!-- ========================================================================= -->
 <div class="page-break"></div>
 <figure style="margin: 0; padding: 0; text-align: center;">
-  <img src="04_顧客-企業-投資者關係心智圖_Word直式版.png" alt="企業、客戶與投資人的價值循環架構圖"
-       style="max-height: 252mm; width: auto; max-width: 98%; border: 1.5px solid #CBD5E1; border-radius: 8px;">
+  <img src="04_顧客-企業-投資者關係心智圖_橫版.png" alt="企業、客戶與投資人的價值循環架構圖（橫版全景）"
+       style="width: 100%; height: auto; max-width: 100%; border: 1.5px solid #CBD5E1; border-radius: 8px;">
   <figcaption style="font-size: 8.8pt; color: #475569; text-align: center; margin-top: 6px;">
-    <strong>圖 1｜商業生態核心價值循環架構圖：</strong> 堅守「企業 ↔ 客戶」造血核心，以統計模型為指針，讓投資人助燃劑發揮正向加速效應。
+    <strong>圖 1｜商業生態核心價值循環架構圖（橫版 16:9 全景）：</strong> 堅守「企業 ↔ 客戶」造血核心，以統計模型為指針，讓投資人助燃劑發揮正向加速效應。
   </figcaption>
 </figure>
+
+<div class="card" style="margin-top: 14px; border-left: 4px solid #0284C7;">
+  <div class="card-header" style="background: #F0F9FF; color: #075985; font-size: 9.8pt;">
+    ★ 全景生態架構之三大決策啟示（高管如何落實價值對齊）
+  </div>
+  <div class="card-body" style="font-size: 9.0pt; line-height: 1.56;">
+    <p><strong>1. 堅守唯一造血主迴路：</strong> 商業世界中，所有持續性的營收與毛利皆誕生於「企業與客戶」的價值交換。脫離客戶真實滿意的任何概念與專案，皆是無源之水。</p>
+    <p><strong>2. 助燃劑的正確定位：</strong> 資本市場提供的資金，本質是為了「放大已經被市場驗證的造血商業模式」，絕不能企圖以投資人熱錢掩蓋產品與客戶價值的缺陷。</p>
+    <p style="margin-bottom: 0;"><strong>3. 警惕尾巴搖狗的悲劇：</strong> 當高管為了迎合華爾街短期季報而犧牲客戶服務（如波音削減飛安研發、迪士尼影視賣玩具），企業地基將迅速被掏空。抗拒短期誘惑、以道斯統計模型對齊真實需求，投資人才能共享長期繁榮。</p>
+  </div>
+</div>
 
 <!-- ========================================================================= -->
 <!-- 第 4 頁：參、科學破局（道斯模型、公式與三大反直覺實證案例） -->
@@ -281,28 +292,81 @@ def build_report_content():
 </div>
 
 <!-- ========================================================================= -->
-<!-- 第 7 頁：伍、延伸防禦（商模差異與四道防偏見防線） -->
+<!-- 第 7 頁：伍、延伸防禦之一：五大商業模式差異與 AI 賦能定位 -->
 <!-- ========================================================================= -->
 <h2 class="chapter-start">伍、延伸防禦：商業模式差異與防範演算法偏見的「四道關卡」</h2>
 
 <p>
-  當企業將這套方法論推廣至更多事業單位時，必須釐清兩項深層認知：商業模式的本質差異，以及如何防範統計模型淪為《大數據的傲慢與偏見》中所警惕的「偏見擴大器」。
+  當企業將「少做多得」統計模型推廣至不同事業部或新業務線時，高管必須先建立兩大深層認知：<strong>辨識自身所處的商業生態位階</strong>，以及<strong>建立演算法防偏見防線</strong>。否則，若將 B2C 的流量思維生搬硬套到 B2B，或是讓模型成為高管主觀偏見的放大器，企業只會加速走向失敗。
 </p>
 
-<h3>1. 商業模式差異：B2B 的檯面硬指標 vs. B2C 的幕後絲滑體驗</h3>
+<h3>1. 商業模式差異：五大主流模式對比與 AI 賦能定位</h3>
 <p>
-  <strong>B2B 客戶是理性組織採購：</strong> 客戶購買企業服務時，背負著自身財務損益責任。因此，供應商若能展示領先的「AI 能力」與「專案執行力」，客戶就能在自身財報上具體量化出節省的成本與增加的產能。這兩者在 B2B 會直接成為<strong>採購合約中的硬指標</strong>。
-</p>
-<p>
-  <strong>B2C 客戶買的是最終體驗：</strong> 消費者使用 Netflix 或叫外送時，根本不在乎幕後採用了什麼複雜模型。消費者要的是「推薦有沒有打中我」、「外送有沒有 20 分鐘熱騰騰送達」。在 B2C 環境中，AI 必須<strong>隱身於幕後</strong>，轉化為無感的極致體驗。
+  在商業世界中，不同生態位階的客戶，其決策邏輯、利益痛點與價值感受完全不同。例如：B2B 客戶背負著部門損益與合約責任，看重的是理性投資回報率（ROI）；而 B2C 消費者買的是省時與情緒滿足，講求無感絲滑體驗。若不先釐清商業模式，統計模型就算算得再精準，也只會排錯優先順序。下表詳解五大主流模式的價值核心與 AI 賦能定位：
 </p>
 
-<h3>2. 建立防範演算法偏見的四道防線（破除垃圾進、垃圾出）</h3>
+<table style="width: 100%; border-collapse: collapse; margin: 8px 0 10px 0;">
+  <thead>
+    <tr>
+      <th style="width: 15%; border-top: 2px solid #0F172A; border-bottom: 1.5px solid #0F172A; padding: 6px 8px;">商業模式</th>
+      <th style="width: 27%; border-top: 2px solid #0F172A; border-bottom: 1.5px solid #0F172A; padding: 6px 8px;">買單主體與決策特徵（白話解讀）</th>
+      <th style="width: 34%; border-top: 2px solid #0F172A; border-bottom: 1.5px solid #0F172A; padding: 6px 8px;">AI 科技與統計模型核心定位</th>
+      <th style="width: 24%; border-top: 2px solid #0F172A; border-bottom: 1.5px solid #0F172A; padding: 6px 8px;">典型實證代表案例</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="font-weight: 700; border-bottom: 1px solid #E2E8F0; padding: 6px 8px;">B2B<br><span style="font-size: 8.2pt; color: #64748B; font-weight: normal;">企業對企業</span></td>
+      <td style="border-bottom: 1px solid #E2E8F0; padding: 6px 8px;"><strong>理性組織採購：</strong> 決策背負部門損益（P&amp;L）與合約風險，審批關卡多、週期長，追求可量化之降本增效。</td>
+      <td style="border-bottom: 1px solid #E2E8F0; padding: 6px 8px;"><strong>檯面硬指標（合約實力）：</strong> AI 需直接量化停機風險預測、工時節省與履約進度，直接寫入採購合約成為驗收標的。</td>
+      <td style="border-bottom: 1px solid #E2E8F0; padding: 6px 8px;"><strong>S-SET</strong>（流體報價縮至3hr）、<strong>ITI</strong>（每週進度主動追蹤）、工業設備智慧檢修。</td>
+    </tr>
+    <tr>
+      <td style="font-weight: 700; border-bottom: 1px solid #E2E8F0; padding: 6px 8px;">B2C<br><span style="font-size: 8.2pt; color: #64748B; font-weight: normal;">企業對終端客</span></td>
+      <td style="border-bottom: 1px solid #E2E8F0; padding: 6px 8px;"><strong>感性個人消費者：</strong> 追求即時滿足、省時省力與情緒價值，轉換成本極低，對複雜操作毫無耐心。</td>
+      <td style="border-bottom: 1px solid #E2E8F0; padding: 6px 8px;"><strong>幕後隱形基礎設施：</strong> AI 必須深埋於後台（千人千面推薦、秒級調度、排隊預估），轉化為無感極致體驗，嚴禁打擾用戶。</td>
+      <td style="border-bottom: 1px solid #E2E8F0; padding: 6px 8px;"><strong>Netflix</strong>（串流內容個性化推薦）、<strong>星巴克</strong>（行動預先點餐調度）、外送動態路徑預估。</td>
+    </tr>
+    <tr>
+      <td style="font-weight: 700; border-bottom: 1px solid #E2E8F0; padding: 6px 8px;">B2B2C<br><span style="font-size: 8.2pt; color: #64748B; font-weight: normal;">平台賦能商戶</span></td>
+      <td style="border-bottom: 1px solid #E2E8F0; padding: 6px 8px;"><strong>雙重買單主體：</strong> 商戶要訂單增長與經營減負，終端客要品項豐富與服務可靠，平台需平衡雙邊利益。</td>
+      <td style="border-bottom: 1px solid #E2E8F0; padding: 6px 8px;"><strong>雙向媒合與經營減負引擎：</strong> 替商戶自動生成文案、預測庫存與定價；替消費者提供精準搜尋、品質推薦與履約背書。</td>
+      <td style="border-bottom: 1px solid #E2E8F0; padding: 6px 8px;"><strong>Shopify</strong>（獨立電商賦能）、<strong>UberEats / 熊貓</strong>（餐飲生態媒合）、線上旅遊預訂平台。</td>
+    </tr>
+    <tr>
+      <td style="font-weight: 700; border-bottom: 1px solid #E2E8F0; padding: 6px 8px;">C2C<br><span style="font-size: 8.2pt; color: #64748B; font-weight: normal;">個人對個人平台</span></td>
+      <td style="border-bottom: 1px solid #E2E8F0; padding: 6px 8px;"><strong>平權個人交易：</strong> 交易雙方資訊高度不對稱，核心命脈是「信任」與「安全」，極易因單次詐騙或糾紛而瓦解。</td>
+      <td style="border-bottom: 1px solid #E2E8F0; padding: 6px 8px;"><strong>假貨辨識、信用評等與仲裁中樞：</strong> 以圖搜圖比對真品細節、對話防詐即時預警、歷史信用評級與交易爭議快速仲裁。</td>
+      <td style="border-bottom: 1px solid #E2E8F0; padding: 6px 8px;"><strong>Airbnb</strong>（房東客雙審與保障保險）、<strong>Carousell 旋轉拍賣</strong>、二手車驗證交易平台。</td>
+    </tr>
+    <tr>
+      <td style="font-weight: 700; border-bottom: 2px solid #0F172A; padding: 6px 8px;">B2G<br><span style="font-size: 8.2pt; color: #64748B; font-weight: normal;">企業對公部門</span></td>
+      <td style="border-bottom: 2px solid #0F172A; padding: 6px 8px;"><strong>公務採購與法規稽核：</strong> 講求 100% 依法行政、主權資安、無弊端疑慮，重視公眾利益與程序正義大於短期利潤。</td>
+      <td style="border-bottom: 2px solid #0F172A; padding: 6px 8px;"><strong>可解釋性（XAI）與主權合規防護罩：</strong> 杜絕黑箱演算法，決策路徑需具備完整審計日誌（Audit Trail）以備議會與政風稽核。</td>
+      <td style="border-bottom: 2px solid #0F172A; padding: 6px 8px;"><strong>智慧城市號誌調控</strong>、數位稅務異常申報審查、國防與公衛緊急物資採購系統。</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="card" style="margin-top: 10px; border-left: 4px solid #D97706;">
+  <div class="card-header" style="background: #FFFBEB; color: #B45309; font-size: 9.6pt;">
+    ★ 高管決策啟示：切莫張冠李戴，找準真實價值槓桿
+  </div>
+  <div class="card-body" style="font-size: 8.9pt; line-height: 1.52;">
+    <p>高管制定戰略時最忌「位階錯位」：在 <strong>B2B</strong> 切莫拿酷炫但無法量化 ROI 的前台 AI 噱頭當賣點，客戶只看合約實力與履約保障；在 <strong>B2C</strong> 切莫強迫消費者理解模型架構，增加操作步驟的技術都是退步；在 <strong>B2G</strong> 貿然採用不可說明的黑箱演算法，將直接引發合規災難。唯有對齊自身商業模式，統計模型才能找準真正的造血槓桿。</p>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 第 8 頁：伍、延伸防禦之二：防範演算法偏見的「四道關卡」 -->
+<!-- ========================================================================= -->
+<div class="page-break"></div>
+<h3 style="margin-top: 0; margin-bottom: 6px;">2. 建立防範演算法偏見的四道防線（破除垃圾進、垃圾出）</h3>
 <p>
-  統計模型能消除人類隨機雜訊，但若輸入的問卷題目或目標函數本身就帶有高管的主觀盲點，模型將淪為加速犯錯的工具。企業必須落實以下四道防線：
+  統計模型能有效消除人類專家的隨機雜訊，但若輸入的問卷題目或目標函數本身就帶有高管的主觀盲點，模型將淪為《大數據的傲慢與偏見》中所警惕的「數學毀滅武器（WMD）」，加速放大錯誤。為確保模型輸出的是真實顧客心聲而非高管自嗨，企業必須落實以下四道嚴密防線：
 </p>
 
-<table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
+<table style="width: 100%; border-collapse: collapse; margin: 8px 0 12px 0;">
   <thead>
     <tr>
       <th style="width: 22%; border-top: 2px solid #0F172A; border-bottom: 1.5px solid #0F172A; padding: 6px 8px;">防線關卡</th>
@@ -333,6 +397,16 @@ def build_report_content():
     </tr>
   </tbody>
 </table>
+
+<div class="card" style="margin-top: 10px; border-left: 4px solid #0F766E;">
+  <div class="card-header" style="background: #F2FAF8; color: #115E59; font-size: 9.6pt;">
+    ● 模型治理守則：讓數據成為組織信任的基石
+  </div>
+  <div class="card-body" style="font-size: 8.9pt; line-height: 1.54;">
+    <p><strong>避免統計自嗨：</strong> 統計模型的最大價值，不在於跑出多高深複雜的演算法，而在於讓「數據說實話」。企業必須堅持每季以流失客戶回訪更新題庫，並由跨部門團隊共同檢視模型權重與真實財報的勾稽關係，杜絕美化與卸責。</p>
+    <p style="margin-bottom: 0;"><strong>從小步快跑到全員對齊：</strong> 如同 ITI 製造商由每週三發布進度做起，以及 S-SET 先將報價時間壓入 3 小時內才打廣告，數據驅動策略必須經過「小範圍驗證 → 日常業務固化 → 取得定價權」三階躍遷，方能形成不可撼動的長期護城河。</p>
+  </div>
+</div>
 
 <!-- ========================================================================= -->
 <!-- 第 8 頁：陸、高管自測檢核清單與結語 -->
@@ -431,7 +505,7 @@ def build_markdown_report():
 - **「投資人」只是外部的輔助助燃劑**：資本市場提供的資金，本質是為了幫助造血引擎加快擴張腳步（例如興建新廠房、招募頂尖研發團隊），事後再合理分享「企業與客戶」共同創造的經營成果。
 - **助燃劑反客為主的結構性失靈**：當外部熱錢過度湧入時，高管極易陷入「討好投資人、輕忽真客戶」的致命陷阱。例如波音公司為迎合華爾街短期估值與股息，過度樽節工程研發與品管成本，終致 737 MAX 嚴重飛安危機；迪士尼部分影視為賣周邊玩具而硬塞角色，犧牲故事品質。一旦造血引擎熄火，崩盤只是時間問題。
 
-![圖 1｜商業生態核心價值循環圖](./04_顧客-企業-投資者關係心智圖_Word直式版.png)
+![圖 1｜商業生態核心價值循環架構圖（橫版全景）](./04_顧客-企業-投資者關係心智圖_橫版.png)
 
 ---
 
@@ -473,11 +547,22 @@ def build_markdown_report():
 
 ## 伍、延伸防禦：商業模式差異與防範演算法偏見的「四道關卡」
 
-### 1. 商業模式差異：B2B 的硬指標 vs. B2C 的幕後絲滑體驗
-- **B2B 客戶是理性組織**：採購決策直接影響其自身財務獲利，故「AI 科技實力」與「專案執行力」會直接成為合約上的硬指標。
-- **B2C 客戶看重最終體驗**：消費者買的是省時、好玩、便宜。AI 一樣至關重要，但必須隱藏在推薦、派單與風控的幕後。
+### 1. 商業模式差異：五大主流模式對比與 AI 賦能定位
 
-### 2. 防範「數學毀滅武器」的四道防線
+企業在導入 AI 科技或統計分析時，最常見的敗因就是「拿別人的劇本，演自己的戲」。在商業世界中，不同生態位階的客戶，其決策邏輯、利益痛點與價值感受完全不同。若不先認清自身商業模式，盲目複製市場流行（例如 B2B 公司學串流平台做酷炫推薦，或是 B2C 平台逼消費者看技術白皮書），統計模型就算運算再精準，也只會排錯優先順序。
+
+| 商業模式（生態角色） | 買單主體與決策特徵（白話解讀） | AI 科技與統計模型核心定位 | 典型實證代表案例 |
+| :--- | :--- | :--- | :--- |
+| **B2B**<br>（企業對企業） | **理性組織採購**：決策背負部門損益（P&L）與合約風險，審批關卡多、週期長，追求可量化之降本增效與風險規避。 | **檯面硬指標（合約實力）**：AI 需直接量化停機風險預測、工時節省與履約進度，直接寫入採購合約成為驗收標的。 | **S-SET**（流體報價縮至3hr）、**ITI**（每週進度主動追蹤）、工業設備智慧檢修。 |
+| **B2C**<br>（企業對終端客） | **感性個人消費者**：追求即時滿足、省時省力與情緒價值，轉換成本極低，對複雜操作毫無耐心。 | **幕後隱形基礎設施**：AI 必須深埋於後台（千人千面推薦、秒級調度、排隊預估），轉化為無感極致體驗，嚴禁打擾用戶。 | **Netflix**（串流內容個性化推薦）、**星巴克**（行動點餐動態調度）、外送動態路徑預估。 |
+| **B2B2C**<br>（平台賦能商戶服務終端客） | **雙重買單主體**：商戶要訂單增長與經營減負，終端客要品項豐富與服務可靠，平台需平衡雙邊利益。 | **雙向媒合與經營減負引擎**：替商戶自動生成文案、預測庫存與定價；替消費者提供精準搜尋、品質推薦與履約背書。 | **Shopify**（獨立電商賦能）、**UberEats / 熊貓**（餐飲生態媒合）、線上旅遊預訂平台。 |
+| **C2C**<br>（個人對個人平台） | **平權個人交易**：交易雙方資訊高度不對稱，核心命脈是「信任」與「安全」，極易因單次詐騙或糾紛而瓦解。 | **假貨辨識、信用評等與仲裁中樞**：以圖搜圖比對真品細節、對話防詐即時預警、歷史信用評級與交易爭議快速仲裁。 | **Airbnb**（房東客雙審與保障保險）、**Carousell 旋轉拍賣**、二手車驗證交易平台。 |
+| **B2G**<br>（企業對公部門） | **公務採購與法規稽核**：講求 100% 依法行政、主權資安、無弊端疑慮，重視公眾利益與程序正義大於短期利潤。 | **可解釋性（XAI）與主權合規防護罩**：杜絕黑箱演算法，決策路徑需具備完整審計日誌（Audit Trail）以備議會與政風稽核。 | **智慧城市號誌調控**、數位稅務異常申報審查、國防與公衛緊急物資採購系統。 |
+
+> **★ 高管決策啟示（切莫張冠李戴）**：  
+> 高管制定戰略時最忌「位階錯位」：在 **B2B** 切莫拿酷炫但無法量化 ROI 的前台 AI 噱頭當賣點，客戶只看合約實力與履約保障；在 **B2C** 切莫強迫消費者理解模型架構，增加操作步驟的技術都是退步；在 **B2G** 貿然採用不可說明的黑箱演算法，將直接引發合規災難。唯有對齊自身商業模式，統計模型才能找準真正的造血槓桿。
+
+### 2. 建立防範演算法偏見的「四道防線」（破除垃圾進、垃圾出）
 1. **第一關（開放式探索）**：深入訪談流失客戶與真實客訴，由客戶痛點產生問卷題目，防止高管自戀式出題。
 2. **第二關（間接推導重要性）**：用統計迴歸推算權重，不直接問「哪項重要」，破除客戶每項都勾重要的社會期許偏誤。
 3. **第三關（對接會計帳本）**：將滿意度串連 ERP 真實利潤與回購，杜絕自嗨虛榮指標。
