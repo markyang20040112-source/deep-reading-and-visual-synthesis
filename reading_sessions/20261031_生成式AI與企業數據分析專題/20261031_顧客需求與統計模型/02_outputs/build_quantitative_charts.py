@@ -87,10 +87,10 @@ def build_charts():
     ]
     spacing = 1.25
     x = np.arange(len(categories)) * spacing
-    bar_w = 0.20
-    gap = 0.46
-    x_exec = x - gap/2 - bar_w/2
-    x_cust = x + gap/2 + bar_w/2
+    bar_w = 0.32
+    gap_internal = 0.02
+    x_exec = x - bar_w/2 - gap_internal/2
+    x_cust = x + bar_w/2 + gap_internal/2
 
     # 數據（百分比）
     exec_estimate = [12.5, 2.3, 10.0, 42.0]     # 高管直覺預估重要度/提升感
@@ -110,51 +110,64 @@ def build_charts():
     for bar in bars1:
         h = bar.get_height()
         ax_left.text(bar.get_x() + bar.get_width()/2, h + 1.2, f"{h:.1f}%",
-                     ha="center", va="bottom", fontsize=8.8, weight="bold", color=c_exec_edge)
+                     ha="center", va="bottom", fontsize=8.8, weight="bold", color=c_exec_edge, zorder=6)
     for bar in bars2:
         h = bar.get_height()
         ax_left.text(bar.get_x() + bar.get_width()/2, h + 1.2, f"{h:.1f}%",
-                     ha="center", va="bottom", fontsize=8.8, weight="bold", color=c_cust_edge)
+                     ha="center", va="bottom", fontsize=8.8, weight="bold", color=c_cust_edge, zorder=6)
 
-    # 垂直雙向剪刀差標註帶（置於高矮兩柱之間的落差空隙，幾何上下絕對對稱，絕不重疊柱身）
-    # 案例 0：24小時問題解決（85% vs 12.5% -> Δ = +72.5%）
+    # 剪刀差垂直雙向箭頭與落差膠囊：完全移至「較矮長方形的上方頂部空位」，柱身 100% 潔淨飽滿
+    # 案例 0：24小時問題解決（高管 12.5% [矮] vs 顧客 85.0% [高] -> Δ = +72.5%）
     y_low0, y_high0 = 12.5, 85.0
-    y_mid0 = (y_low0 + y_high0) / 2
-    ax_left.plot([x[0] - gap/2, x[0] + gap/2], [y_low0, y_low0], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
-    ax_left.plot([x[0] - gap/2, x[0] + gap/2], [y_high0, y_high0], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
-    ax_left.annotate("", xy=(x[0], y_high0 - 0.8), xytext=(x[0], y_low0 + 0.8),
+    arrow_bot0 = 16.5
+    arrow_top0 = y_high0
+    y_mid0 = (arrow_bot0 + arrow_top0) / 2
+    # 水平虛線從高柱頂部向左延伸跨越左柱
+    ax_left.plot([x_exec[0] - bar_w/2, x_cust[0] + bar_w/2], [y_high0, y_high0],
+                 color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
+    # 垂直雙向箭頭坐落於左柱（較矮長方形）上方，頂端精準觸達高柱虛線，底端自然指向柱頂數值
+    ax_left.annotate("", xy=(x_exec[0], arrow_top0), xytext=(x_exec[0], arrow_bot0),
                      arrowprops=dict(arrowstyle="<->", color="#0E5B6B", lw=1.4), zorder=5)
-    draw_capsule(ax_left, x[0], y_mid0, "Δ = +72.5%\n(+6.8倍)",
+    draw_capsule(ax_left, x_exec[0], y_mid0, "Δ = +72.5%\n(+6.8倍)",
                  color="#0E5B6B", bg="#EBF7F9", border="#5DBACD", fontsize=7.2)
 
-    # 案例 1：安全規範（19.5% vs 2.3% -> Δ = +17.2%）
+    # 案例 1：安全規範（高管 2.3% [矮] vs 顧客 19.5% [高] -> Δ = +17.2%）
     y_low1, y_high1 = 2.3, 19.5
-    y_mid1 = (y_low1 + y_high1) / 2
-    ax_left.plot([x[1] - gap/2, x[1] + gap/2], [y_low1, y_low1], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
-    ax_left.plot([x[1] - gap/2, x[1] + gap/2], [y_high1, y_high1], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
-    ax_left.annotate("", xy=(x[1], y_high1 - 0.6), xytext=(x[1], y_low1 + 0.6),
+    arrow_bot1 = 6.2
+    arrow_top1 = y_high1
+    y_mid1 = (arrow_bot1 + arrow_top1) / 2
+    ax_left.plot([x_exec[1] - bar_w/2, x_cust[1] + bar_w/2], [y_high1, y_high1],
+                 color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
+    ax_left.annotate("", xy=(x_exec[1], arrow_top1), xytext=(x_exec[1], arrow_bot1),
                      arrowprops=dict(arrowstyle="<->", color="#0E5B6B", lw=1.4), zorder=5)
-    draw_capsule(ax_left, x[1], y_mid1, "Δ = +17.2%\n(+8.5倍)",
-                 color="#0E5B6B", bg="#EBF7F9", border="#5DBACD", fontsize=7.2)
+    # 緊湊單行膠囊，杜絕雙行文字擠壓箭頭桿身
+    draw_capsule(ax_left, x_exec[1], y_mid1, "Δ = +17.2% (+8.5倍)",
+                 color="#0E5B6B", bg="#EBF7F9", border="#5DBACD", fontsize=7.0)
 
-    # 案例 2：溝通進度（48% vs 10% -> Δ = +38.0%）
+    # 案例 2：溝通進度（高管 10.0% [矮] vs 顧客 48.0% [高] -> Δ = +38.0%）
     y_low2, y_high2 = 10.0, 48.0
-    y_mid2 = (y_low2 + y_high2) / 2
-    ax_left.plot([x[2] - gap/2, x[2] + gap/2], [y_low2, y_low2], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
-    ax_left.plot([x[2] - gap/2, x[2] + gap/2], [y_high2, y_high2], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
-    ax_left.annotate("", xy=(x[2], y_high2 - 0.8), xytext=(x[2], y_low2 + 0.8),
+    arrow_bot2 = 14.2
+    arrow_top2 = y_high2
+    y_mid2 = (arrow_bot2 + arrow_top2) / 2
+    ax_left.plot([x_exec[2] - bar_w/2, x_cust[2] + bar_w/2], [y_high2, y_high2],
+                 color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
+    ax_left.annotate("", xy=(x_exec[2], arrow_top2), xytext=(x_exec[2], arrow_bot2),
                      arrowprops=dict(arrowstyle="<->", color="#0E5B6B", lw=1.4), zorder=5)
-    draw_capsule(ax_left, x[2], y_mid2, "Δ = +38.0%\n(核心驅動)",
+    draw_capsule(ax_left, x_exec[2], y_mid2, "Δ = +38.0%\n(核心驅動)",
                  color="#0E5B6B", bg="#EBF7F9", border="#5DBACD", fontsize=7.2)
 
-    # 案例 3：品質低價（4% vs 42% -> 高管嚴重過度高估）
+    # 案例 3：品質低價（高管 42.0% [高] vs 顧客 4.0% [矮] -> 嚴重過度高估）
     y_low3, y_high3 = 4.0, 42.0
-    y_mid3 = (y_low3 + y_high3) / 2
-    ax_left.plot([x[3] - gap/2, x[3] + gap/2], [y_low3, y_low3], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
-    ax_left.plot([x[3] - gap/2, x[3] + gap/2], [y_high3, y_high3], color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
-    ax_left.annotate("", xy=(x[3], y_high3 - 0.8), xytext=(x[3], y_low3 + 0.8),
+    arrow_bot3 = 8.0
+    arrow_top3 = y_high3
+    y_mid3 = (arrow_bot3 + arrow_top3) / 2
+    # 水平虛線從左側高柱頂部向右延伸跨越右柱
+    ax_left.plot([x_exec[3] - bar_w/2, x_cust[3] + bar_w/2], [y_high3, y_high3],
+                 color="#94A3B8", linestyle=":", lw=1.2, zorder=2)
+    # 垂直雙向箭頭坐落於右柱（較矮長方形）上方
+    ax_left.annotate("", xy=(x_cust[3], arrow_top3), xytext=(x_cust[3], arrow_bot3),
                      arrowprops=dict(arrowstyle="<->", color="#97481B", lw=1.4), zorder=5)
-    draw_capsule(ax_left, x[3], y_mid3, "Δ = -38.0%\n(衛生因子)",
+    draw_capsule(ax_left, x_cust[3], y_mid3, "Δ = -38.0%\n(衛生因子)",
                  color="#97481B", bg="#FFF3EA", border="#ECA072", fontsize=7.2)
 
     ax_left.set_title("圖 1A｜高階主管直覺預估 vs. 顧客實際提升潛力（雙維反差剪刀差）",

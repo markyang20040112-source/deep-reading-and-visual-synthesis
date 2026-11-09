@@ -55,33 +55,58 @@ def build_landscape_mindmap():
     cur_y -= 0.10  # 標題與投資人卡片的垂直間距
 
     # =========================================================================
-    # 2. 外部輔助迴路：投資人／資本市場（全寬橫卡，內含 3 欄並列子卡）
+    # 2. 外部輔助迴路：投資人／資本市場（全寬橫卡，內含 3 欄 PPT 結構化平行列槽）
     # =========================================================================
     inv_top = cur_y
-    inv_h = 1.16
+    inv_h = 1.25
     inv_y = inv_top - inv_h
 
     # 投資人背景大卡片（暖琥珀金色調）
     rounded_box(ax, MX, inv_y, CONTENT_W, inv_h, face="#FFFDF5", edge="#D97706", lw=1.6, radius=0.08, z=2)
 
-    # 投資人標題列
-    ax.text(MX + 0.22, inv_top - 0.20,
-            "★ 外部輔助迴路：投資人／資本市場（角色：助燃劑 Catalyst）",
-            fontproperties=fp(14.5, bold=True), color="#92400E", va="top", ha="left", zorder=5)
+    # 投資人大卡標題列
+    rounded_box(ax, MX, inv_top - 0.32, CONTENT_W, 0.32, face="#FEF3C7", edge="#D97706", lw=1.0, radius=0.06, z=3)
+    ax.text(MX + 0.22, inv_top - 0.16,
+            "★ 外部輔助迴路：投資人／資本市場（角色：外部助燃劑 Catalyst）",
+            fontproperties=fp(13.8, bold=True), color="#92400E", va="center", ha="left", zorder=5)
 
-    # 3 個橫向項目
-    col_w_inv = (CONTENT_W - 0.44 - 2 * 0.25) / 3
-    inv_items = [
-        ("【想要什麼】", "企業產值提高 → 自身投資獲利提高 → 願意再加碼投資擴張。"),
-        ("【核心角色】", "提供擴張所需資金，事後合理分享「企業與客戶」共同創造的成果。"),
-        ("【危險訊號】", "資本熱錢遠超客戶營收時，助燃劑反客為主綁架方向，導致尾巴搖狗。"),
+    # 3 個結構化平行列槽／水平並排子卡槽（Sub-slots）
+    slot_pad_x = 0.14
+    slot_gap = 0.18
+    col_w_inv = (CONTENT_W - 2 * slot_pad_x - 2 * slot_gap) / 3  # 4.72 吋
+    slot_top = inv_top - 0.38
+    slot_h = 0.80
+    slot_y = slot_top - slot_h
+
+    inv_slots = [
+        {
+            "tag": "【想要什麼】（投資回報）",
+            "desc": "企業產值持續提高 → 自身獲利放大 → 願加碼資金擴張",
+            "face": "#FFFDF5", "header_face": "#FEF9C3", "edge": "#FCD34D", "tag_color": "#92400E"
+        },
+        {
+            "tag": "【核心角色】（外部助燃）",
+            "desc": "提供擴張所需資金，事後合理分享「企業與客戶」共同成果",
+            "face": "#FFFBEB", "header_face": "#FDE68A", "edge": "#F59E0B", "tag_color": "#78350F"
+        },
+        {
+            "tag": "【危險訊號】（反客為主）",
+            "desc": "資本熱錢遠超客戶營收時，助燃劑反客為主，引發「尾巴搖狗」短期崩壞",
+            "face": "#FFF5F5", "header_face": "#FEE2E2", "edge": "#FCA5A5", "tag_color": "#991B1B"
+        },
     ]
 
-    for idx, (label, desc) in enumerate(inv_items):
-        item_x = MX + 0.22 + idx * (col_w_inv + 0.25)
-        item_y = inv_top - 0.44
-        p_item = Paragraph(f"**{label}** {desc}", 11.5, col_w_inv, color="#451A03", bold_color="#92400E", leading=1.35)
-        p_item.draw(ax, item_x, item_y)
+    for idx, s in enumerate(inv_slots):
+        sx = MX + slot_pad_x + idx * (col_w_inv + slot_gap)
+        # 子卡外框與底色
+        rounded_box(ax, sx, slot_y, col_w_inv, slot_h, face=s["face"], edge=s["edge"], lw=1.1, radius=0.05, z=3)
+        # 子卡標題列槽
+        rounded_box(ax, sx, slot_top - 0.28, col_w_inv, 0.28, face=s["header_face"], edge=s["edge"], lw=0.8, radius=0.04, z=4)
+        ax.text(sx + col_w_inv / 2, slot_top - 0.14, s["tag"],
+                fontproperties=fp(11.0, bold=True), color=s["tag_color"], va="center", ha="center", zorder=5)
+        # 內文敘述（精準單行居中）
+        p_slot = Paragraph(s["desc"], 9.8, col_w_inv - 0.16, color="#1E293B", bold_color=s["tag_color"], leading=1.3, align="center")
+        p_slot.draw(ax, sx + 0.08, slot_top - 0.42)
 
     # 留出寬敞垂直走廊，供放置不重疊的垂直連動連接標籤與箭頭
     cur_y = inv_y - 0.36
