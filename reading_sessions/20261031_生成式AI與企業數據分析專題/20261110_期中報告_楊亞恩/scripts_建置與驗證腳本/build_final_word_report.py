@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
-"""
+r"""
 build_final_word_report.py
-Generates the publication-grade Word document:
-C:\\Users\\User\\OneDrive\\桌面\\期中報告\\楊亞恩.docx
+Generates the publication-grade Word document saved at BOTH:
+1. C:\Users\User\OneDrive\桌面\期中報告\楊亞恩.docx
+2. reading_sessions\20261031_生成式AI與企業數據分析專題\20261110_期中報告_楊亞恩\楊亞恩.docx
+(Keeps 楊亞恩—初稿.docx intact as backup).
 """
 
 import os
 import sys
 import html
+import base64
+import shutil
+import subprocess
 import docx
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -15,14 +20,24 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import parse_xml, OxmlElement
 from docx.oxml.ns import nsdecls, qn
 
-OUTPUT_PATH = r"C:\Users\User\OneDrive\桌面\期中報告\楊亞恩.docx"
+OUTPUT_PATH_1 = r"C:\Users\User\OneDrive\桌面\期中報告\楊亞恩.docx"
+OUTPUT_PATH_2 = r"reading_sessions\20261031_生成式AI與企業數據分析專題\20261110_期中報告_楊亞恩\楊亞恩.docx"
 
 # Source image paths
-IMG_P041 = r"reading_sessions\20261031_生成式AI與企業數據分析專題\docx_images\P041_image1.png"
-IMG_P062 = r"C:\Users\User\OneDrive\桌面\期中報告\AI資料整理大腦架構圖.jpg"
-IMG_P082 = r"reading_sessions\20261031_生成式AI與企業數據分析專題\docx_images\P082_image3.png"
+IMG_P041 = r"reading_sessions\20261031_生成式AI與企業數據分析專題\20261110_期中報告_楊亞恩\assets_原始素材與圖表\fig1_data_debt_gap.png"
+IMG_P062 = r"reading_sessions\20261031_生成式AI與企業數據分析專題\20261110_期中報告_楊亞恩\assets_原始素材與圖表\fig2_brain_architecture.png"
+IMG_P082 = r"reading_sessions\20261031_生成式AI與企業數據分析專題\20261110_期中報告_楊亞恩\assets_原始素材與圖表\fig3_price_sensitivity_confounding.png"
 IMG_P100 = r"reading_sessions\20261031_生成式AI與企業數據分析專題\20261031_顧客需求與統計模型\02_outputs\03_quantitative_empirical_charts.png"
 IMG_P113 = r"C:\Users\User\OneDrive\桌面\期中報告\04_顧客-企業-投資者關係心智圖_橫版.png"
+
+# Robust local fallbacks
+IMG_P100_ALT = r"reading_sessions\20261031_生成式AI與企業數據分析專題\20261110_期中報告_楊亞恩\assets_原始素材與圖表\高管直覺客戶重視價值與現實落差.png"
+if not os.path.exists(IMG_P100) and os.path.exists(IMG_P100_ALT):
+    IMG_P100 = IMG_P100_ALT
+
+IMG_P113_ALT = r"reading_sessions\20261031_生成式AI與企業數據分析專題\20261110_期中報告_楊亞恩\assets_原始素材與圖表\04_顧客-企業-投資者關係心智圖_橫版.png"
+if not os.path.exists(IMG_P113) and os.path.exists(IMG_P113_ALT):
+    IMG_P113 = IMG_P113_ALT
 
 # Color constants
 COLOR_NAVY = RGBColor(30, 58, 138)       # #1E3A8A Deep Blue
@@ -51,7 +66,7 @@ def apply_run_font(run, font_name="標楷體", ascii_font="Times New Roman", siz
     if color_rgb:
         run.font.color.rgb = color_rgb
 
-def add_p(doc, text="", style="Normal", align=WD_ALIGN_PARAGRAPH.LEFT, space_before=0, space_after=4, line_spacing=1.3, first_line_indent_pt=0):
+def add_p(doc, text="", style="Normal", align=WD_ALIGN_PARAGRAPH.LEFT, space_before=0, space_after=4, line_spacing=1.3, first_line_indent_pt=0, left_indent_pt=0):
     p = doc.add_paragraph(style=style)
     p.alignment = align
     pPr = p._p.get_or_add_pPr()
@@ -61,8 +76,14 @@ def add_p(doc, text="", style="Normal", align=WD_ALIGN_PARAGRAPH.LEFT, space_bef
     pPr.append(sp)
     
     # Indent
-    if first_line_indent_pt > 0:
-        ind = parse_xml(f'<w:ind {nsdecls("w")} w:firstLine="{int(first_line_indent_pt * 20)}"/>')
+    if first_line_indent_pt > 0 or left_indent_pt > 0:
+        ind_str = '<w:ind ' + nsdecls("w")
+        if first_line_indent_pt > 0:
+            ind_str += f' w:firstLine="{int(first_line_indent_pt * 20)}"'
+        if left_indent_pt > 0:
+            ind_str += f' w:left="{int(left_indent_pt * 20)}"'
+        ind_str += '/>'
+        ind = parse_xml(ind_str)
         pPr.append(ind)
         
     if text:
@@ -116,6 +137,7 @@ def add_runs(p, runs_spec, base_size_pt=12):
     """
     runs_spec is a list of items:
     - (text, is_bold)
+    - (text, is_bold, color_rgb)
     - (text, is_bold, is_italic)
     - ("LINK_INTERNAL", bookmark_name, display_text, is_bold, is_italic)
     - ("LINK_EXTERNAL", url, display_text, is_bold, is_italic)
@@ -136,9 +158,17 @@ def add_runs(p, runs_spec, base_size_pt=12):
         else:
             txt = item[0]
             b = item[1]
-            it = item[2] if len(item) > 2 else False
+            color_rgb = None
+            it = False
+            if len(item) > 2:
+                if isinstance(item[2], RGBColor):
+                    color_rgb = item[2]
+                elif isinstance(item[2], bool):
+                    it = item[2]
+            if len(item) > 3 and isinstance(item[3], bool):
+                it = item[3]
             r = p.add_run(txt)
-            apply_run_font(r, size_pt=base_size_pt, bold=b, italic=it)
+            apply_run_font(r, size_pt=base_size_pt, bold=b, italic=it, color_rgb=color_rgb)
 
 def add_figure(doc, img_path, caption_text, width_in=6.6):
     p_img = doc.add_paragraph()
@@ -176,50 +206,21 @@ def style_cell(cell, fill_hex=None, top_pt=5, bottom_pt=5, left_pt=8, right_pt=8
     tcBorders = parse_xml(f'<w:tcBorders {nsdecls("w")}><w:top w:val="{"single" if border_top_hex else "none"}" w:sz="4" w:space="0" w:color="{border_top_hex or "none"}"/><w:bottom w:val="{"single" if border_bottom_hex else "none"}" w:sz="4" w:space="0" w:color="{border_bottom_hex or "none"}"/><w:left w:val="none"/><w:right w:val="none"/></w:tcBorders>')
     tcPr.append(tcBorders)
 
-def build_table_1(doc):
+def render_ppt_table(doc, caption_text, headers, data, col_widths, table_width_dxa=9648):
     p_cap = doc.add_paragraph()
     p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p_cap.paragraph_format.keep_with_next = True
     pPr = p_cap._p.get_or_add_pPr()
     sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="240" w:after="100"/>')
     pPr.append(sp)
-    r_cap = p_cap.add_run("表一：四種 AI 應用情境矩陣（前沿破局解法、核心機制與理論死穴批判）")
+    r_cap = p_cap.add_run(caption_text)
     apply_run_font(r_cap, size_pt=10.5, bold=True, color_rgb=COLOR_NAVY)
     
-    headers = ["前沿破局解法", "核心運作機制與文中案例", "第一性原理「理論死穴」批判\n(您的思辨洞察)", "最適配之商業應用戰場"]
-    data = [
-        [
-            "解法一：綁定真人記憶之數位雙生\n(Grounded Twins)",
-            "對真人進行數小時訪談、心理認知測驗並追蹤購物軌跡（哥倫比亞 2,500 人群組、史丹福、CivicSync），建立基準事實錨點。",
-            "【具身認知與感覺不可壓縮性】：無法「真的把整個人塞進模型」！文字逐字稿無法編碼生理嗅覺、味覺與潛意識記憶（如文中高砂香料 Takasago 測試香氣徹底失靈）。",
-            "B2B 銷售人員話術演練、客服應對模擬、理性功能型產品之早期概念訪談。"
-        ],
-        [
-            "解法二：右腦 AI 轉譯 + 左腦統計公式\n(Hybrid Model)",
-            "右腦（大模型）僅將非結構化圖文轉譯為特徵分數；左腦交由傳統統計線性／選擇模型計算價格彈性，數學上切斷腦補混淆。",
-            "【計量模型誤設偏誤 (Misspecification)】：雖出現幻覺機率最小，但面對高度複雜、多變數非線性交互作用的感性問題時，左腦極難寫出高解釋力函式（寫簡單 R² 低、寫複雜又過度配適）。",
-            "成熟產業之常規品牌健康度追蹤、核心價值驅動因素之「提升潛力 (Lift)」排序。"
-        ],
-        [
-            "解法三：少量真人 + 大量 AI 統計校準\n(PPI Calibration)",
-            "以 100 名真人盲測為黃金基準，搭配 10,000 名 AI 合成受訪者，用統計公式計算並扣除 AI 的系統性腦補誤差。",
-            "【分布偏移與湊巧對齊】：極不穩定！當下 AI 對準人類可能只是「湊巧發生」，一旦問題換字眼或跨時間（如文中范登堡 Bisbee 2024 研究發現 3 個月內表現不穩），校準即失效再發幻覺。",
-            "預算受限下之大規模量化問卷擴充（需每波次重新抽取真人小樣本動態校準）。"
-        ],
-        [
-            "解法四：大量歷史數據與實驗微調\n(Fine-Tuning)",
-            "拿企業過往累積之大量真實調查與歷史 A/B Test 數據直接微調模型權重（如 Evidenza、GBK Collective 測試不同組合）。",
-            "【後照鏡外推失靈 (Extrapolation Failure)】：拿過去數據訓練屬於「分布內插值」，但面對未來「消費者行為劇變」或「突破性產品創新」（文中警告）時預測力較弱。",
-            "既有產品線之小幅改版測試、跨門市常規選品配置（如 Arena 零售應用）。"
-        ]
-    ]
-    
-    col_widths = [Inches(1.35), Inches(1.85), Inches(2.15), Inches(1.35)]
-    table = doc.add_table(rows=len(data)+1, cols=4)
+    table = doc.add_table(rows=len(data)+1, cols=len(headers))
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     
     tblPr = table._tbl.tblPr
-    tblW = parse_xml(f'<w:tblW {nsdecls("w")} w:w="9648" w:type="dxa"/>')
+    tblW = parse_xml(f'<w:tblW {nsdecls("w")} w:w="{table_width_dxa}" w:type="dxa"/>')
     tblPr.append(tblW)
     
     # Header row
@@ -241,125 +242,229 @@ def build_table_1(doc):
         apply_run_font(r, size_pt=11, bold=True, color_rgb=RGBColor(255, 255, 255))
         
     # Data rows
-    for r_idx, row_data in enumerate(data):
+    for r_idx, row_spec in enumerate(data):
         row = table.rows[r_idx + 1]
         trPr = row._tr.get_or_add_trPr()
         trPr.append(parse_xml(f'<w:cantSplit {nsdecls("w")}/>'))
         fill_hex = HEX_WHITE if r_idx % 2 == 0 else HEX_LIGHT_BLUE
         
-        for c_idx, val in enumerate(row_data):
+        for c_idx, cell_spec in enumerate(row_spec):
             cell = row.cells[c_idx]
             cell.width = col_widths[c_idx]
             style_cell(cell, fill_hex=fill_hex, top_pt=5, bottom_pt=5, border_bottom_hex=HEX_BORDER)
-            p = cell.paragraphs[0]
-            p.alignment = WD_ALIGN_PARAGRAPH.LEFT if c_idx > 0 else WD_ALIGN_PARAGRAPH.CENTER
-            pPr = p._p.get_or_add_pPr()
-            sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="0" w:line="240" w:lineRule="auto"/>')
-            pPr.append(sp)
-            r = p.add_run(val)
-            apply_run_font(r, size_pt=11, bold=(c_idx == 0), color_rgb=COLOR_DARK)
             
-    # Add spacing after table
+            p_first = cell.paragraphs[0]
+            p_first.alignment = WD_ALIGN_PARAGRAPH.CENTER if c_idx == 0 else WD_ALIGN_PARAGRAPH.LEFT
+            pPr = p_first._p.get_or_add_pPr()
+            sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="20" w:after="20" w:line="240" w:lineRule="auto"/>')
+            pPr.append(sp)
+            
+            # cell_spec is a list of lines/paragraphs
+            for line_idx, line_runs in enumerate(cell_spec):
+                p_cur = p_first if line_idx == 0 else cell.add_paragraph()
+                if line_idx > 0:
+                    p_cur.alignment = WD_ALIGN_PARAGRAPH.CENTER if c_idx == 0 else WD_ALIGN_PARAGRAPH.LEFT
+                    pCurPr = p_cur._p.get_or_add_pPr()
+                    sp_cur = parse_xml(f'<w:spacing {nsdecls("w")} w:before="20" w:after="20" w:line="240" w:lineRule="auto"/>')
+                    pCurPr.append(sp_cur)
+                if isinstance(line_runs, tuple):
+                    line_runs = [line_runs]
+                for item in line_runs:
+                    txt = item[0]
+                    b = item[1]
+                    c = item[2] if len(item) > 2 else COLOR_DARK
+                    r = p_cur.add_run(txt)
+                    apply_run_font(r, size_pt=11, bold=b, color_rgb=c or COLOR_DARK)
+                    
+    # Spacing after table
     p_after = doc.add_paragraph()
     pPr = p_after._p.get_or_add_pPr()
     sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="140"/>')
     pPr.append(sp)
+    return table
 
-def build_table_2(doc):
-    p_cap = doc.add_paragraph()
-    p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p_cap.paragraph_format.keep_with_next = True
-    pPr = p_cap._p.get_or_add_pPr()
-    sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="240" w:after="100"/>')
-    pPr.append(sp)
-    r_cap = p_cap.add_run("表二：AI 模型在不同企業商業模式中的定位矩陣（買單主體、核心定位與實證案例）")
-    apply_run_font(r_cap, size_pt=10.5, bold=True, color_rgb=COLOR_NAVY)
+def build_table_1(doc):
+    caption = "表一：四種 AI 應用情境矩陣（前沿破局解法、核心機制與理論死穴批判）"
+    headers = ["【應用模式】", "【核心做法（文中實例）】", "【主要優勢（PPT重點）】", "【人機邊界與極限】"]
+    col_widths = [Inches(1.4), Inches(2.0), Inches(1.8), Inches(1.5)]
     
-    headers = ["商業模式", "買單主體與決策特徵（白話解讀）", "AI 科技與統計模型核心定位", "典型實證代表案例"]
     data = [
         [
-            "B2B\n(企業對企業)",
-            "理性組織採購：決策背負部門損益（P&L）與合約風險，審批關卡多、週期長，追求可量化之降本增效。",
-            "檯面硬指標（合約實力）：AI 需直接量化停機風險預測、工時節省與履約進度，直接寫入採購合約成為驗收標的。",
-            "S-SET（流體報價縮至 3hr）、ITI（每週進度主動追蹤）、工業設備智慧檢修。"
+            # Col 0: 應用模式
+            [
+                ("解法一：綁定真人數位雙生\n(Grounded Twins)", True, COLOR_NAVY)
+            ],
+            # Col 1: 核心做法
+            [
+                [("• 深度訪談：", True, COLOR_NAVY), ("以數小時真人訪談與心智測驗建立基準事實", False, COLOR_DARK)],
+                [("• 追蹤軌跡：", True, COLOR_NAVY), ("哥倫比亞、史丹福與 CivicSync 行為錨點", False, COLOR_DARK)]
+            ],
+            # Col 2: 主要優勢
+            [
+                [("• 真實性高：", True, COLOR_NAVY), ("有客觀基準事實錨定，杜絕純虛構人格", False, COLOR_DARK)],
+                [("• 破局關鍵：", True, COLOR_NAVY), ("將質化訪談規模化，兼具規模與深度", False, COLOR_DARK)]
+            ],
+            # Col 3: 人機邊界與極限
+            [
+                [("• 感覺不可壓縮：", True, RGBColor(185, 28, 28)), ("香料氣味、生理直覺無法數位化", False, COLOR_DARK)],
+                [("• 成本門檻高：", True, RGBColor(185, 28, 28)), ("前期真人訪談與資料維護耗費巨大", False, COLOR_DARK)]
+            ]
         ],
         [
-            "B2C\n(企業對終端客)",
-            "感性個人消費者：追求即時滿足、省時省力與情緒價值，轉換成本極低，對複雜操作毫無耐心。",
-            "幕後隱形基礎設施：AI 必須深埋於後台（千人千面推薦、秒級調度、排隊預估），轉化為無感極致體驗，嚴禁打擾用戶。",
-            "Netflix（串流內容個性化推薦）、星巴克（行動預先點餐調度）、外送動態路徑預估。"
+            # Col 0: 應用模式
+            [
+                ("解法二：混合架構模型\n(Hybrid Model)", True, COLOR_NAVY)
+            ],
+            # Col 1: 核心做法
+            [
+                [("• 分工轉譯：", True, COLOR_NAVY), ("右腦大模型僅轉譯非結構圖文為特徵分數", False, COLOR_DARK)],
+                [("• 統計計算：", True, COLOR_NAVY), ("左腦傳統計量模型計算價格彈性與敏感度", False, COLOR_DARK)]
+            ],
+            # Col 2: 主要優勢
+            [
+                [("• 數學防幻覺：", True, COLOR_NAVY), ("截斷大模型自作聰明之「混淆」推論", False, COLOR_DARK)],
+                [("• 解釋力清晰：", True, COLOR_NAVY), ("係數與因果關係具備高度可稽核性", False, COLOR_DARK)]
+            ],
+            # Col 3: 人機邊界與極限
+            [
+                [("• 模型誤設風險：", True, RGBColor(185, 28, 28)), ("多變數非線性時左腦統計函式難以擬合", False, COLOR_DARK)],
+                [("• 維護依賴：", True, RGBColor(185, 28, 28)), ("需專業計量經濟學家持續調校參數", False, COLOR_DARK)]
+            ]
         ],
         [
-            "B2B2C\n(平台賦能商戶)",
-            "雙重買單主體：商戶要訂單增長與經營減負，終端客要品項豐富與服務可靠，平台需平衡雙邊利益。",
-            "雙向媒合與經營減負引擎：替商戶自動生成文案、預測庫存與定價；替消費者提供精準搜尋、品質推薦與履約背書。",
-            "Shopify（獨立電商賦能）、UberEats / 熊貓（餐飲生態媒合）、線上旅遊預訂平台。"
+            # Col 0: 應用模式
+            [
+                ("解法三：真人基準校準\n(PPI Calibration)", True, COLOR_NAVY)
+            ],
+            # Col 1: 核心做法
+            [
+                [("• 黃金基準：", True, COLOR_NAVY), ("以 100 名真人盲測為核心標準點", False, COLOR_DARK)],
+                [("• 統計修正：", True, COLOR_NAVY), ("萬名 AI 代理人模擬後以公式扣除系統偏誤", False, COLOR_DARK)]
+            ],
+            # Col 2: 主要優勢
+            [
+                [("• 成本暴降：", True, COLOR_NAVY), ("兼顧真人深度與 AI 海量樣本規模", False, COLOR_DARK)],
+                [("• 快速擴充：", True, COLOR_NAVY), ("小預算即可啟動大規模市場動態調查", False, COLOR_DARK)]
+            ],
+            # Col 3: 人機邊界與極限
+            [
+                [("• 分布偏移風險：", True, RGBColor(185, 28, 28)), ("AI 對齊真人可能為短期湊巧（3個月即漂移）", False, COLOR_DARK)],
+                [("• 動態依賴：", True, RGBColor(185, 28, 28)), ("每一波次皆需重新抽取真人基準校準", False, COLOR_DARK)]
+            ]
         ],
         [
-            "C2C\n(個人對個人平台)",
-            "平權個人交易：交易雙方資訊高度不對稱，核心命脈是「信任」與「安全」，極易因單次詐騙或糾紛而瓦解。",
-            "假貨辨識、信用評等與仲裁中樞：以圖搜圖比對真品細節、對話防詐即時預警、歷史信用評級與交易爭議快速仲裁。",
-            "Airbnb（房東客雙審與保障保險）、Carousell 旋轉拍賣、二手車驗證交易平台。"
-        ],
-        [
-            "B2G\n(企業對公部門)",
-            "公務採購與法規稽核：講求 100% 依法行政、主權資安、無弊端疑慮，重視公眾利益與程序正義大於短期利潤。",
-            "可解釋性（XAI）與主權合規防護罩：杜絕黑箱演算法，決策路徑需具備完整審計日誌（Audit Trail）以備議會與政風稽核。",
-            "智慧城市號誌調控、數位稅務異常申報審查、國防與公衛緊急物資採購系統。"
+            # Col 0: 應用模式
+            [
+                ("解法四：歷史實驗微調\n(Fine-Tuning)", True, COLOR_NAVY)
+            ],
+            # Col 1: 核心做法
+            [
+                [("• 專有數據微調：", True, COLOR_NAVY), ("輸入歷史問卷、銷售日誌與 A/B Test", False, COLOR_DARK)],
+                [("• 產業專用：", True, COLOR_NAVY), ("Evidenza、GBK Collective 針對品類調權", False, COLOR_DARK)]
+            ],
+            # Col 2: 主要優勢
+            [
+                [("• 貼近企業內部：", True, COLOR_NAVY), ("高度適配既有商品與客戶群行為特徵", False, COLOR_DARK)],
+                [("• 自動化部署：", True, COLOR_NAVY), ("常態性選品與門市配置快速標準化輸出", False, COLOR_DARK)]
+            ],
+            # Col 3: 人機邊界與極限
+            [
+                [("• 後照鏡盲區：", True, RGBColor(185, 28, 28)), ("僅能分布內插值，無法預測顛覆性創新", False, COLOR_DARK)],
+                [("• 冷啟動困難：", True, RGBColor(185, 28, 28)), ("新品牌或無歷史數據之新賽道完全失靈", False, COLOR_DARK)]
+            ]
         ]
     ]
+    render_ppt_table(doc, caption, headers, data, col_widths)
+
+def build_table_2(doc):
+    caption = "表二：AI 模型在不同企業類型中的定位矩陣（客戶焦點、幕後任務與商業價值）"
+    headers = ["【企業類型 (B2B/B2C等)】", "【客戶關注焦點】", "【AI 幕後核心任務】", "【帶來的核心商業價值】"]
+    col_widths = [Inches(1.4), Inches(1.8), Inches(1.8), Inches(1.7)]
     
-    col_widths = [Inches(1.15), Inches(2.0), Inches(2.2), Inches(1.35)]
-    table = doc.add_table(rows=len(data)+1, cols=4)
-    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    data = [
+        [
+            # B2B
+            [("B2B\n(企業對企業)", True, COLOR_NAVY)],
+            [
+                [("• 理性採購：", True, COLOR_NAVY), ("決策背負部門損益（P&L）與合約風險", False, COLOR_DARK)],
+                [("• 硬性指標：", True, COLOR_NAVY), ("審批週期長，只看可量化降本增效", False, COLOR_DARK)]
+            ],
+            [
+                [("• 檯面硬實力：", True, COLOR_NAVY), ("預測停機風險、工時節省與履約進度", False, COLOR_DARK)],
+                [("• 合約標的：", True, COLOR_NAVY), ("直接寫入採購合約成為驗收基準", False, COLOR_DARK)]
+            ],
+            [
+                [("• 實質價值：", True, COLOR_NAVY), ("S-SET 流體報價縮至 3hr，排除停機損失", False, COLOR_DARK)]
+            ]
+        ],
+        [
+            # B2C
+            [("B2C\n(企業對終端客)", True, COLOR_NAVY)],
+            [
+                [("• 感性消費：", True, COLOR_NAVY), ("追求即時滿足、省時省力與情緒價值", False, COLOR_DARK)],
+                [("• 轉換極快：", True, COLOR_NAVY), ("轉換成本趨近於零，對繁瑣操作零容忍", False, COLOR_DARK)]
+            ],
+            [
+                [("• 幕後隱形調度：", True, COLOR_NAVY), ("千人千面推薦、毫秒定價、排隊預估", False, COLOR_DARK)],
+                [("• 無感極致體驗：", True, COLOR_NAVY), ("深埋系統後台，嚴禁增加用戶操作阻力", False, COLOR_DARK)]
+            ],
+            [
+                [("• 實質價值：", True, COLOR_NAVY), ("Netflix 個性化推薦、星巴克行動點餐調度", False, COLOR_DARK)]
+            ]
+        ],
+        [
+            # B2B2C
+            [("B2B2C\n(平台賦能商戶)", True, COLOR_NAVY)],
+            [
+                [("• 雙重買單主體：", True, COLOR_NAVY), ("商戶要流量增長，終端客要品質與可靠", False, COLOR_DARK)],
+                [("• 生態平衡：", True, COLOR_NAVY), ("平台需同時兼顧雙邊利益與交易公平", False, COLOR_DARK)]
+            ],
+            [
+                [("• 雙向媒合引擎：", True, COLOR_NAVY), ("替商戶自動生成文案、預測銷量定價", False, COLOR_DARK)],
+                [("• 履約背書：", True, COLOR_NAVY), ("替消費者精準搜尋、推薦優選商品", False, COLOR_DARK)]
+            ],
+            [
+                [("• 實質價值：", True, COLOR_NAVY), ("Shopify 獨立站賦能、外送平台動態媒合", False, COLOR_DARK)]
+            ]
+        ],
+        [
+            # C2C
+            [("C2C\n(個人對個人)", True, COLOR_NAVY)],
+            [
+                [("• 平權個人交易：", True, COLOR_NAVY), ("資訊高度不對稱，核心命脈為「信任」", False, COLOR_DARK)],
+                [("• 風險脆弱：", True, COLOR_NAVY), ("極易因單次詐騙或假貨糾紛瓦解信心", False, COLOR_DARK)]
+            ],
+            [
+                [("• 信任仲裁中樞：", True, COLOR_NAVY), ("以圖搜圖比對真品細節、對話防詐預警", False, COLOR_DARK)],
+                [("• 歷史信用評級：", True, COLOR_NAVY), ("交易糾紛智慧初審與自動化履約保障", False, COLOR_DARK)]
+            ],
+            [
+                [("• 實質價值：", True, COLOR_NAVY), ("Airbnb 雙向審查與保險、二手交易平台", False, COLOR_DARK)]
+            ]
+        ],
+        [
+            # B2G
+            [("B2G\n(企業對公部門)", True, COLOR_NAVY)],
+            [
+                [("• 公務法規稽核：", True, COLOR_NAVY), ("講求 100% 依法行政、主權資安與無弊端", False, COLOR_DARK)],
+                [("• 公共利益導向：", True, COLOR_NAVY), ("重視程序正義與個資隱私大於短期利潤", False, COLOR_DARK)]
+            ],
+            [
+                [("• 可解釋性 (XAI)：", True, COLOR_NAVY), ("杜絕黑箱演算法，決策路徑完整可溯源", False, COLOR_DARK)],
+                [("• 主權合規防護：", True, COLOR_NAVY), ("提供 Audit Trail 審計日誌備議會政風查驗", False, COLOR_DARK)]
+            ],
+            [
+                [("• 實質價值：", True, COLOR_NAVY), ("智慧交通號誌調控、數位稅務異常查核", False, COLOR_DARK)]
+            ]
+        ]
+    ]
+    render_ppt_table(doc, caption, headers, data, col_widths)
     
-    tblPr = table._tbl.tblPr
-    tblW = parse_xml(f'<w:tblW {nsdecls("w")} w:w="9648" w:type="dxa"/>')
-    tblPr.append(tblW)
-    
-    # Header row
-    hdr_row = table.rows[0]
-    hdr_trPr = hdr_row._tr.get_or_add_trPr()
-    hdr_trPr.append(parse_xml(f'<w:tblHeader {nsdecls("w")}/>'))
-    hdr_trPr.append(parse_xml(f'<w:cantSplit {nsdecls("w")}/>'))
-    
-    for i, h_text in enumerate(headers):
-        cell = hdr_row.cells[i]
-        cell.width = col_widths[i]
-        style_cell(cell, fill_hex=HEX_DEEP_BLUE, top_pt=6, bottom_pt=6, border_bottom_hex=HEX_DEEP_BLUE)
-        p = cell.paragraphs[0]
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        pPr = p._p.get_or_add_pPr()
-        sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="0" w:line="240" w:lineRule="auto"/>')
-        pPr.append(sp)
-        r = p.add_run(h_text)
-        apply_run_font(r, size_pt=11, bold=True, color_rgb=RGBColor(255, 255, 255))
-        
-    # Data rows
-    for r_idx, row_data in enumerate(data):
-        row = table.rows[r_idx + 1]
-        trPr = row._tr.get_or_add_trPr()
-        trPr.append(parse_xml(f'<w:cantSplit {nsdecls("w")}/>'))
-        fill_hex = HEX_WHITE if r_idx % 2 == 0 else HEX_LIGHT_BLUE
-        
-        for c_idx, val in enumerate(row_data):
-            cell = row.cells[c_idx]
-            cell.width = col_widths[c_idx]
-            style_cell(cell, fill_hex=fill_hex, top_pt=5, bottom_pt=5, border_bottom_hex=HEX_BORDER)
-            p = cell.paragraphs[0]
-            p.alignment = WD_ALIGN_PARAGRAPH.LEFT if c_idx > 0 else WD_ALIGN_PARAGRAPH.CENTER
-            pPr = p._p.get_or_add_pPr()
-            sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="0" w:line="240" w:lineRule="auto"/>')
-            pPr.append(sp)
-            r = p.add_run(val)
-            apply_run_font(r, size_pt=11, bold=(c_idx == 0), color_rgb=COLOR_DARK)
-            
     # Callout Box below table
     p_box = doc.add_paragraph()
     pPr = p_box._p.get_or_add_pPr()
     sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="120" w:after="160" w:line="260" w:lineRule="auto"/>')
     pPr.append(sp)
-    # Box borders & shading
     pBdr = parse_xml(f'<w:pBdr {nsdecls("w")}><w:left w:val="single" w:sz="24" w:space="15" w:color="{HEX_AMBER_BORDER}"/><w:top w:val="single" w:sz="4" w:space="8" w:color="{HEX_BORDER}"/><w:right w:val="single" w:sz="4" w:space="8" w:color="{HEX_BORDER}"/><w:bottom w:val="single" w:sz="4" w:space="8" w:color="{HEX_BORDER}"/></w:pBdr>')
     pPr.append(pBdr)
     shd = parse_xml(f'<w:shd {nsdecls("w")} w:val="clear" w:color="auto" w:fill="{HEX_AMBER_BG}"/>')
@@ -371,7 +476,10 @@ def build_table_2(doc):
     apply_run_font(r_body, size_pt=9.5, bold=False, color_rgb=RGBColor(120, 53, 15))
 
 
-def main():
+def generate_docx(page_numbers_map=None):
+    """
+    Builds the document. If page_numbers_map is provided, uses exact page numbers in TOC.
+    """
     print("Initializing Document...")
     doc = docx.Document()
     
@@ -399,42 +507,91 @@ def main():
     normal_style.font.color.rgb = COLOR_DARK
     
     # =========================================================================
-    # 1. COVER PAGE (封面 一頁, 方案 A)
+    # 1. COVER PAGE (封面 一頁, 方案 B, NO UNIVERSITY HEADER, ONE-LINE TITLE)
     # =========================================================================
     print("Generating Cover Page...")
-    add_p(doc, "", space_before=40)
+    # Top spacing
+    add_p(doc, "", space_before=90)
     
-    p_univ = add_p(doc, "東吳大學  企業管理學系  115 學年度第 1 學期", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=20, space_after=12)
-    apply_run_font(p_univ.runs[0], size_pt=13, color_rgb=COLOR_SLATE)
+    # Main Title on ONE SINGLE LINE (no line breaks)
+    # With printable width = 6.27 inches (451.4 pt), 16 pt fits completely on 1 line
+    p_title = doc.add_paragraph()
+    p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    pPr = p_title._p.get_or_add_pPr()
+    sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="60" w:after="400" w:line="320" w:lineRule="auto"/>')
+    pPr.append(sp)
+    # Ensure wide enough bounds so 100% stays on 1 line
+    ind = parse_xml(f'<w:ind {nsdecls("w")} w:left="-180" w:right="-180"/>')
+    pPr.append(ind)
+    r_title = p_title.add_run("從數據債到人機協同：生成式 AI 時代下的企業商業分析重構")
+    apply_run_font(r_title, size_pt=16, bold=True, color_rgb=COLOR_NAVY)
     
-    p_course = add_p(doc, "《商業數據分析與生成式 AI》期中專題報告", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=50)
-    apply_run_font(p_course.runs[0], size_pt=16, bold=True, color_rgb=COLOR_NAVY)
+    # Subtitle: Creative staggered/stepped layout (方案 B)
+    # Line 1
+    p_sub1 = doc.add_paragraph()
+    p_sub1.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    pPr = p_sub1._p.get_or_add_pPr()
+    sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="100" w:after="160" w:line="280" w:lineRule="auto"/>')
+    pPr.append(sp)
+    ind = parse_xml(f'<w:ind {nsdecls("w")} w:left="{int(1.3 * 1440)}"/>')
+    pPr.append(ind)
+    r_sub1 = p_sub1.add_run("以《哈佛商業評論》四篇專題文章")
+    apply_run_font(r_sub1, size_pt=13, bold=True, color_rgb=COLOR_SLATE)
     
-    p_title = add_p(doc, "從數據債到人機協同：\n生成式 AI 時代下的企業商業分析重構", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=10, space_after=20, line_spacing=1.3)
-    apply_run_font(p_title.runs[0], size_pt=24, bold=True, color_rgb=COLOR_NAVY)
+    # Line 2 (indented/staggered right, ensuring "真義" is on this line, not orphan)
+    p_sub2 = doc.add_paragraph()
+    p_sub2.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    pPr = p_sub2._p.get_or_add_pPr()
+    # 4200 dxa (210 pt) after subtitle provides the elegant vertical breathing room before the student info block
+    sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="4200" w:line="280" w:lineRule="auto"/>')
+    pPr.append(sp)
+    ind = parse_xml(f'<w:ind {nsdecls("w")} w:left="{int(1.9 * 1440)}"/>')
+    pPr.append(ind)
+    r_sub2 = p_sub2.add_run("——探討企業數據準備、市場研究與顧客價值真義")
+    apply_run_font(r_sub2, size_pt=13, bold=True, color_rgb=COLOR_SLATE)
     
-    p_sub = add_p(doc, "以《哈佛商業評論》四篇專題文章探討企業數據準備、市場研究與顧客價值真義", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=10, space_after=120, line_spacing=1.3)
-    apply_run_font(p_sub.runs[0], size_pt=13.5, color_rgb=COLOR_SLATE)
+    # Student & Instructor Info: Borderless 2-column Word table for 100% mathematical vertical alignment
+    info_table = doc.add_table(rows=4, cols=2)
+    info_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    tblPr = info_table._tbl.tblPr
+    tblW = parse_xml(f'<w:tblW {nsdecls("w")} w:w="4800" w:type="dxa"/>')
+    tblPr.append(tblW)
     
-    # Metadata block
-    meta_lines = [
-        ("指 導 老 師：", "謝懷恕  教授"),
-        ("班　　　級：", "企管系 3B"),
+    info_data = [
+        ("指 導 老 師：", "謝懷恕 教授"),
+        ("系　　　級：", "企管系 3B"),
         ("學　　　號：", "311157139"),
-        ("姓　　　名：", "楊亞恩"),
-        ("繳 交 日 期：", "2026 年 11 月 11 日")
+        ("姓　　　名：", "楊亞恩")
     ]
-    for lbl, val in meta_lines:
-        p_m = doc.add_paragraph()
-        p_m.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        pPr = p_m._p.get_or_add_pPr()
-        sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="120" w:line="240" w:lineRule="auto"/>')
-        pPr.append(sp)
+    col_w_info = [Inches(1.5), Inches(1.8)]
+    for r_i, (lbl, val) in enumerate(info_data):
+        row = info_table.rows[r_i]
+        trPr = row._tr.get_or_add_trPr()
+        trPr.append(parse_xml(f'<w:cantSplit {nsdecls("w")}/>'))
         
-        r1 = p_m.add_run(lbl + " ")
-        apply_run_font(r1, size_pt=12.5, color_rgb=COLOR_SLATE)
-        r2 = p_m.add_run(val)
-        apply_run_font(r2, size_pt=12.5, bold=True, color_rgb=COLOR_DARK)
+        # Col 0 (Label)
+        c0 = row.cells[0]
+        c0.width = col_w_info[0]
+        style_cell(c0, top_pt=5, bottom_pt=5, left_pt=4, right_pt=4)
+        p0 = c0.paragraphs[0]
+        p0.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        pPr0 = p0._p.get_or_add_pPr()
+        sp0 = parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="0" w:line="240" w:lineRule="auto"/>')
+        pPr0.append(sp0)
+        r0 = p0.add_run(lbl)
+        apply_run_font(r0, size_pt=12.5, color_rgb=COLOR_SLATE)
+        
+        # Col 1 (Value)
+        c1 = row.cells[1]
+        c1.width = col_w_info[1]
+        style_cell(c1, top_pt=5, bottom_pt=5, left_pt=6, right_pt=4)
+        p1 = c1.paragraphs[0]
+        p1.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        pPr1 = p1._p.get_or_add_pPr()
+        sp1 = parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="0" w:line="240" w:lineRule="auto"/>')
+        pPr1.append(sp1)
+        r1 = p1.add_run(val)
+        apply_run_font(r1, size_pt=12.5, bold=True, color_rgb=COLOR_DARK)
         
     doc.add_page_break()
     
@@ -445,7 +602,7 @@ def main():
     p_toc_t = doc.add_paragraph()
     p_toc_t.alignment = WD_ALIGN_PARAGRAPH.CENTER
     pPr = p_toc_t._p.get_or_add_pPr()
-    sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="160" w:after="120"/>')
+    sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="120" w:after="80"/>')
     pPr.append(sp)
     r_toc = p_toc_t.add_run("目　　錄")
     apply_run_font(r_toc, size_pt=18, bold=True, color_rgb=COLOR_NAVY)
@@ -453,52 +610,121 @@ def main():
     p_note = doc.add_paragraph()
     p_note.alignment = WD_ALIGN_PARAGRAPH.CENTER
     pPr = p_note._p.get_or_add_pPr()
-    sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="240"/>')
+    sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="180"/>')
     pPr.append(sp)
     r_n = p_note.add_run("（點擊各章節名稱即可自動跳轉至內文對應段落）")
-    apply_run_font(r_n, size_pt=10, italic=True, color_rgb=COLOR_SLATE)
+    apply_run_font(r_n, size_pt=9.5, italic=True, color_rgb=COLOR_SLATE)
     
-    toc_items = [
-        ("壹、本篇心得架構簡介", "bm_part1", 12, True, 0),
-        ("貳、四篇文章讀後之心得與想法", "bm_part2", 12, True, 0),
-        ("一、《AI 能強化你的數據分析能力》", "bm_art1", 11, True, 20),
-        ("二、《你的公司數據真的準備好面對生成式 AI 了嗎？》", "bm_art2", 11, True, 20),
-        ("1. 資料結構化的時間成本、資安風險、轉化效益的困境", "bm_art2_1", 10.5, False, 40),
-        ("2. 突破困境的解法：人機協作才能將效益成倍放大", "bm_art2_2", 10.5, False, 40),
-        ("三、《生成式 AI 正在顛覆市場研究》", "bm_art3", 11, True, 20),
-        ("1. 幻覺在資料模擬預測下被無限放大", "bm_art3_1", 10.5, False, 40),
-        ("AI模擬消費者", "bm_art3_1_sim", 10, False, 60),
-        ("AI沒有辦法完全複製人類的「感受」", "bm_art3_1_spice", 10, False, 60),
-        ("2. AI更適合訪問人類？AI與人互動能消除幻覺？", "bm_art3_2", 10.5, False, 40),
-        ("3. AI該如何被應用在分析上", "bm_art3_3", 10.5, False, 40),
-        ("四、《顧客需求不靠猜！統計模型找正解》", "bm_art4", 11, True, 20),
-        ("1. 人類擅長什麼？AI又擅長什麼呢？", "bm_art4_1", 10.5, False, 40),
-        ("2. 在模型幫助我們撥開迷霧後，我們該如何做？", "bm_art4_2", 10.5, False, 40),
-        ("3. 延伸思考：AI模型在不同類型的企業中定位有何不同", "bm_art4_3", 10.5, False, 40),
-        ("4. 延伸思考：企業、顧客和投資者的三角關係", "bm_art4_4", 10.5, False, 40),
-        ("參、心得結語", "bm_part3", 12, True, 0),
-        ("肆、個人對於AI崛起之潮流心得看法", "bm_part4", 12, True, 0),
-        ("1. 人們真的懂AI的定義嗎？", "bm_part4_1", 10.5, False, 20),
-        ("2. AI的正確定位為何？", "bm_part4_2", 10.5, False, 20),
-        ("3. AI的使用保險裝置不足", "bm_part4_3", 10.5, False, 20),
-        ("對AI的過於信任", "bm_part4_3_trust", 10, False, 40),
-        ("AI的使用保險失靈", "bm_part4_3_fail", 10, False, 40),
-        ("伍、資料來源及使用工具&使用方法", "bm_part5", 12, True, 0),
-        ("一、資料來源", "bm_part5_1", 11, True, 20),
-        ("二、使用工具&使用方法", "bm_part5_2", 11, True, 20)
+    toc_specs = [
+        # (title, bookmark, level, default_page)
+        ("壹、本篇心得架構簡介", "bm_part1", 1, 3),
+        ("貳、四篇文章讀後之心得與想法", "bm_part2", 1, 3),
+        ("一、《AI 能強化你的數據分析能力》", "bm_art1", 2, 3),
+        ("二、《你的公司數據真的準備好面對生成式 AI 了嗎？》", "bm_art2", 2, 4),
+        ("1. 資料結構化的時間成本、資安風險、轉化效益的困境", "bm_art2_1", 3, 4),
+        ("2. 突破困境的解法：人機協作才能將效益成倍放大", "bm_art2_2", 3, 5),
+        ("三、《生成式 AI 正在顛覆市場研究》", "bm_art3", 2, 6),
+        ("1. 幻覺在資料模擬預測下被無限放大", "bm_art3_1", 3, 6),
+        ("AI模擬消費者", "bm_art3_1_sim", 4, 6),
+        ("AI沒有辦法完全複製人類的「感受」", "bm_art3_1_spice", 4, 7),
+        ("2. AI更適合訪問人類？AI與人互動能消除幻覺？", "bm_art3_2", 3, 8),
+        ("3. AI該如何被應用在分析上", "bm_art3_3", 3, 8),
+        ("四、《顧客需求不靠猜！統計模型找正解》", "bm_art4", 2, 9),
+        ("1. 人類擅長什麼？AI又擅長什麼呢？", "bm_art4_1", 3, 9),
+        ("2. 在模型幫助我們撥開迷霧後，我們該如何做？", "bm_art4_2", 3, 10),
+        ("3. 延伸思考：AI模型在不同類型的企業中定位有何不同", "bm_art4_3", 3, 10),
+        ("4. 延伸思考：企業、顧客和投資者的三角關係", "bm_art4_4", 3, 11),
+        ("參、心得結語", "bm_part3", 1, 12),
+        ("肆、個人對於AI崛起之潮流心得看法", "bm_part4", 1, 13),
+        ("1. 人們真的懂AI的定義嗎？", "bm_part4_1", 3, 13),
+        ("2. AI的正確定位為何？", "bm_part4_2", 3, 13),
+        ("3. AI的使用保險裝置不足", "bm_part4_3", 3, 13),
+        ("對AI的過於信任", "bm_part4_3_trust", 4, 13),
+        ("AI的使用保險失靈", "bm_part4_3_fail", 4, 14),
+        ("伍、資料來源及使用工具&使用方法", "bm_part5", 1, 14),
+        ("一、資料來源", "bm_part5_1", 2, 14),
+        ("二、使用工具&使用方法", "bm_part5_2", 2, 15)
     ]
     
-    for title, bm_name, sz, is_b, indent_pt in toc_items:
+    for title, bm_name, lvl, def_pg in toc_specs:
+        pg_num = str(page_numbers_map.get(bm_name, def_pg)) if page_numbers_map else str(def_pg)
+        
         p_t = doc.add_paragraph()
         pPr = p_t._p.get_or_add_pPr()
-        sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="30" w:after="40" w:line="240" w:lineRule="auto"/>')
+        
+        # Determine styling by level
+        if lvl == 1:
+            sz = 13
+            is_b = True
+            indent_pt = 0
+            color_hex = HEX_DEEP_BLUE
+            sp_before = 40
+            sp_after = 20
+        elif lvl == 2:
+            sz = 12
+            is_b = True
+            indent_pt = 16
+            color_hex = HEX_DEEP_BLUE
+            sp_before = 30
+            sp_after = 15
+        elif lvl == 3:
+            sz = 11
+            is_b = False
+            indent_pt = 32
+            color_hex = "0F172A"
+            sp_before = 20
+            sp_after = 15
+        else: # lvl == 4
+            sz = 10.5
+            is_b = False
+            indent_pt = 48
+            color_hex = "475569"
+            sp_before = 15
+            sp_after = 15
+            
+        # 1.25 line spacing (300 dxa)
+        sp = parse_xml(f'<w:spacing {nsdecls("w")} w:before="{sp_before}" w:after="{sp_after}" w:line="300" w:lineRule="auto"/>')
         pPr.append(sp)
+        
         if indent_pt > 0:
             ind = parse_xml(f'<w:ind {nsdecls("w")} w:left="{int(indent_pt*20)}"/>')
             pPr.append(ind)
             
+        # Tab stop with dotted leader at 9020 dxa (right margin of 6.27-inch text width)
+        tabs = parse_xml(f'<w:tabs {nsdecls("w")}><w:tab w:val="right" w:leader="dot" w:pos="9020"/></w:tabs>')
+        pPr.append(tabs)
+        
         esc_title = html.escape(title)
-        hyperlink = parse_xml(f'<w:hyperlink {nsdecls("w")} w:anchor="{bm_name}"><w:r><w:rPr><w:rFonts {nsdecls("w")} w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="標楷體" w:cs="Times New Roman"/>{"<w:b/>" if is_b else ""}<w:color w:val="{HEX_DEEP_BLUE if is_b else "0F172A"}"/><w:sz w:val="{int(sz*2)}"/></w:rPr><w:t xml:space="preserve">{esc_title}</w:t></w:r></w:hyperlink>')
+        hyperlink = parse_xml(
+            f'<w:hyperlink {nsdecls("w")} w:anchor="{bm_name}">'
+            f'<w:r>'
+            f'<w:rPr>'
+            f'<w:rFonts {nsdecls("w")} w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="標楷體" w:cs="Times New Roman"/>'
+            f'{"<w:b/>" if is_b else ""}'
+            f'<w:color w:val="{color_hex}"/>'
+            f'<w:sz w:val="{int(sz*2)}"/>'
+            f'</w:rPr>'
+            f'<w:t xml:space="preserve">{esc_title}</w:t>'
+            f'</w:r>'
+            f'<w:r>'
+            f'<w:rPr>'
+            f'<w:rFonts {nsdecls("w")} w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="標楷體" w:cs="Times New Roman"/>'
+            f'<w:color w:val="64748B"/>'
+            f'<w:sz w:val="{int(sz*2)}"/>'
+            f'</w:rPr>'
+            f'<w:tab/>'
+            f'</w:r>'
+            f'<w:r>'
+            f'<w:rPr>'
+            f'<w:rFonts {nsdecls("w")} w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="標楷體" w:cs="Times New Roman"/>'
+            f'{"<w:b/>" if is_b else ""}'
+            f'<w:color w:val="{color_hex}"/>'
+            f'<w:sz w:val="{int(sz*2)}"/>'
+            f'</w:rPr>'
+            f'<w:t>{pg_num}</w:t>'
+            f'</w:r>'
+            f'</w:hyperlink>'
+        )
         p_t._p.append(hyperlink)
         
     doc.add_page_break()
@@ -663,8 +889,8 @@ def main():
         ("。", False)
     ])
     
-    # Figure 1
-    add_figure(doc, IMG_P041, "圖一：企業 AI 期待與現實落差現況圖（高達八成期待 vs. 僅 6% 實質生產應用）", width_in=6.6)
+    # Figure 1 (P041)
+    add_figure(doc, IMG_P041, "圖一：企業 AI 期望與現實落差現況圖（高達八成期待 vs. 僅 8% 實質商業落地）", width_in=6.6)
     
     # P054
     p = add_p(doc, space_before=4, space_after=6, line_spacing=1.3, first_line_indent_pt=24)
@@ -738,8 +964,8 @@ def main():
         ("。", False)
     ])
     
-    # Figure 2
-    add_figure(doc, IMG_P062, "圖二：人機協同大腦架構圖（剛性左腦數據辭典、靈活右腦 AI 模型、前額葉人類專家）", width_in=6.6)
+    # Figure 2 (P062)
+    add_figure(doc, IMG_P062, "圖二：人機協同數據治理大腦架構圖（剛性數據辭典、靈活大模型、人類專家防線）", width_in=6.6)
     
     # P075
     p = add_p(doc, space_before=4, space_after=6, line_spacing=1.3, first_line_indent_pt=24)
@@ -783,8 +1009,8 @@ def main():
         ("，但沒想到產品從一千元漲到五千元後，AI假扮的消費者，購買意願沒有絲毫下降，反觀真正的消費者已經掉到4%。", False)
     ])
     
-    # Figure 3
-    add_figure(doc, IMG_P082, "圖三：價格敏感度混淆實驗分析圖（千元漲至五千元之 AI 與真人決策脫節）", width_in=6.6)
+    # Figure 3 (P082)
+    add_figure(doc, IMG_P082, "圖三：價格敏感度混淆實驗分析圖（1,000 漲至 5,000 元之 AI 與真人決策脫節）", width_in=6.6)
     
     # P083
     p = add_p(doc, space_before=4, space_after=6, line_spacing=1.3, first_line_indent_pt=24)
@@ -880,7 +1106,7 @@ def main():
         ("。", False)
     ])
     
-    # Table 1
+    # Table 1 (四種 AI 應用情境矩陣)
     build_table_1(doc)
     
     # P094
@@ -925,7 +1151,7 @@ def main():
         ("這篇文章主要在說，研究顯示高層認為重要的價值驅動因素與顧客真實重視的事物呈現低度相關、零相關甚至負相關，導致大量資源與計畫被浪費在錯誤的方向上。", False)
     ])
     
-    # Figure 4
+    # Figure 4 (P100)
     add_figure(doc, IMG_P100, "圖四：高管直覺客戶重視價值與現實落差（主觀重要性 vs. 客戶真實權重與營收轉換率）", width_in=6.6)
     
     # P101
@@ -991,7 +1217,7 @@ def main():
         ("在本篇文章中提到研究者訪問了許多B2B企業，導致客戶對企業AI的領先與能力非常看重，比重甚至高達九成以上。但這讓我反思，難道AI模型在其他類型的企業中就不重要了嗎？於是我整理出了下面這個表格：", False)
     ])
     
-    # Table 2
+    # Table 2 (AI模型在不同企業類型中的定位矩陣)
     build_table_2(doc)
     
     # P108
@@ -1039,7 +1265,7 @@ def main():
         ("。", False)
     ])
     
-    # Figure 5
+    # Figure 5 (P113)
     add_figure(doc, IMG_P113, "圖五：顧客-企業-投資者關係生態心智圖（造血發動機 vs. 資本助燃劑健康循環）", width_in=6.6)
     
     # P114
@@ -1294,9 +1520,72 @@ def main():
         if "GitHub" in desc or "原始碼" in lbl:
             add_runs(p, [("LINK_EXTERNAL", "https://github.com/markyang20040112-source/deep-reading-and-visual-synthesis", "期中專題原始碼與分析工作區（GitHub 專案庫）", False, True)])
 
-    print(f"Saving Document to {OUTPUT_PATH}...")
-    doc.save(OUTPUT_PATH)
-    print("Document successfully created and saved!")
+    return doc
+
+
+def query_bookmark_pages(docx_path):
+    """
+    Invokes Word COM via base64 PowerShell to obtain the exact page number of each bookmark.
+    """
+    os.environ["TARGET_DOCX"] = os.path.abspath(docx_path)
+    ps_script = """
+$p = [System.Environment]::GetEnvironmentVariable('TARGET_DOCX')
+$word = New-Object -ComObject Word.Application
+$word.Visible = $false
+try {
+    $doc = $word.Documents.Open($p)
+    foreach ($b in $doc.Bookmarks) {
+        $pg = $b.Range.Information(3)
+        [Console]::WriteLine("BM_MAP:$($b.Name):$pg")
+    }
+    $doc.Close()
+} finally {
+    $word.Quit()
+}
+"""
+    enc = base64.b64encode(ps_script.encode("utf-16le")).decode("ascii")
+    try:
+        out = subprocess.check_output(["powershell", "-NoProfile", "-EncodedCommand", enc], text=True, stderr=subprocess.STDOUT)
+        page_map = {}
+        for line in out.splitlines():
+            line = line.strip()
+            if line.startswith("BM_MAP:"):
+                parts = line.split(":")
+                if len(parts) >= 3:
+                    try:
+                        page_map[parts[1].strip()] = int(parts[2].strip())
+                    except ValueError:
+                        pass
+        print(f"Extracted {len(page_map)} bookmark page numbers from Word COM.")
+        return page_map
+    except Exception as e:
+        print(f"Word COM query failed: {e}")
+        return {}
+
+
+def main():
+    # Pass 1: generate initial docx
+    print("=== PASS 1: Generating Initial Document ===")
+    doc = generate_docx()
+    os.makedirs(os.path.dirname(OUTPUT_PATH_1), exist_ok=True)
+    os.makedirs(os.path.dirname(OUTPUT_PATH_2), exist_ok=True)
+    
+    doc.save(OUTPUT_PATH_1)
+    print(f"Saved initial to {OUTPUT_PATH_1}")
+    
+    # Query actual page numbers
+    print("=== Querying Exact Page Numbers via Word COM ===")
+    page_map = query_bookmark_pages(OUTPUT_PATH_1)
+    print("Page Map:", page_map)
+    
+    # Pass 2: generate with exact page numbers
+    print("=== PASS 2: Regenerating Document with Accurate Page Numbers ===")
+    doc_final = generate_docx(page_numbers_map=page_map)
+    doc_final.save(OUTPUT_PATH_1)
+    doc_final.save(OUTPUT_PATH_2)
+    print(f"Final document successfully saved to:")
+    print(f"  1. {OUTPUT_PATH_1}")
+    print(f"  2. {OUTPUT_PATH_2}")
 
 if __name__ == "__main__":
     main()

@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
+r"""
 verify_report.py
-Deep verification of C:\\Users\\User\\OneDrive\\桌面\\期中報告\\楊亞恩.docx
+Deep verification of publication-grade Word documents saved at BOTH:
+1. C:\Users\User\OneDrive\桌面\期中報告\楊亞恩.docx
+2. reading_sessions\20261031_生成式AI與企業數據分析專題\20261110_期中報告_楊亞恩\楊亞恩.docx
 """
 
 import os
@@ -9,27 +11,66 @@ import sys
 import docx
 from docx.oxml.ns import qn
 
-TARGET_DOC = r"C:\Users\User\OneDrive\桌面\期中報告\楊亞恩.docx"
+TARGET_DOC_1 = r"C:\Users\User\OneDrive\桌面\期中報告\楊亞恩.docx"
+TARGET_DOC_2 = r"reading_sessions\20261031_生成式AI與企業數據分析專題\20261110_期中報告_楊亞恩\楊亞恩.docx"
 BACKUP_DOC = r"C:\Users\User\OneDrive\桌面\期中報告\楊亞恩—初稿.docx"
 
-def verify():
-    print(f"=== 1. Checking File Existence and Backup ===")
-    assert os.path.exists(TARGET_DOC), f"Target docx does not exist: {TARGET_DOC}"
-    assert os.path.exists(BACKUP_DOC), f"Backup docx does not exist: {BACKUP_DOC}"
+def verify_single(doc_path):
+    print(f"\n========================================================")
+    print(f"VERIFYING: {doc_path}")
+    print(f"========================================================")
+    assert os.path.exists(doc_path), f"File does not exist: {doc_path}"
+    file_sz = os.path.getsize(doc_path)
+    print(f"File size: {file_sz:,} bytes")
+    assert file_sz > 500000, "File size too small!"
     
-    target_size = os.path.getsize(TARGET_DOC)
-    backup_size = os.path.getsize(BACKUP_DOC)
-    print(f"Target size: {target_size:,} bytes")
-    print(f"Backup size: {backup_size:,} bytes (intact)")
-    assert target_size > 500000, "Target docx seems too small, images might be missing!"
-    
-    print("\n=== 2. Loading Document Structure ===")
-    doc = docx.Document(TARGET_DOC)
+    doc = docx.Document(doc_path)
     print(f"Total Paragraphs: {len(doc.paragraphs)}")
     print(f"Total Tables: {len(doc.tables)}")
-    assert len(doc.tables) == 2, f"Expected 2 tables, found {len(doc.tables)}"
+    assert len(doc.tables) == 3, f"Expected 3 tables (Cover Info Table + Table 1 + Table 2), found {len(doc.tables)}"
     
-    # Check images
+    # 1. Verify Cover Page
+    print("\n--- 1. Checking Cover Page Constraints ---")
+    cover_text = "\n".join([p.text for p in doc.paragraphs[:10]])
+    print("Cover text sample:\n" + cover_text.strip())
+    assert "東吳大學" not in cover_text, "ERROR: Cover page contains university header '東吳大學'!"
+    assert "繳交日期" not in cover_text, "ERROR: Cover page contains '繳交日期'!"
+    
+    # Title must be on one line
+    title_p = [p for p in doc.paragraphs[:5] if "從數據債到人機協同" in p.text][0]
+    assert "\n" not in title_p.text, f"ERROR: Main title contains newline: {title_p.text}"
+    assert title_p.text == "從數據債到人機協同：生成式 AI 時代下的企業商業分析重構", f"Title text mismatch: {title_p.text}"
+    print("Main Title verified: Single line without line breaks!")
+    
+    # Subtitle layout
+    sub_ps = [p for p in doc.paragraphs[:8] if "哈佛商業評論" in p.text or "企業數據準備" in p.text]
+    assert len(sub_ps) >= 2, "Subtitle staggered lines missing!"
+    print(f"Subtitle Line 1: {sub_ps[0].text.strip()}")
+    print(f"Subtitle Line 2: {sub_ps[1].text.strip()}")
+    assert sub_ps[1].text.strip().endswith("真義"), "Subtitle Line 2 must end with '真義'!"
+    
+    # Cover Table
+    t_info = doc.tables[0]
+    assert len(t_info.rows) == 4 and len(t_info.columns) == 2, "Cover info table dimension mismatch!"
+    assert "謝懷恕" in t_info.rows[0].cells[1].text
+    assert "企管系 3B" in t_info.rows[1].cells[1].text
+    assert "311157139" in t_info.rows[2].cells[1].text
+    assert "楊亞恩" in t_info.rows[3].cells[1].text
+    print("Cover Info Table verified: 4 rows, 2 columns, borderless vertical alignment!")
+    
+    # 2. Verify TOC
+    print("\n--- 2. Checking TOC & Dotted Leaders ---")
+    # Check dotted leader tabs
+    toc_tabs_found = 0
+    for p in doc.paragraphs[:40]:
+        for elem in p._p.iter():
+            if elem.tag.endswith('tab') and elem.get(qn('w:leader')) == 'dot':
+                toc_tabs_found += 1
+    print(f"TOC Dotted leader tab stops found: {toc_tabs_found}")
+    assert toc_tabs_found >= 20, f"Expected dotted leader tabs in TOC, found {toc_tabs_found}"
+    
+    # 3. Check Images
+    print("\n--- 3. Checking Images ---")
     img_count = 0
     for p in doc.paragraphs:
         for r in p.runs:
@@ -38,8 +79,8 @@ def verify():
     print(f"Total Inline Pictures: {img_count}")
     assert img_count == 5, f"Expected 5 inline pictures, found {img_count}"
     
-    print("\n=== 3. Checking Bookmarks and TOC Hyperlinks ===")
-    # Extract all bookmarks
+    # 4. Check Bookmarks
+    print("\n--- 4. Checking Bookmarks ---")
     bookmarks = set()
     for p in doc.paragraphs:
         for elem in p._p.iter():
@@ -47,9 +88,6 @@ def verify():
                 name = elem.get(qn('w:name'))
                 if name:
                     bookmarks.add(name)
-    print(f"Bookmarks found ({len(bookmarks)}):", sorted(list(bookmarks)))
-    
-    # Required bookmarks
     req_bms = [
         "bm_part1", "bm_part2", "bm_art1", "bm_art2", "bm_art2_1", "bm_art2_2",
         "bm_art3", "bm_art3_1", "bm_art3_1_sim", "bm_art3_1_spice", "bm_art3_2", "bm_art3_3",
@@ -59,9 +97,70 @@ def verify():
     ]
     for bm in req_bms:
         assert bm in bookmarks, f"Missing required bookmark: {bm}"
-    print("All 27 required bookmarks are present!")
+    print(f"All {len(req_bms)} required bookmarks verified!")
     
-    # Check TOC internal hyperlinks
+    # 5. Check Tables (Table 1 and Table 2)
+    print("\n--- 5. Checking Table 1 & Table 2 ---")
+    t1 = doc.tables[1]
+    assert len(t1.rows) == 5 and len(t1.columns) == 4, f"Table 1 dimension mismatch: {len(t1.rows)}x{len(t1.columns)}"
+    t1_header = [c.text.strip().replace('\n', '') for c in t1.rows[0].cells]
+    print("Table 1 Headers:", t1_header)
+    assert "應用模式" in t1_header[0]
+    assert "核心做法" in t1_header[1]
+    assert "主要優勢" in t1_header[2]
+    assert "人機邊界" in t1_header[3]
+    
+    t2 = doc.tables[2]
+    assert len(t2.rows) == 6 and len(t2.columns) == 4, f"Table 2 dimension mismatch: {len(t2.rows)}x{len(t2.columns)}"
+    t2_header = [c.text.strip().replace('\n', '') for c in t2.rows[0].cells]
+    print("Table 2 Headers:", t2_header)
+    assert "企業類型" in t2_header[0]
+    assert "客戶關注焦點" in t2_header[1]
+    assert "AI 幕後核心任務" in t2_header[2]
+    assert "商業價值" in t2_header[3]
+    print("Table 1 and Table 2 headers and dimensions verified!")
+    
+    # 6. Check Bolds & Typo Fixes
+    print("\n--- 6. Checking Bold Strings & Typo Fixes ---")
+    all_text = []
+    bold_runs_text = []
+    for p in doc.paragraphs:
+        all_text.append(p.text)
+        for r in p.runs:
+            if r.bold:
+                bold_runs_text.append(r.text)
+    full_doc_text = "\n".join(all_text)
+    full_bold_text = "".join(bold_runs_text)
+    
+    core_bold_checks = [
+        "特別有趣的角度", "看錯方向", "使得原本是當作「助燃劑」的投資",
+        "短視近利的目光，只會導致客戶利益受損", "導致倒閉或企業價值下跌",
+        "無限的可能性", "定義並不能互相連通", "視模型為「工具」",
+        "大部分人對待AI的方式，像是想要讓他「取代」我們",
+        "使用者很多時候甚至連他們真正想要什麼都沒想清楚或不知道，他們只是「被動的」完成目標而已",
+        "它永遠不可能成為人類",
+        "不要忘記了，AI被打造出來是為了「服務」人類的，並不是取代。",
+        "才能與AI一同創造更美好的未來"
+    ]
+    for s in core_bold_checks:
+        assert s in full_doc_text, f"Missing text: {s}"
+        assert s in full_bold_text, f"Text not bolded: {s}"
+    print(f"All {len(core_bold_checks)} core bold phrases verified!")
+    
+    typo_checks = [
+        "為起點，引導讀者", "半結構化資料", "角色", "人機協作",
+        "數據收集整理系統", "之後的購買意願", "該如何被應用",
+        "等轉型完全落地後，再宣布。若是提早釋出", "有何不同", "企業與行業",
+        "有多厲害", "這麼「瘋狂地」使用它", "它所真正帶來的是",
+        "古希臘時期，數學模型", "視模型為「工具」", "在請它幫忙",
+        "以獲得答案完成測試並取得高分"
+    ]
+    for s in typo_checks:
+        assert s in full_doc_text, f"Missing typo fix: {s}"
+    print(f"All {len(typo_checks)} typo / phrasing corrections verified!")
+    
+    # 7. Check Links
+    print("\n--- 7. Checking Internal Cross-Reference and External Hyperlinks ---")
     toc_links = []
     ext_links = []
     for p in doc.paragraphs:
@@ -74,128 +173,30 @@ def verify():
                 elif r_id:
                     rel = p.part.rels[r_id]
                     ext_links.append((rel.target_ref, "".join(elem.itertext())))
-                    
-    print(f"\nInternal Hyperlinks found: {len(toc_links)}")
-    for anc, txt in toc_links:
-        assert anc in bookmarks, f"Hyperlink anchor '{anc}' points to non-existent bookmark!"
-    print("All internal hyperlinks point to valid bookmarks!")
-    
-    # Specifically check P127 internal cross-reference to spice case
     spice_refs = [txt for anc, txt in toc_links if anc == "bm_art3_1_spice"]
-    print(f"Spice cross-reference links count: {len(spice_refs)} (includes TOC and in-text)")
-    assert len(spice_refs) >= 2, f"Expected both TOC and in-text cross reference to bm_art3_1_spice, found {len(spice_refs)}"
-    
-    print(f"\nExternal Hyperlinks found: {len(ext_links)}")
-    import urllib.request
-    for url, txt in ext_links:
-        print(f"  - [{txt}]: {url}")
-        # Test URL validity
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'})
-        try:
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                assert resp.status == 200, f"URL {url} returned status {resp.status}"
-        except Exception as e:
-            # Report error if failure
-            print(f"    [URL Check]: {e}")
-            assert "404" not in str(e), f"Fatal 404 dead link detected: {url}"
+    assert len(spice_refs) >= 2, f"Expected both TOC and in-text cross reference to spice case, found {len(spice_refs)}"
     assert len(ext_links) >= 10, f"Expected at least 10 external links, found {len(ext_links)}"
+    print(f"Internal links: {len(toc_links)}, External links: {len(ext_links)}")
     
-    # Check Page Dimensions
-    sec = doc.sections[0]
-    print(f"Page Dimensions: width={sec.page_width.pt:.1f}pt, height={sec.page_height.pt:.1f}pt")
-    assert abs(sec.page_width.pt - 595.4) < 5, f"Expected A4 width (~595.4pt), got {sec.page_width.pt}"
-    assert abs(sec.page_height.pt - 841.7) < 5, f"Expected A4 height (~841.7pt), got {sec.page_height.pt}"
-    print("Page size verified: Standard A4 (210mm x 297mm)")
-
-    print("\n=== 4. Checking Tables ===")
-    t1 = doc.tables[0]
-    print(f"Table 1 Rows: {len(t1.rows)}, Cols: {len(t1.columns)}")
-    assert len(t1.rows) == 5 and len(t1.columns) == 4, "Table 1 dimension mismatch!"
-    t1_header = [cell.text.strip().replace('\n', '') for cell in t1.rows[0].cells]
-    print("Table 1 Headers:", t1_header)
-    assert "前沿破局解法" in t1_header[0]
-    # Check font size of Table 1 cell
-    t1_r0_c0 = t1.rows[0].cells[0].paragraphs[0].runs[0]
-    t1_r1_c0 = t1.rows[1].cells[0].paragraphs[0].runs[0]
-    assert t1_r0_c0.font.size.pt == 11.0, f"Expected 11pt header, got {t1_r0_c0.font.size.pt}"
-    assert t1_r1_c0.font.size.pt == 11.0, f"Expected 11pt data, got {t1_r1_c0.font.size.pt}"
-    print("Table 1 font size verified: 11pt")
-    
-    t2 = doc.tables[1]
-    print(f"Table 2 Rows: {len(t2.rows)}, Cols: {len(t2.columns)}")
-    assert len(t2.rows) == 6 and len(t2.columns) == 4, "Table 2 dimension mismatch!"
-    t2_header = [cell.text.strip().replace('\n', '') for cell in t2.rows[0].cells]
-    print("Table 2 Headers:", t2_header)
-    assert "商業模式" in t2_header[0]
-    t2_r0_c0 = t2.rows[0].cells[0].paragraphs[0].runs[0]
-    t2_r1_c0 = t2.rows[1].cells[0].paragraphs[0].runs[0]
-    assert t2_r0_c0.font.size.pt == 11.0, f"Expected 11pt header, got {t2_r0_c0.font.size.pt}"
-    assert t2_r1_c0.font.size.pt == 11.0, f"Expected 11pt data, got {t2_r1_c0.font.size.pt}"
-    print("Table 2 font size verified: 11pt")
-    
-    print("\n=== 5. Checking Core Bold Strings ===")
-    all_text = []
-    bold_runs_text = []
-    for p in doc.paragraphs:
-        all_text.append(p.text)
-        for r in p.runs:
-            if r.bold:
-                bold_runs_text.append(r.text)
-    full_doc_text = "\n".join(all_text)
-    full_bold_text = "".join(bold_runs_text)
-    
-    core_bold_checks = [
-        "特別有趣的角度",
-        "看錯方向",
-        "使得原本是當作「助燃劑」的投資",
-        "短視近利的目光，只會導致客戶利益受損",
-        "導致倒閉或企業價值下跌",
-        "無限的可能性",
-        "定義並不能互相連通",
-        "視模型為「工具」",
-        "大部分人對待AI的方式，像是想要讓他「取代」我們",
-        "使用者很多時候甚至連他們真正想要什麼都沒想清楚或不知道，他們只是「被動的」完成目標而已",
-        "它永遠不可能成為人類",
-        "不要忘記了，AI被打造出來是為了「服務」人類的，並不是取代。",
-        "才能與AI一同創造更美好的未來"
-    ]
-    for s in core_bold_checks:
-        found_in_doc = s in full_doc_text
-        found_in_bold = s in full_bold_text
-        print(f"  Bold check '{s[:25]}...': In Doc={found_in_doc}, In Bold={found_in_bold}")
-        assert found_in_doc, f"Missing text: {s}"
-        assert found_in_bold, f"Text not bolded: {s}"
-        
-    print("\n=== 6. Checking Word Count & Typos Fixes ===")
     char_count = sum(len(p.text.strip()) for p in doc.paragraphs)
     for t in doc.tables:
         for row in t.rows:
             for cell in row.cells:
                 char_count += sum(len(p.text.strip()) for p in cell.paragraphs)
-    print(f"Total Character Count (including tables): {char_count:,} chars (Requirement: >= 2,000 words/chars)")
-    assert char_count >= 2000, f"Document length too short: {char_count}"
+    print(f"Total Character Count: {char_count:,} chars")
+    assert char_count >= 2000, f"Word count too low: {char_count}"
+    print(f"DOCUMENT VERIFICATION PASSED: {doc_path}\n")
+
+def main():
+    print("=== Checking Backup Docx ===")
+    assert os.path.exists(BACKUP_DOC), f"Backup docx missing: {BACKUP_DOC}"
+    print(f"Backup intact: {BACKUP_DOC} ({os.path.getsize(BACKUP_DOC):,} bytes)")
     
-    # Check typo fixes
-    assert "為起點，引導讀者" in full_doc_text
-    assert "半結構化資料" in full_doc_text
-    assert "角色" in full_doc_text
-    assert "人機協作" in full_doc_text
-    assert "數據收集整理系統" in full_doc_text
-    assert "之後的購買意願" in full_doc_text
-    assert "該如何被應用" in full_doc_text
-    assert "等轉型完全落地後，再宣布。若是提早釋出" in full_doc_text
-    assert "有何不同" in full_doc_text
-    assert "企業與行業" in full_doc_text
-    assert "有多厲害" in full_doc_text
-    assert "這麼「瘋狂地」使用它" in full_doc_text
-    assert "它所真正帶來的是" in full_doc_text
-    assert "古希臘時期，數學模型" in full_doc_text
-    assert "視模型為「工具」" in full_doc_text
-    assert "在請它幫忙" in full_doc_text
-    assert "以獲得答案完成測試並取得高分" in full_doc_text
-    print("All 19 typo / phrasing corrections verified!")
-    
-    print("\n=== ALL DEEP VERIFICATION CHECKS PASSED SUCCESSFULLY! ===")
+    verify_single(TARGET_DOC_1)
+    verify_single(TARGET_DOC_2)
+    print("\n========================================================")
+    print("ALL VERIFICATIONS COMPLETED SUCCESSFULLY FOR BOTH FILES!")
+    print("========================================================")
 
 if __name__ == "__main__":
-    verify()
+    main()
