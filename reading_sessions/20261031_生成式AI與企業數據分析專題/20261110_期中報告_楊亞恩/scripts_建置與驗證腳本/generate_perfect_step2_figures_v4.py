@@ -117,13 +117,13 @@ def generate_figure1():
     ax2.fill_between(x2, y2, 0, color='#0D9488', alpha=0.08, zorder=1)
     ax2.bar(x2, y2, width=0.48, color=teal_bars, edgecolor='#115E59', linewidth=1.2, alpha=0.90, zorder=2)
 
-    # Early box encompassing 3 columns up to y=71.5
-    early_box = FancyBboxPatch((-0.38, 0), 2.76, 71.5, boxstyle='round,pad=0.02,rounding_size=0.15',
+    # Early box encompassing 3 columns up to y=70.2
+    early_box = FancyBboxPatch((-0.38, 0), 2.76, 70.2, boxstyle='round,pad=0.02,rounding_size=0.15',
                                 facecolor='#F0FDFA', edgecolor='#0D9488', linewidth=1.5, linestyle='--', alpha=0.70, zorder=1)
     ax2.add_patch(early_box)
 
-    # Green box shifted up to y = 66.0% (wide open blank area, avoiding 33% bar directly)
-    ax2.text(1.0, 66.0, '◆ 早期摸索與局部試點合計 Σ = 73%\n（33% 個人試用 + 21% 剛訂指引 + 19% 單一部門試點）',
+    # Green box shifted up to y = 65.0% (wide open blank area, avoiding 33% bar directly)
+    ax2.text(0.95, 65.0, '◆ 早期摸索與局部試點合計 Σ = 73%\n（33% 個人試用 + 21% 剛訂指引 + 19% 單一部門試點）',
              ha='center', va='center', fontsize=12.0, fontweight='bold', color='#115E59',
              bbox=dict(boxstyle='round,pad=0.35', facecolor='#CCFBF1', edgecolor='#0F766E', linewidth=1.3), zorder=8)
 
@@ -137,7 +137,7 @@ def generate_figure1():
                  bbox=dict(boxstyle='round,pad=0.20', facecolor='#FFFFFF', edgecolor='none', alpha=0.88), zorder=7)
 
     # Insight box placed higher and rightward
-    ax2.text(2.65, 86.5,
+    ax2.text(2.95, 87.5,
              '★ 1 + 1 > 2 雙圖接力洞察：\n'
              '左圖顯示 94% 企業未能進入核心投產；\n'
              '右圖進一步拆解這群企業的真實去向：\n'
@@ -336,27 +336,28 @@ def generate_figure2():
     ax.text((x_mid + card_w + x_right) / 2, 5.15, "疑難個案\n異常上報 →", ha='center', va='center',
             fontsize=11.5, fontweight='bold', color='#6D28D9', bbox=bbox_p2, zorder=6)
 
-    # U-shaped Curved Arc Arrow for Feedback Loop (FancyArrowPatch with connectionstyle="arc3,rad=-0.036")
+    # U-shaped Curved Arc Arrow for Feedback Loop (FancyArrowPatch with connectionstyle="arc3,rad=-0.088", mutation_scale=22)
     curved_arrow = FancyArrowPatch(
-        posA=(x_right + card_w / 2, 1.48),
-        posB=(x_left + card_w / 2, 1.48),
-        connectionstyle="arc3,rad=-0.036",
-        arrowstyle="->,head_width=0.55,head_length=0.75",
+        posA=(x_right + card_w / 2, 1.62),
+        posB=(x_left + card_w / 2, 1.62),
+        connectionstyle="arc3,rad=-0.088",
+        arrowstyle="-|>",
+        mutation_scale=22,
         color="#DC2626", lw=2.8, linestyle='--', zorder=5
     )
     ax.add_patch(curved_arrow)
 
-    # Dynamic feedback callout box at y = 0.60 (clearance above from curved arrow apex)
+    # Dynamic feedback callout box at y = 0.58 (clearance above from curved arrow apex)
     bbox_feed = dict(boxstyle="round,pad=0.38,rounding_size=0.12", fc="#FFF1F2", ec="#DC2626", lw=1.5)
-    ax.text(9.0, 0.60,
+    ax.text(9.0, 0.58,
             "★ 動態反哺與持續進化迴路：人類專家將仲裁經驗轉化為新規則，回饋擴充「剛性左腦數據辭典」，使系統越用越聰明、疆界持續擴張",
-            ha='center', va='center', fontsize=12.8, fontweight='bold', color='#991B1B',
+            ha='center', va='center', fontsize=12.5, fontweight='bold', color='#991B1B',
             bbox=bbox_feed, zorder=6)
 
     # Footer note at y = 0.16
     ax.text(9.0, 0.16,
             "■ 三位一體定律：無 AI 則人類無法面對數據洪流；無人類則 AI 遭遇邊界即崩潰；無辭典則 AI 產出充斥幻覺。三者缺一不可。",
-            ha='center', va='center', fontsize=12.0, color='#475569', zorder=6)
+            ha='center', va='center', fontsize=11.8, color='#475569', zorder=6)
 
     plt.savefig(out_path, dpi=300)
     plt.close()
