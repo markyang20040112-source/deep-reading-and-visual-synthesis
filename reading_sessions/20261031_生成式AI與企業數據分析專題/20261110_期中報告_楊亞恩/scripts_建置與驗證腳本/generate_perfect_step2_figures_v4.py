@@ -3,11 +3,16 @@
 generate_perfect_step2_figures_v4.py
 Implementation of executive visual assets adhering to:
 - Canvas upgrades:
-  - Fig 1: 18.0 x 8.0 (300 DPI), left Y-axis 1.2"+ margin, +40% column spacing
-  - Fig 2: 18.0 x 8.5 (300 DPI), 1.1" inter-card channels, lifted footer pills, zero bottom border / feedback loop touching
-  - Fig 3: 18.0 x 8.5 (300 DPI), preserved real data (79%->35%->4% vs 67%->64%->62%), widescreen panoramic layout
-  - Fig 4: 18.0 x 8.5 (300 DPI), doubled category bar spacing, elevated delta capsules, spacious right panel
-  - Fig 5: 18.0 x 9.5 (300 DPI), Vertical Alignment Grid in 3 top cards, generous spacing between bullet 3 & footer pill
+  - Fig 1: 18.0 x 8.0 (300 DPI), left Y-axis 1.2"+ margin, +40% column spacing,
+           green box lifted to y=66% (away from 33% bar), spacious bottom 3-layer spacing,
+           flattened data source box.
+  - Fig 2: 18.0 x 8.5 (300 DPI), 1.1" inter-card channels, lifted footer pills (y+0.40"),
+           graceful curved U-shaped feedback arc arrow (FancyArrowPatch).
+  - Fig 3: 18.0 x 8.5 (300 DPI), preserved real data (79%->35%->4% vs 67%->64%->62%), widescreen panoramic layout.
+  - Fig 4: 18.0 x 8.5 (300 DPI), doubled category bar spacing, upward growth arrow for Case 2 (2.3%->19.5%),
+           aligned delta capsule, slimmed data source box.
+  - Fig 5: 18.0 x 9.5 (300 DPI), lifted top card bullets with balanced rhythm, relaxed warning case line spacing (1.35x),
+           expanded bottom banner height with 1.45x centered line spacing.
 """
 
 import os
@@ -15,7 +20,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch, ConnectionPatch
+from matplotlib.patches import FancyBboxPatch, ConnectionPatch, FancyArrowPatch
 
 matplotlib.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'PingFang TC', 'Noto Sans CJK TC', 'DFKai-SB', 'sans-serif']
 matplotlib.rcParams['axes.unicode_minus'] = False
@@ -27,7 +32,7 @@ os.makedirs(ASSETS_DIR, exist_ok=True)
 
 # =============================================================================
 # FIGURE 1: CDO 7-STAGE RETENTION WATERFALL & 5-STAGE MATURITY BREAKDOWN
-# Canvas: 18.0 x 8.0, left=0.078 (>1.4 inches margin for Y-axis), widened bar spacing (+40%)
+# Canvas: 18.0 x 8.0, left=0.078, lifted green box to y=66%, spacious bottom layers
 # =============================================================================
 def generate_figure1():
     out_path = os.path.join(ASSETS_DIR, "fig1_cdo_dual_panel.png")
@@ -36,7 +41,7 @@ def generate_figure1():
         nrows=1, ncols=2,
         width_ratios=[1.38, 1.0],
         left=0.078, right=0.975,
-        top=0.81, bottom=0.22,
+        top=0.81, bottom=0.25,
         wspace=0.25
     )
 
@@ -112,11 +117,14 @@ def generate_figure1():
     ax2.fill_between(x2, y2, 0, color='#0D9488', alpha=0.08, zorder=1)
     ax2.bar(x2, y2, width=0.48, color=teal_bars, edgecolor='#115E59', linewidth=1.2, alpha=0.90, zorder=2)
 
-    early_box = FancyBboxPatch((-0.38, 0), 2.76, 52.0, boxstyle='round,pad=0.02,rounding_size=0.15',
-                                facecolor='#F0FDFA', edgecolor='#0D9488', linewidth=1.5, linestyle='--', alpha=0.75, zorder=1)
+    # Early box encompassing 3 columns up to y=71.5
+    early_box = FancyBboxPatch((-0.38, 0), 2.76, 71.5, boxstyle='round,pad=0.02,rounding_size=0.15',
+                                facecolor='#F0FDFA', edgecolor='#0D9488', linewidth=1.5, linestyle='--', alpha=0.70, zorder=1)
     ax2.add_patch(early_box)
-    ax2.text(1.0, 46.5, '◆ 早期摸索與局部試點合計 Σ = 73%\n（33% 個人試用 + 21% 剛訂指引 + 19% 單一部門試點）',
-             ha='center', va='center', fontsize=12.2, fontweight='bold', color='#115E59',
+
+    # Green box shifted up to y = 66.0% (wide open blank area, avoiding 33% bar directly)
+    ax2.text(1.0, 66.0, '◆ 早期摸索與局部試點合計 Σ = 73%\n（33% 個人試用 + 21% 剛訂指引 + 19% 單一部門試點）',
+             ha='center', va='center', fontsize=12.0, fontweight='bold', color='#115E59',
              bbox=dict(boxstyle='round,pad=0.35', facecolor='#CCFBF1', edgecolor='#0F766E', linewidth=1.3), zorder=8)
 
     ax2.plot(x2, y2, color='#0F172A', linewidth=3.4, zorder=4)
@@ -128,15 +136,16 @@ def generate_figure1():
                  color='#115E59' if i < 4 else '#0F172A',
                  bbox=dict(boxstyle='round,pad=0.20', facecolor='#FFFFFF', edgecolor='none', alpha=0.88), zorder=7)
 
-    ax2.text(2.15, 78.5,
+    # Insight box placed higher and rightward
+    ax2.text(2.65, 86.5,
              '★ 1 + 1 > 2 雙圖接力洞察：\n'
              '左圖顯示 94% 企業未能進入核心投產；\n'
              '右圖進一步拆解這群企業的真實去向：\n'
              '• 73% 停留在個人試用與局部試點\n'
              '• 16% 因畏懼資安與幻覺而全面禁用\n'
              '• 僅 6% 完成雙模數據地基、規模投產',
-             ha='center', va='center', fontsize=12.8, fontweight='bold', color='#0F172A', linespacing=1.45,
-             bbox=dict(boxstyle='round,pad=0.55', facecolor='#F0FDFA', edgecolor='#0F766E', linewidth=1.6), zorder=8)
+             ha='center', va='center', fontsize=11.5, fontweight='bold', color='#0F172A', linespacing=1.35,
+             bbox=dict(boxstyle='round,pad=0.42', facecolor='#F0FDFA', edgecolor='#0F766E', linewidth=1.5), zorder=8)
 
     ax2.set_title('【右圖：企業 AI 落地成熟度拆解】未投產企業 5 大階段分布',
                    fontsize=15.5, fontweight='bold', color='#0F172A', loc='left', pad=14)
@@ -165,14 +174,14 @@ def generate_figure1():
     ax2.set_xticks(x2)
     ax2.set_xticklabels([''] * len(x2))
 
-    # X-axis labels
+    # X-axis labels with generous breathing space between column base and labels
     for xi, t1, t2 in zip(x1, tier1_p1, tier2_p1):
-        ax1.text(xi, -5.5, t1, ha='center', va='top', fontsize=13.5, fontweight='bold', color='#1E3A8A', clip_on=False)
-        ax1.text(xi, -12.5, t2, ha='center', va='top', fontsize=12.0, color='#334155', linespacing=1.3, clip_on=False)
+        ax1.text(xi, -7.5, t1, ha='center', va='top', fontsize=13.5, fontweight='bold', color='#1E3A8A', clip_on=False)
+        ax1.text(xi, -16.5, t2, ha='center', va='top', fontsize=11.5, color='#334155', linespacing=1.28, clip_on=False)
 
     for xi, t1, t2 in zip(x2, tier1_p2, tier2_p2):
-        ax2.text(xi, -5.5, t1, ha='center', va='top', fontsize=13.5, fontweight='bold', color='#115E59', clip_on=False)
-        ax2.text(xi, -12.5, t2, ha='center', va='top', fontsize=12.0, color='#334155', linespacing=1.3, clip_on=False)
+        ax2.text(xi, -7.5, t1, ha='center', va='top', fontsize=13.5, fontweight='bold', color='#115E59', clip_on=False)
+        ax2.text(xi, -16.5, t2, ha='center', va='top', fontsize=11.5, color='#334155', linespacing=1.28, clip_on=False)
 
     # Cross panel connector
     con = ConnectionPatch(xyA=(6.15, 6), coordsA=ax1.transData, xyB=(-0.42, 33), coordsB=ax2.transData,
@@ -180,15 +189,15 @@ def generate_figure1():
                           connectionstyle='arc3,rad=-0.18', zorder=10)
     fig.add_artist(con)
 
-    # Footer banner
-    footer_box = FancyBboxPatch((0.078, 0.02), 0.897, 0.065, boxstyle='round,pad=0.008,rounding_size=0.01',
+    # Compressed & flattened footer banner
+    footer_box = FancyBboxPatch((0.078, 0.018), 0.897, 0.046, boxstyle='round,pad=0.005,rounding_size=0.008',
                                 transform=fig.transFigure, facecolor='#F1F5F9', edgecolor='#CBD5E1', linewidth=1.0)
     fig.add_artist(footer_box)
 
-    fig.text(0.088, 0.058, '■ 數據來源與說明：AWS 與 MIT CDOIQ《2024 全球數據長（CDO）實證調查報告》（樣本數 N = 335 位企業數據長與高階主管）。',
-             fontsize=12.0, fontweight='bold', color='#1E293B', ha='left', va='center')
-    fig.text(0.088, 0.032, '• 同質性轉換說明：為確保左圖 X 軸全數為正向留存率，反向障礙已依法轉換為互補過關率（100%-46%=54% 品質過關；100%-57%=43% 策略行動）。右圖另有 5% 屬其他/未表態。',
-             fontsize=11.0, color='#475569', ha='left', va='center')
+    fig.text(0.088, 0.047, '■ 數據來源與說明：AWS 與 MIT CDOIQ《2024 全球數據長（CDO）實證調查報告》（樣本數 N = 335 位企業數據長與高階主管）。',
+             fontsize=11.5, fontweight='bold', color='#1E293B', ha='left', va='center')
+    fig.text(0.088, 0.027, '• 同質性轉換說明：為確保左圖 X 軸全數為正向留存率，反向障礙已依法轉換為互補過關率（100%-46%=54% 品質過關；100%-57%=43% 策略行動）。右圖另有 5% 屬其他/未表態。',
+             fontsize=10.5, color='#475569', ha='left', va='center')
 
     plt.savefig(out_path, dpi=300)
     plt.close()
@@ -197,7 +206,7 @@ def generate_figure1():
 
 # =============================================================================
 # FIGURE 2: BRAIN ARCHITECTURE (LEFT-TO-RIGHT PPT 3-PILLAR PIPELINE)
-# Canvas: 18.0 x 8.5, 1.10 inch channels, zero bottom border clipping, lifted footer capsules
+# Canvas: 18.0 x 8.5, lifted footer pills (y+0.40"), U-shaped curved feedback arc
 # =============================================================================
 def generate_figure2():
     out_path = os.path.join(ASSETS_DIR, "fig2_brain_architecture.png")
@@ -217,9 +226,6 @@ def generate_figure2():
     ax.plot([0.70, 17.30], [7.50, 7.50], color='#CBD5E1', lw=1.5)
     ax.plot([0.70, 5.20], [7.50, 7.50], color='#1E3A8A', lw=3.8)
 
-    # 3 Horizontal Cards (Left -> Middle -> Right)
-    # Available width: 17.30 - 0.70 = 16.60
-    # 3 cards of width 4.80 each = 14.40; 2 gaps of 1.10 each = 2.20; Total = 16.60! Exactly 1.10 inch channels!
     card_y = 1.70
     card_h = 5.55
     card_w = 4.80
@@ -259,14 +265,14 @@ def generate_figure2():
             ax.text(x + 0.40, by + 0.08, b_desc, ha='left', va='center',
                     fontsize=11.6, color='#334155', linespacing=1.2, zorder=4)
 
-        # Footer Pill: elevated position (y + 0.30), leaving 0.30" margin from card bottom border!
-        foot = FancyBboxPatch((x + 0.25, y + 0.28), w - 0.50, 0.46, boxstyle="round,pad=0.0,rounding_size=0.08",
+        # Lifted Footer Pill (y + 0.40, leaving 0.40" bottom clearance, eliminating squeeze)
+        foot = FancyBboxPatch((x + 0.25, y + 0.40), w - 0.50, 0.46, boxstyle="round,pad=0.0,rounding_size=0.08",
                               facecolor=foot_bg, edgecolor=border_color, linewidth=1.3, zorder=3)
         ax.add_patch(foot)
-        ax.text(x + w / 2, y + 0.51, foot_pill, ha='center', va='center',
+        ax.text(x + w / 2, y + 0.63, foot_pill, ha='center', va='center',
                 fontsize=12.2, fontweight='bold', color=foot_color, zorder=4)
 
-    # 1. Left Card: 剛性左腦（數據辭典）
+    # 1. Left Card: 剛性左腦
     draw_pillar_card(
         x=x_left, y=card_y, w=card_w, h=card_h,
         bg_color='#F0F7FF', border_color='#1E3A8A',
@@ -283,7 +289,7 @@ def generate_figure2():
         foot_bg='#EFF6FF', foot_color='#1E3A8A'
     )
 
-    # 2. Middle Card: 靈活右腦（大語言模型）
+    # 2. Middle Card: 靈活右腦
     draw_pillar_card(
         x=x_mid, y=card_y, w=card_w, h=card_h,
         bg_color='#FAF5FF', border_color='#7C3AED',
@@ -300,7 +306,7 @@ def generate_figure2():
         foot_bg='#F3E8FF', foot_color='#6D28D9'
     )
 
-    # 3. Right Card: 前額葉（人類專家最後防線）
+    # 3. Right Card: 前額葉
     draw_pillar_card(
         x=x_right, y=card_y, w=card_w, h=card_h,
         bg_color='#FFF1F2', border_color='#DC2626',
@@ -317,37 +323,38 @@ def generate_figure2():
         foot_bg='#FEE2E2', foot_color='#991B1B'
     )
 
-    # Connecting Arrows (Left -> Middle -> Right) inside 1.10" channels
-    # Arrow 1: Left to Middle (channel = 5.50 to 6.60, center = 6.05)
+    # Connecting Arrows inside channels
     ax.annotate('', xy=(x_mid - 0.08, 4.60), xytext=(x_left + card_w + 0.08, 4.60),
                 arrowprops=dict(arrowstyle="->,head_width=0.48,head_length=0.62", color='#1D4ED8', lw=3.2), zorder=5)
     bbox_p1 = dict(boxstyle="round,pad=0.18,rounding_size=0.08", fc="#EFF6FF", ec="#1D4ED8", lw=1.3)
     ax.text((x_left + card_w + x_mid) / 2, 5.15, "規則錨定\n規格約束 →", ha='center', va='center',
             fontsize=11.5, fontweight='bold', color='#1D4ED8', bbox=bbox_p1, zorder=6)
 
-    # Arrow 2: Middle to Right (channel = 11.40 to 12.50, center = 11.95)
     ax.annotate('', xy=(x_right - 0.08, 4.60), xytext=(x_mid + card_w + 0.08, 4.60),
                 arrowprops=dict(arrowstyle="->,head_width=0.48,head_length=0.62", color='#7C3AED', lw=3.2), zorder=5)
     bbox_p2 = dict(boxstyle="round,pad=0.18,rounding_size=0.08", fc="#FAF5FF", ec="#7C3AED", lw=1.3)
     ax.text((x_mid + card_w + x_right) / 2, 5.15, "疑難個案\n異常上報 →", ha='center', va='center',
             fontsize=11.5, fontweight='bold', color='#6D28D9', bbox=bbox_p2, zorder=6)
 
-    # Bottom Feedback Loop Arrow (Right -> Left)
-    # Card bottom is 1.70. Arrow runs safely at y = 1.35 with generous 0.35" clearance from card bottom!
-    arrowprops_feedback = dict(arrowstyle="->,head_width=0.55,head_length=0.75",
-                               color="#DC2626", lw=2.8, ls='--')
-    ax.annotate('', xy=(x_left + card_w / 2, 1.35), xytext=(x_right + card_w / 2, 1.35),
-                arrowprops=arrowprops_feedback, zorder=5)
+    # U-shaped Curved Arc Arrow for Feedback Loop (FancyArrowPatch with connectionstyle="arc3,rad=-0.036")
+    curved_arrow = FancyArrowPatch(
+        posA=(x_right + card_w / 2, 1.48),
+        posB=(x_left + card_w / 2, 1.48),
+        connectionstyle="arc3,rad=-0.036",
+        arrowstyle="->,head_width=0.55,head_length=0.75",
+        color="#DC2626", lw=2.8, linestyle='--', zorder=5
+    )
+    ax.add_patch(curved_arrow)
 
-    # Dynamic feedback callout box at y = 0.55 (height = 0.56, top = 1.11, leaves 0.24" clearance below dashed arrow!)
-    bbox_feed = dict(boxstyle="round,pad=0.42,rounding_size=0.12", fc="#FFF1F2", ec="#DC2626", lw=1.5)
-    ax.text(9.0, 0.70,
+    # Dynamic feedback callout box at y = 0.60 (clearance above from curved arrow apex)
+    bbox_feed = dict(boxstyle="round,pad=0.38,rounding_size=0.12", fc="#FFF1F2", ec="#DC2626", lw=1.5)
+    ax.text(9.0, 0.60,
             "★ 動態反哺與持續進化迴路：人類專家將仲裁經驗轉化為新規則，回饋擴充「剛性左腦數據辭典」，使系統越用越聰明、疆界持續擴張",
-            ha='center', va='center', fontsize=13.0, fontweight='bold', color='#991B1B',
+            ha='center', va='center', fontsize=12.8, fontweight='bold', color='#991B1B',
             bbox=bbox_feed, zorder=6)
 
-    # Footer note at y = 0.18
-    ax.text(9.0, 0.20,
+    # Footer note at y = 0.16
+    ax.text(9.0, 0.16,
             "■ 三位一體定律：無 AI 則人類無法面對數據洪流；無人類則 AI 遭遇邊界即崩潰；無辭典則 AI 產出充斥幻覺。三者缺一不可。",
             ha='center', va='center', fontsize=12.0, color='#475569', zorder=6)
 
@@ -444,7 +451,7 @@ def generate_figure3():
 
 # =============================================================================
 # FIGURE 4: CUSTOMER VALUE GAP & FINANCIAL LEVERAGE
-# Canvas: 18.0 x 8.5, doubled bar spacing, elevated delta capsules, spacious right panel
+# Canvas: 18.0 x 8.5, Case 2 upward growth arrow (2.3%->19.5%), aligned capsule, slimmed footer
 # =============================================================================
 def generate_figure4():
     out_path = os.path.join(ASSETS_DIR, "fig4_customer_value_gap.png")
@@ -479,7 +486,6 @@ def generate_figure4():
         "【溝通回饋】\n每週專案進度更新\n（製造商 ITI）",
         "【品質低價】\n規格符合與低報價\n（基本衛生因子門檻）",
     ]
-    # Doubled bar group spacing (1.65 instead of 1.35)
     x = np.arange(len(categories)) * 1.65
     bar_w = 0.42
     gap = 0.04
@@ -514,18 +520,18 @@ def generate_figure4():
         ax.text(cx, cy, text, ha="center", va="center", fontsize=11.8, fontweight="bold",
                 color=color, bbox=bbox_props, zorder=7)
 
-    # Delta Arrows & High-position Avoidance Capsules
     # Case 0: 24h problem resolution
     ax1.plot([x_exec[0] - bar_w/2, x_cust[0] + bar_w/2], [85.0, 85.0], color="#94A3B8", linestyle=":", lw=1.5, zorder=2)
     ax1.annotate("", xy=(x_exec[0], 85.0), xytext=(x_exec[0], 17.5),
                  arrowprops=dict(arrowstyle="<->", color="#0E5B6B", lw=2.0), zorder=5)
     draw_capsule(ax1, x_exec[0], 51.0, "Δ = +72.5%\n(+6.8倍關鍵)", "#0E5B6B", "#EBF7F9", "#5DBACD")
 
-    # Case 1: Safety compliance (Capsule positioned safely elevated at y=42.0 to avoid 2.3% and 19.5% bars)
+    # Case 1: Safety compliance (FIXED: upward growth arrow from 2.3% to 19.5% with aligned capsule)
     ax1.plot([x_exec[1] - bar_w/2, x_cust[1] + bar_w/2], [19.5, 19.5], color="#94A3B8", linestyle=":", lw=1.5, zorder=2)
-    ax1.annotate("", xy=(x_exec[1], 21.0), xytext=(x_exec[1], 34.0),
-                 arrowprops=dict(arrowstyle="->", color="#0E5B6B", lw=1.8), zorder=5)
-    draw_capsule(ax1, x_exec[1], 44.0, "Δ = +17.2%\n(+8.5倍被低估)", "#0E5B6B", "#EBF7F9", "#5DBACD")
+    ax1.annotate("", xy=(x_exec[1], 19.5), xytext=(x_exec[1], 4.8),
+                 arrowprops=dict(arrowstyle="->,head_width=0.45,head_length=0.55", color="#0E5B6B", lw=2.0), zorder=5)
+    ax1.plot([x_exec[1], x_exec[1]], [19.5, 25.5], color="#0E5B6B", linestyle=":", lw=1.5, zorder=5)
+    draw_capsule(ax1, x_exec[1], 31.5, "Δ = +17.2%\n(+8.5倍被低估)", "#0E5B6B", "#EBF7F9", "#5DBACD")
 
     # Case 2: Weekly progress update
     ax1.plot([x_exec[2] - bar_w/2, x_cust[2] + bar_w/2], [48.0, 48.0], color="#94A3B8", linestyle=":", lw=1.5, zorder=2)
@@ -604,15 +610,15 @@ def generate_figure4():
         bbox=dict(boxstyle="round,pad=0.55,rounding_size=0.15", fc="#F8FAFC", ec="#0E5B6B", lw=1.4)
     )
 
-    # Footer banner
-    footer_box = FancyBboxPatch((0.078, 0.02), 0.892, 0.065, boxstyle='round,pad=0.008,rounding_size=0.01',
+    # Slimmed Flattened Footer banner
+    footer_box = FancyBboxPatch((0.078, 0.018), 0.892, 0.046, boxstyle='round,pad=0.005,rounding_size=0.008',
                                 transform=fig.transFigure, facecolor='#F1F5F9', edgecolor='#CBD5E1', linewidth=1.0)
     fig.add_artist(footer_box)
 
-    fig.text(0.088, 0.058, '■ 資料來源：Vikas Mittal, A. Piazza, S. Singh & A. Malshe (2025), "Do You Know What Your Customers Value?", Harvard Business Review.',
-             fontsize=12.0, fontweight='bold', color='#1E293B', ha='left', va='center')
-    fig.text(0.088, 0.032, '• 研究範疇：涵蓋 104 家上市 B2B 企業及其 18,840 名顧客之 10-K 財報自然語言分析與雙層統計模型驗證；涵蓋期間 1999–2024 年。',
-             fontsize=11.0, color='#475569', ha='left', va='center')
+    fig.text(0.088, 0.047, '■ 資料來源：Vikas Mittal, A. Piazza, S. Singh & A. Malshe (2025), "Do You Know What Your Customers Value?", Harvard Business Review.',
+             fontsize=11.5, fontweight='bold', color='#1E293B', ha='left', va='center')
+    fig.text(0.088, 0.027, '• 研究範疇：涵蓋 104 家上市 B2B 企業及其 18,840 名顧客之 10-K 財報自然語言分析與雙層統計模型驗證；涵蓋期間 1999–2024 年。',
+             fontsize=10.5, color='#475569', ha='left', va='center')
 
     plt.savefig(out_path, dpi=300)
     plt.close()
@@ -621,7 +627,7 @@ def generate_figure4():
 
 # =============================================================================
 # FIGURE 5: ECOSYSTEM VALUE LOOP (LEFT-TO-RIGHT PPT 3-PILLAR & FAILURE WARNINGS)
-# Canvas: 18.0 x 9.5, Vertical Alignment Grid, ample spacing between bullet 3 & footer capsule
+# Canvas: 18.0 x 9.5, lifted top bullets, relaxed warning line spacing (1.35x), expanded bottom banner
 # =============================================================================
 def generate_figure5():
     out_path = os.path.join(ASSETS_DIR, "fig5_ecosystem_mindmap.png")
@@ -642,8 +648,6 @@ def generate_figure5():
     ax.plot([0.65, 5.20], [8.45, 8.45], color='#0284C7', lw=3.8)
 
     # 3 Horizontal Cards (Top Row)
-    # Available width from 0.65 to 17.35 = 16.70
-    # card_w = 4.60, gap = 1.45 (2 gaps = 2.90, 3 cards = 13.80; 13.80 + 2.90 = 16.70)
     top_y = 4.80
     top_h = 3.50
     col_w = 4.60
@@ -671,18 +675,8 @@ def generate_figure5():
         ax.text(x + 0.25, y + h - 1.12, subtitle, ha='left', va='center',
                 fontsize=12.0, color='#475569', zorder=3)
 
-        # Vertical Alignment Grid for 3 bullets:
-        # We start bullet 0 safely at y + h - 1.50
-        # Step = 0.52. Each bullet title at by, desc at by - 0.21.
-        # Bullet 0: by = y + h - 1.50 -> desc at y + h - 1.71
-        # Bullet 1: by = y + h - 2.02 -> desc at y + h - 2.23
-        # Bullet 2: by = y + h - 2.54 -> desc at y + h - 2.75
-        # With h = 3.50:
-        # Bullet 2 desc is at y + 0.75!
-        # Footer pill is placed at y + 0.18, height 0.40 -> top of footer pill is at y + 0.58!
-        # Gap between Bullet 2 desc and Footer pill = 0.75 - 0.58 = 0.17 inches of clean whitespace!
-        # Footer pill bottom is at y + 0.18, leaving 0.18 inches of clean whitespace from card bottom!
-        bullet_start = y + h - 1.52
+        # Lifted Bullets Grid: perfectly balanced between subtitle and footer pill
+        bullet_start = y + h - 1.40
         for i, (tag, desc) in enumerate(bullets):
             by = bullet_start - i * 0.52
             ax.text(x + 0.25, by, f"{tag}", ha='left', va='center',
@@ -691,10 +685,10 @@ def generate_figure5():
                     fontsize=11.5, color='#334155', zorder=4)
 
         # Footer Pill
-        foot = FancyBboxPatch((x + 0.22, y + 0.18), w - 0.44, 0.40, boxstyle="round,pad=0.0,rounding_size=0.06",
+        foot = FancyBboxPatch((x + 0.22, y + 0.20), w - 0.44, 0.40, boxstyle="round,pad=0.0,rounding_size=0.06",
                               facecolor=foot_bg, edgecolor=border_color, linewidth=1.2, zorder=3)
         ax.add_patch(foot)
-        ax.text(x + w / 2, y + 0.38, foot_pill, ha='center', va='center',
+        ax.text(x + w / 2, y + 0.40, foot_pill, ha='center', va='center',
                 fontsize=11.2, fontweight='bold', color=foot_color, zorder=4)
 
     # 1. Left Card: 投資人／資本市場
@@ -745,41 +739,34 @@ def generate_figure5():
         foot_bg='#CCFBF1', foot_color='#0F766E'
     )
 
-    # Connectors between Top Cards (1.45 inch wide gaps, ZERO collision!)
-    # Gap 1: between Card 1 (ends 5.25) and Card 2 (starts 6.70). Center = 5.975
-    # Top arrow: 資本助燃
+    # Connectors between Top Cards
     ax.annotate('', xy=(6.60, top_y + 2.20), xytext=(5.35, top_y + 2.20),
                 arrowprops=dict(arrowstyle="->,head_width=0.42,head_length=0.55", color='#D97706', lw=2.6), zorder=5)
     ax.text(5.975, top_y + 2.52, "資本助燃 →", ha='center', va='center',
             fontsize=12.0, fontweight='bold', color='#92400E', zorder=6)
 
-    # Bottom arrow: 共享市值
     ax.annotate('', xy=(5.35, top_y + 1.25), xytext=(6.60, top_y + 1.25),
                 arrowprops=dict(arrowstyle="->,head_width=0.42,head_length=0.55", color='#0284C7', lw=2.6), zorder=5)
     ax.text(5.975, top_y + 1.57, "← 共享市值", ha='center', va='center',
             fontsize=12.0, fontweight='bold', color='#0369A1', zorder=6)
 
-    # Gap 2: between Card 2 (ends 11.30) and Card 3 (starts 12.75). Center = 12.025
-    # Top arrow: 解顧客痛點
     ax.annotate('', xy=(12.65, top_y + 2.30), xytext=(11.40, top_y + 2.30),
                 arrowprops=dict(arrowstyle="->,head_width=0.45,head_length=0.58", color='#0D9488', lw=2.8), zorder=5)
     ax.text(12.025, top_y + 2.62, "解顧客痛點 →", ha='center', va='center',
             fontsize=12.2, fontweight='bold', color='#0F766E', zorder=6)
 
-    # Center badge: ★ 雙向造血主迴路 ★
     bbox_core = dict(boxstyle="round,pad=0.28,rounding_size=0.10", fc="#0F172A", ec="#38BDF8", lw=1.6)
     ax.text(12.025, top_y + 1.70, "★ 雙向造血 ★\n（主迴路）", ha='center', va='center',
             fontsize=11.5, fontweight='bold', color='#38BDF8', bbox=bbox_core, zorder=6)
 
-    # Bottom arrow: 回饋真實營收
     ax.annotate('', xy=(11.40, top_y + 1.10), xytext=(12.65, top_y + 1.10),
                 arrowprops=dict(arrowstyle="->,head_width=0.45,head_length=0.58", color='#0284C7', lw=2.8), zorder=5)
     ax.text(12.025, top_y + 0.78, "← 真金白銀", ha='center', va='center',
             fontsize=12.2, fontweight='bold', color='#0369A1', zorder=6)
 
     # ---------------- Lower Tier: 3 Structural Failure Warning Cards ----------------
-    warn_y = 1.15
-    warn_h = 3.35
+    warn_y = 1.18
+    warn_h = 3.38
     warn_w = 16.70
     warn_x = 0.65
 
@@ -799,10 +786,10 @@ def generate_figure5():
             "【誘因錯位惡果】管理階層為迎合每季股價炒作，將心力用於取悅資本市場而非服務客戶，最終導致「尾巴搖狗」的毀滅性崩壞：",
             fontsize=12.5, fontweight="bold", color="#7F1D1D", va="top", ha="left", zorder=5)
 
-    # 3 Parallel Warning Cards
+    # 3 Parallel Warning Cards with relaxed line spacing (1.35x) and increased breathing room
     case_w = 5.25
-    case_h = 2.05
-    case_y = warn_y + 0.20
+    case_h = 2.12
+    case_y = warn_y + 0.16
     cx_list = [warn_x + 0.25, warn_x + 0.25 + case_w + 0.25, warn_x + 0.25 + (case_w + 0.25) * 2]
 
     cases = [
@@ -846,18 +833,20 @@ def generate_figure5():
                 fontsize=13.5, fontweight="bold", color="#991B1B", va="center", ha="center", zorder=5)
 
         for r_idx, (r_head, r_body) in enumerate(c["items"]):
-            ry = case_y + case_h - 0.68 - r_idx * 0.45
+            ry = case_y + case_h - 0.66 - r_idx * 0.49
             ax.text(cx + 0.22, ry, f"• 【{r_head}】", fontsize=12.2, fontweight="bold", color="#991B1B", va="center", ha="left", zorder=5)
-            ax.text(cx + 0.22, ry - 0.19, f"   {r_body}", fontsize=11.5, color="#1E293B", va="center", ha="left", zorder=5)
+            ax.text(cx + 0.22, ry - 0.21, f"   {r_body}", fontsize=11.6, color="#1E293B", linespacing=1.35, va="center", ha="left", zorder=5)
 
-    # Bottom Master Banner
-    banner_box = FancyBboxPatch((warn_x, 0.14), warn_w, 0.85, boxstyle="round,pad=0.0,rounding_size=0.10",
+    # Bottom Master Banner with expanded height & centered 1.35x line spacing
+    banner_y = 0.10
+    banner_h = 0.94
+    banner_box = FancyBboxPatch((warn_x, banner_y), warn_w, banner_h, boxstyle="round,pad=0.0,rounding_size=0.10",
                                 facecolor="#0F172A", edgecolor="#38BDF8", linewidth=1.6, zorder=2)
     ax.add_patch(banner_box)
-    ax.text(warn_x + 0.28, 0.68, "★ 商業第一性原理結論：", fontsize=13.5, fontweight="bold", color="#FBBF24", va="center", ha="left", zorder=5)
-    ax.text(warn_x + 0.28, 0.38, "真正的商業價值永遠誕生於「企業與客戶」的雙向造血迴路；資本市場的資金只是加速的助燃劑。\n"
+    ax.text(warn_x + 0.28, banner_y + banner_h - 0.26, "★ 商業第一性原理結論：", fontsize=13.5, fontweight="bold", color="#FBBF24", va="center", ha="left", zorder=5)
+    ax.text(warn_x + 0.28, banner_y + 0.34, "真正的商業價值永遠誕生於「企業與客戶」的雙向造血迴路；資本市場的資金只是加速的助燃劑。\n"
                                   "企業唯有放下直覺執念，用統計模型找出顧客真正在乎的事，才能以健康的真金白銀支撐起長期穩健的市值溢價。",
-            fontsize=11.6, color="#F8FAFC", linespacing=1.35, va="center", ha="left", zorder=5)
+            fontsize=12.0, color="#F8FAFC", linespacing=1.45, va="center", ha="left", zorder=5)
 
     plt.savefig(out_path, dpi=300)
     plt.close()
@@ -870,4 +859,4 @@ if __name__ == "__main__":
     generate_figure3()
     generate_figure4()
     generate_figure5()
-    print("\nAll 5 figures generated successfully with V4 specifications!")
+    print("\nAll 5 figures generated successfully with V4/V5 fine-tuned specifications!")
