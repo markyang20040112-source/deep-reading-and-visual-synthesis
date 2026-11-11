@@ -73,14 +73,18 @@ def set_run_font(run, font_name=FONT_CHINESE, western_font=FONT_WESTERN,
     """
     Applies comprehensive dual-font properties (EastAsian + Ascii/HAnsi)
     to eliminate font substitution fallbacks across Microsoft Word and LibreOffice.
+    Strictly replaces any existing w:rFonts to eliminate duplicate schema tags.
     """
     run.bold = bold
     run.italic = italic
     run.font.size = Pt(size_pt)
     run.font.color.rgb = color_rgb
-    run.font.name = western_font
 
     rPr = run._r.get_or_add_rPr()
+    old_rFonts = rPr.find(qn('w:rFonts'))
+    if old_rFonts is not None:
+        rPr.remove(old_rFonts)
+
     rFonts_xml = (
         f'<w:rFonts {nsdecls("w")} '
         f'w:ascii="{western_font}" '
@@ -214,8 +218,11 @@ def build_callout_box(p, title_text, body_text):
     - Subtle slate borders on other three sides (#CBD5E1)
     - Symmetrically aligned horizontal width matching the 7.10-inch table (-598 dxa on left/right)
     - Clean 標楷體 typography.
+    - keep_together / w:keepLines pagination protection ensuring the callout card
+      NEVER splits across a page break.
     """
     p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    p.paragraph_format.keep_together = True
     pPr = p._p.get_or_add_pPr()
 
     # Spacing and line height
@@ -270,6 +277,9 @@ def populate_ppt_table(table, headers, data, col_widths, table_width_dxa=DEFAULT
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
     tblPr = table._tbl.tblPr
+    old_tblW = tblPr.find(qn('w:tblW'))
+    if old_tblW is not None:
+        tblPr.remove(old_tblW)
     tblW = parse_xml(f'<w:tblW {nsdecls("w")} w:w="{table_width_dxa}" w:type="dxa"/>')
     tblPr.append(tblW)
 
@@ -300,8 +310,10 @@ def populate_ppt_table(table, headers, data, col_widths, table_width_dxa=DEFAULT
 
     for i, h_text in enumerate(headers):
         cell = hdr_row.cells[i]
-        cell.width = col_widths[i]
         tcPr = cell._tc.get_or_add_tcPr()
+        old_tcW = tcPr.find(qn('w:tcW'))
+        if old_tcW is not None:
+            tcPr.remove(old_tcW)
         tcW = parse_xml(f'<w:tcW {nsdecls("w")} w:w="{int(col_widths[i].inches * 1440)}" w:type="dxa"/>')
         tcPr.append(tcW)
 
@@ -336,8 +348,10 @@ def populate_ppt_table(table, headers, data, col_widths, table_width_dxa=DEFAULT
 
         for c_idx, cell_bullets in enumerate(row_spec):
             cell = row.cells[c_idx]
-            cell.width = col_widths[c_idx]
             tcPr = cell._tc.get_or_add_tcPr()
+            old_tcW = tcPr.find(qn('w:tcW'))
+            if old_tcW is not None:
+                tcPr.remove(old_tcW)
             tcW = parse_xml(f'<w:tcW {nsdecls("w")} w:w="{int(col_widths[c_idx].inches * 1440)}" w:type="dxa"/>')
             tcPr.append(tcW)
 
@@ -723,13 +737,44 @@ def remove_legacy_table_images(doc):
     return removed_count
 
 
-def insert_tables_into_doc(doc):
+def remove_existing_tables(doc):
+    """
+    Removes previously inserted Table 1, Table 2, captions, and Callout Box
+    if present, allowing a clean idempotent re-insertion or update.
+    """
+    to_remove = []
+    for t in doc.tables:
+        if len(t.rows) == 5 and len(t.columns) == 4:
+            if "應用模式" in "".join(c.text for c in t.rows[0].cells):
+                to_remove.append(t._tbl)
+        elif len(t.rows) == 6 and len(t.columns) == 4:
+            if "企業類型" in "".join(c.text for c in t.rows[0].cells):
+                to_remove.append(t._tbl)
+
+    for p in doc.paragraphs:
+        txt = p.text.strip()
+        if txt.startswith("表一：四種 AI 應用情境矩陣") or txt.startswith("表二：AI 模型在不同企業類型中的定位矩陣") or txt.startswith("★ 高管決策啟示"):
+            to_remove.append(p._p)
+
+    for elem in to_remove:
+        parent = elem.getparent()
+        if parent is not None:
+            parent.remove(elem)
+    if to_remove:
+        print(f"[table_components] Removed {len(to_remove)} existing table/caption/callout element(s) for fresh insertion.")
+    return len(to_remove)
+
+
+def insert_tables_into_doc(doc, force=False):
     """
     Idempotent and safe table insertion into an existing docx Document object.
-    Checks whether Table 1 and Table 2 already exist to avoid duplicate insertions.
+    Checks whether Table 1 and Table 2 already exist and have valid keepLines pagination protection.
+    If force=True or if existing callout box lacks keepLines protection, re-inserts cleanly.
     """
     t1_exists = False
     t2_exists = False
+    callout_has_keeplines = False
+
     for t in doc.tables:
         if len(t.rows) == 5 and len(t.columns) == 4:
             if "應用模式" in "".join(c.text for c in t.rows[0].cells):
@@ -738,9 +783,19 @@ def insert_tables_into_doc(doc):
             if "企業類型" in "".join(c.text for c in t.rows[0].cells):
                 t2_exists = True
 
-    if t1_exists and t2_exists:
-        print("[table_components] Both Table 1 and Table 2 already exist. No duplicate insertion.")
+    for p in doc.paragraphs:
+        if "★ 高管決策啟示" in p.text:
+            if p._p.pPr is not None and any(e.tag.endswith('keepLines') for e in p._p.pPr):
+                callout_has_keeplines = True
+
+    if t1_exists and t2_exists and callout_has_keeplines and not force:
+        print("[table_components] Both Table 1 and Table 2 already exist with full pagination protection. No duplicate insertion.")
         return doc
+
+    if t1_exists or t2_exists:
+        remove_existing_tables(doc)
+        t1_exists = False
+        t2_exists = False
 
     # Clean legacy screenshot placeholders before inserting publication-grade tables
     remove_legacy_table_images(doc)
@@ -749,28 +804,29 @@ def insert_tables_into_doc(doc):
     assert target_p1 is not None, "Could not find anchor paragraph for Table 1 ('上面這四種應用方式')!"
     assert target_p2 is not None, "Could not find anchor paragraph for Table 2 ('不難看出，其實AI模型')!"
 
-    if not t1_exists:
-        print("[table_components] Inserting Table 1 before anchor paragraph...")
-        insert_table_1_before(doc, target_p1)
+    print("[table_components] Inserting Table 1 before anchor paragraph...")
+    insert_table_1_before(doc, target_p1)
 
-    if not t2_exists:
-        print("[table_components] Inserting Table 2 & Callout Box before anchor paragraph...")
-        insert_table_2_before(doc, target_p2, include_callout=True)
+    print("[table_components] Inserting Table 2 & Callout Box before anchor paragraph...")
+    insert_table_2_before(doc, target_p2, include_callout=True)
 
     print("[table_components] Successfully inserted Table 1 and Table 2!")
     return doc
 
 
-def insert_tables_into_file(source_docx_path, output_docx_path=None):
+def insert_tables_into_file(source_docx_path, output_docx_path=None, force=False):
     """
     Safely opens source_docx_path, inserts Table 1 and Table 2, and saves to output_docx_path
     (or overwrites source_docx_path if output_docx_path is None).
     """
+    source_docx_path = os.path.abspath(source_docx_path)
     if output_docx_path is None:
         output_docx_path = source_docx_path
+    else:
+        output_docx_path = os.path.abspath(output_docx_path)
 
     doc = docx.Document(source_docx_path)
-    insert_tables_into_doc(doc)
+    insert_tables_into_doc(doc, force=force)
     doc.save(output_docx_path)
     print(f"[table_components] Saved updated document to: {output_docx_path}")
     return output_docx_path
@@ -912,8 +968,15 @@ def verify_tables_in_doc(doc_or_path):
     assert "AI 幕後核心任務" in t2_headers[2], f"Col 2 header mismatch: {t2_headers[2]}"
     assert "商業價值" in t2_headers[3], f"Col 3 header mismatch: {t2_headers[3]}"
 
-    # 2. Structural checks: cantSplit and tblHeader
+    # 2. Structural checks: cantSplit, tblHeader, tblW width 10224 dxa
     for t_idx, t in enumerate([t1, t2], start=1):
+        tblPr = t._tbl.tblPr
+        tblWs = [elem for elem in tblPr if elem.tag.endswith('tblW')]
+        assert len(tblWs) == 1, f"Table {t_idx} has {len(tblWs)} tblW elements (must be exactly 1)!"
+        assert tblWs[0].get(qn('w:w')) == str(DEFAULT_TABLE_WIDTH_DXA), (
+            f"Table {t_idx} width is {tblWs[0].get(qn('w:w'))}, expected {DEFAULT_TABLE_WIDTH_DXA}"
+        )
+
         for r_idx, row in enumerate(t.rows):
             trPr = row._tr.trPr
             assert trPr is not None, f"Table {t_idx} Row {r_idx} missing trPr"
@@ -932,7 +995,7 @@ def verify_tables_in_doc(doc_or_path):
                     fill = shd[0].get(qn('w:fill'))
                     assert fill.upper() == HEX_NAVY.upper(), f"Header fill {fill} != {HEX_NAVY}"
 
-    print("Header background (#1B365D), tblHeader, and cantSplit protections verified 100%!")
+    print("Table width (10224 dxa), header background (#1B365D), tblHeader, and cantSplit protections verified 100%!")
 
     # 3. Zebra Rows check
     for t_idx, t in enumerate([t1, t2], start=1):
@@ -984,6 +1047,9 @@ def verify_tables_in_doc(doc_or_path):
         if "★ 高管決策啟示" in p.text:
             pPr = p._p.pPr
             assert pPr is not None, "Callout paragraph missing pPr"
+            keep_lines = [elem for elem in pPr if elem.tag.endswith('keepLines')]
+            assert len(keep_lines) >= 1, "Callout paragraph missing keepLines (keep_together) protection!"
+
             pBdr = [elem for elem in pPr if elem.tag.endswith('pBdr')]
             assert len(pBdr) >= 1, "Callout paragraph missing pBdr"
             left_bdr = [elem for elem in pBdr[0] if elem.tag.endswith('left')]
@@ -998,7 +1064,7 @@ def verify_tables_in_doc(doc_or_path):
             callout_found += 1
 
     if callout_found:
-        print(f"Executive Callout Box verified with Amber styling (#FFFBEB / #{HEX_AMBER_BORDER})!")
+        print(f"Executive Callout Box verified with Amber styling (#FFFBEB / #{HEX_AMBER_BORDER}) and keepLines protection!")
 
     print("ALL TABLE AND CALLOUT FORMATTING VERIFICATIONS PASSED!\n")
     return True
@@ -1013,19 +1079,22 @@ if __name__ == "__main__":
 
     # CLI Argument Parsing: allows another AI to call via CLI or Python import
     if len(sys.argv) > 1:
-        arg = sys.argv[1].strip()
-        if arg in ("-h", "--help"):
+        args = sys.argv[1:]
+        if "-h" in args or "--help" in args:
             print("Usage:")
             print("  python table_components.py                  # Builds and verifies preview_tables.docx")
             print("  python table_components.py <target_docx>    # Merges Table 1 & Table 2 into target_docx")
-            print("  python table_components.py --merge <target> # Explicit merge flag")
+            print("  python table_components.py --force <target> # Force re-insertion")
             print("\nPython 1-Line Merge Snippet:")
             print('  from table_components import insert_tables_into_file; insert_tables_into_file(r"<PATH_TO_DOCX>")')
             sys.exit(0)
 
-        target_file = sys.argv[2] if arg == "--merge" and len(sys.argv) > 2 else arg
-        print(f"[table_components] Merging tables into target document: {target_file}")
-        insert_tables_into_file(target_file)
+        force_flag = "--force" in args
+        target_args = [a for a in args if not a.startswith("--")]
+        target_file = target_args[0] if target_args else os.path.join(base_dir, "楊亞恩.docx")
+
+        print(f"[table_components] Merging tables into target document: {target_file} (force={force_flag})")
+        insert_tables_into_file(target_file, force=force_flag)
         verify_tables_in_doc(target_file)
         print("[table_components] Merge and verification completed successfully!")
     else:
