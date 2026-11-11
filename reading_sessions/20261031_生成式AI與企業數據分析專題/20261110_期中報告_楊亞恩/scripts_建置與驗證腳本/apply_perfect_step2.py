@@ -106,6 +106,9 @@ def execute():
     for p_img_idx, p_cap_idx, img_path, w_in, cap_text in figures:
         p_img = doc.paragraphs[p_img_idx]
         p_cap = doc.paragraphs[p_cap_idx]
+        fig_prefix = cap_text.split("：")[0]
+        assert fig_prefix in p_cap.text or len(p_img.runs) > 0, \
+            f"Paragraph mismatch at P{p_cap_idx}: expected {fig_prefix}, got {p_cap.text[:30]}"
         print(f"Updating Fig at P{p_img_idx}/P{p_cap_idx}: {cap_text[:35]}...")
         configure_image_paragraph(p_img, img_path, width_in=w_in)
         configure_caption_paragraph(p_cap, cap_text)

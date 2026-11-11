@@ -321,16 +321,16 @@ def generate_figure2():
     # Arrow 1: Left to Middle (channel = 5.50 to 6.60, center = 6.05)
     ax.annotate('', xy=(x_mid - 0.08, 4.60), xytext=(x_left + card_w + 0.08, 4.60),
                 arrowprops=dict(arrowstyle="->,head_width=0.48,head_length=0.62", color='#1D4ED8', lw=3.2), zorder=5)
-    bbox_p1 = dict(boxstyle="round,pad=0.30", fc="#EFF6FF", ec="#1D4ED8", lw=1.3)
+    bbox_p1 = dict(boxstyle="round,pad=0.18,rounding_size=0.08", fc="#EFF6FF", ec="#1D4ED8", lw=1.3)
     ax.text((x_left + card_w + x_mid) / 2, 5.15, "規則錨定\n規格約束 →", ha='center', va='center',
-            fontsize=12.5, fontweight='bold', color='#1D4ED8', bbox=bbox_p1, zorder=6)
+            fontsize=11.5, fontweight='bold', color='#1D4ED8', bbox=bbox_p1, zorder=6)
 
     # Arrow 2: Middle to Right (channel = 11.40 to 12.50, center = 11.95)
     ax.annotate('', xy=(x_right - 0.08, 4.60), xytext=(x_mid + card_w + 0.08, 4.60),
                 arrowprops=dict(arrowstyle="->,head_width=0.48,head_length=0.62", color='#7C3AED', lw=3.2), zorder=5)
-    bbox_p2 = dict(boxstyle="round,pad=0.30", fc="#FAF5FF", ec="#7C3AED", lw=1.3)
+    bbox_p2 = dict(boxstyle="round,pad=0.18,rounding_size=0.08", fc="#FAF5FF", ec="#7C3AED", lw=1.3)
     ax.text((x_mid + card_w + x_right) / 2, 5.15, "疑難個案\n異常上報 →", ha='center', va='center',
-            fontsize=12.5, fontweight='bold', color='#6D28D9', bbox=bbox_p2, zorder=6)
+            fontsize=11.5, fontweight='bold', color='#6D28D9', bbox=bbox_p2, zorder=6)
 
     # Bottom Feedback Loop Arrow (Right -> Left)
     # Card bottom is 1.70. Arrow runs safely at y = 1.35 with generous 0.35" clearance from card bottom!
