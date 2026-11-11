@@ -19,9 +19,17 @@ BACKUP_DOC = os.path.join(BASE_DIR, "楊亞恩_before_plan_b.docx")
 def get_orig_doc():
     if os.path.exists(BACKUP_DOC):
         return docx.Document(BACKUP_DOC)
-    # Fallback to git HEAD
+    # Fallback to git baseline before Plan B
     rel_path = "reading_sessions/20261031_生成式AI與企業數據分析專題/20261110_期中報告_楊亞恩/楊亞恩.docx"
-    res = subprocess.run(["git", "show", f"HEAD:{rel_path}"], capture_output=True)
+    # Find the commit introducing Plan B
+    res_log = subprocess.run(["git", "log", "--grep=Plan B", "-n", "1", "--pretty=%H"], capture_output=True, text=True)
+    plan_b_commit = res_log.stdout.strip()
+    if plan_b_commit:
+        ref = f"{plan_b_commit}~1"
+    else:
+        # Fallback to known pre-Plan B commit hash
+        ref = "8d1d675f1de2799d65a85d49536b9ce61d92a431"
+    res = subprocess.run(["git", "show", f"{ref}:{rel_path}"], capture_output=True)
     if res.returncode == 0 and len(res.stdout) > 0:
         return docx.Document(io.BytesIO(res.stdout))
     return None
