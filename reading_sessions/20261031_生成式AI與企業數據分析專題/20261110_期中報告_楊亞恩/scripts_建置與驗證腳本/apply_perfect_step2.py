@@ -36,10 +36,10 @@ for name, pth in [("Fig 1", FIG1_PATH), ("Fig 2", FIG2_PATH), ("Fig 3", FIG3_PAT
 
 
 def configure_image_paragraph(p_img, img_path, width_in=7.30):
-    """Sets image with exact 7.30" width and negative margin -720 dxa centering."""
+    """Sets image with exact 7.30" width and negative margin -720 dxa centering, with minimized space_before."""
     p_img.paragraph_format.line_spacing = 1.0
-    p_img.paragraph_format.space_before = Pt(6)
-    p_img.paragraph_format.space_after = Pt(4)
+    p_img.paragraph_format.space_before = Pt(2)
+    p_img.paragraph_format.space_after = Pt(3)
     p_img.paragraph_format.keep_with_next = True
 
     # Clear existing runs
