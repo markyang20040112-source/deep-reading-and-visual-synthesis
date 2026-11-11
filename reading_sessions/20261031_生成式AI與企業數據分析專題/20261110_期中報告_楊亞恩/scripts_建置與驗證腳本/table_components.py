@@ -683,18 +683,44 @@ def find_target_paragraphs(doc):
     Locates the precise paragraph anchors for Table 1 and Table 2.
     Target for Table 1: Paragraph starting with "上面這四種應用方式還只是AI應用上的冰山一角"
     Target for Table 2: Paragraph starting with "不難看出，其實AI模型"
+    Uses resilient substring matching stripped of whitespace.
     """
     target_p1 = None
     target_p2 = None
 
     for p in doc.paragraphs:
-        txt = p.text.strip()
-        if "上面這四種應用方式" in txt and target_p1 is None:
+        txt = p.text.strip().replace(" ", "").replace("　", "")
+        if "上面這四種應用方式還只是" in txt and target_p1 is None:
             target_p1 = p
         elif "不難看出，其實AI模型" in txt and target_p2 is None:
             target_p2 = p
 
     return target_p1, target_p2
+
+
+def remove_legacy_table_images(doc):
+    """
+    Removes legacy draft screenshot images of Table 1 and Table 2 (image4.jpeg and image6.jpeg)
+    that were embedded in paragraphs before the anchor points.
+    Preserves all 5 analytical figures (fig1-fig5, all .png) and all paragraph text and formatting.
+    """
+    removed_count = 0
+    for p in doc.paragraphs:
+        runs_to_remove = []
+        for r in p.runs:
+            if 'graphic' in r._r.xml:
+                for blip in r._r.xpath('.//a:blip'):
+                    embed_id = blip.get('{http://schemas.openxmlformats.org/officeDocument/2006/relationships}embed')
+                    if embed_id and embed_id in doc.part.rels:
+                        tgt = doc.part.rels[embed_id].target_ref
+                        if 'image4' in tgt or 'image6' in tgt or tgt.lower().endswith('.jpeg'):
+                            runs_to_remove.append(r)
+        for r in runs_to_remove:
+            p._p.remove(r._r)
+            removed_count += 1
+    if removed_count > 0:
+        print(f"[table_components] Cleaned up {removed_count} legacy screenshot image(s).")
+    return removed_count
 
 
 def insert_tables_into_doc(doc):
@@ -715,6 +741,9 @@ def insert_tables_into_doc(doc):
     if t1_exists and t2_exists:
         print("[table_components] Both Table 1 and Table 2 already exist. No duplicate insertion.")
         return doc
+
+    # Clean legacy screenshot placeholders before inserting publication-grade tables
+    remove_legacy_table_images(doc)
 
     target_p1, target_p2 = find_target_paragraphs(doc)
     assert target_p1 is not None, "Could not find anchor paragraph for Table 1 ('上面這四種應用方式')!"
