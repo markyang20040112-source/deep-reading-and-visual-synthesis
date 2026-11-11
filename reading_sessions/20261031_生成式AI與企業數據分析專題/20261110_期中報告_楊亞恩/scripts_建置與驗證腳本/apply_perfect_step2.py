@@ -2,10 +2,12 @@
 """
 apply_perfect_step2.py
 Applies the optimized Step 2 figures and formatting to 楊亞恩.docx:
-1. Fixes the duplicate <w:ind> OOXML bug (removes all existing <w:ind> before appending the single valid negative margin).
-2. Uses newly generated high-resolution, legible images for Fig 1, Fig 2, Fig 3, Fig 4, Fig 5.
-3. Sets all 5 figures to 6.90 inches centered with negative margin -400 dxa (-0.28 in per side).
-4. Verifies captions, bookmark integrity, and guarantees ZERO writes to Desktop.
+1. Replaces images for Fig 1, Fig 2, Fig 3, Fig 4, Fig 5 with high-resolution, PPT-grade assets.
+2. Implements exact geometric centering formula:
+   ind_dxa = round(((595.44 - W_pt) / 2 - 72.0) * 20)
+   with w:firstLine="0" and w:firstLineChars="0" to eliminate any inherited Chinese indent.
+3. Sets captions to center with w:firstLine="0" and w:firstLineChars="0".
+4. Verifies bookmark integrity, caption formatting, and guarantees ZERO writes to Desktop.
 """
 
 import os
@@ -32,8 +34,8 @@ for name, pth in [("Fig 1", FIG1_PATH), ("Fig 2", FIG2_PATH), ("Fig 3", FIG3_PAT
     print(f"Verified image: {name} -> {pth} ({os.path.getsize(pth):,} bytes)")
 
 
-def configure_image_paragraph(p_img, img_path, width_in=6.90):
-    """Sets image, 6.9 in width, center alignment, and fixes OOXML to have exactly ONE <w:ind>."""
+def configure_image_paragraph(p_img, img_path, width_in=6.80):
+    """Sets image with exact geometric centering formula and explicit w:firstLineChars='0'."""
     p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p_img.paragraph_format.line_spacing = 1.0
     p_img.paragraph_format.space_before = Pt(8)
@@ -44,19 +46,27 @@ def configure_image_paragraph(p_img, img_path, width_in=6.90):
     for r in list(p_img.runs):
         p_img._p.remove(r._r)
 
+    # Calculate exact centering indents:
+    # Page width = 595.44 pt (A4), Left Margin = 72.0 pt
+    w_pt = width_in * 72.0
+    l_space_target = (595.44 - w_pt) / 2.0
+    ind_pt = l_space_target - 72.0
+    ind_dxa = int(round(ind_pt * 20.0))
+
     # Clean existing <w:ind> elements to prevent invalid OOXML duplicate children
     pPr = p_img._p.get_or_add_pPr()
     for child in list(pPr):
         if child.tag.endswith('ind'):
             pPr.remove(child)
 
-    # Append exactly ONE valid negative margin ind element
-    ind_xml = f'<w:ind {nsdecls("w")} w:left="-400" w:right="-400" w:firstLine="0"/>'
+    # Append exactly ONE valid negative margin ind element with firstLineChars="0"
+    ind_xml = f'<w:ind {nsdecls("w")} w:left="{ind_dxa}" w:right="{ind_dxa}" w:firstLine="0" w:firstLineChars="0"/>'
     pPr.append(parse_xml(ind_xml))
 
     # Add image run
     r_img = p_img.add_run()
     r_img.add_picture(img_path, width=Inches(width_in))
+    print(f"  Configured img (width={width_in}in, ind_dxa={ind_dxa}): target L_space={l_space_target:.2f}pt, R_space={l_space_target:.2f}pt")
 
 
 def configure_caption_paragraph(p_cap, caption_text):
@@ -70,12 +80,12 @@ def configure_caption_paragraph(p_cap, caption_text):
     for r in list(p_cap.runs):
         p_cap._p.remove(r._r)
 
-    # Clean existing <w:ind>
+    # Clean existing <w:ind> and ensure firstLine=0 and firstLineChars=0
     pPr = p_cap._p.get_or_add_pPr()
     for child in list(pPr):
         if child.tag.endswith('ind'):
             pPr.remove(child)
-    ind_xml = f'<w:ind {nsdecls("w")} w:firstLine="0"/>'
+    ind_xml = f'<w:ind {nsdecls("w")} w:left="0" w:right="0" w:firstLine="0" w:firstLineChars="0"/>'
     pPr.append(parse_xml(ind_xml))
 
     r_cap = p_cap.add_run(caption_text)
@@ -90,26 +100,21 @@ def execute():
     print(f"\nOpening document: {DOCX_PATH}")
     doc = docx.Document(DOCX_PATH)
 
-    # Identify image paragraphs and captions for Figures 1 to 5
-    # From earlier inspection:
-    # P56: Fig 1 image, P57: Fig 1 caption
-    # P66: Fig 2 image, P67: Fig 2 caption
-    # P76: Fig 3 image, P77: Fig 3 caption
-    # P96: Fig 4 image, P97: Fig 4 caption
-    # P111: Fig 5 image, P112: Fig 5 caption
+    # Figures configuration:
+    # (p_img_idx, p_cap_idx, img_path, width_in, caption_text)
     figures = [
-        (56, 57, FIG1_PATH, "圖一：2024 全球數據長（CDO）實證調查：企業 AI 商業預期（80%）與核心投產（6%）之準備度大斷崖暨成熟度結構"),
-        (66, 67, FIG2_PATH, "圖二：人機協同數據治理大腦架構圖（剛性數據辭典、靈活大模型、人類專家防線）"),
-        (76, 77, FIG3_PATH, "圖三：生成式 AI 市場研究之「價格敏感度混淆」實證實驗（真實消費者 vs. AI 模擬受訪者）"),
-        (96, 97, FIG4_PATH, "圖四：高管直覺客戶重視價值與現實落差（主觀重要性 vs. 客戶真實權重與營收轉換率）"),
-        (111, 112, FIG5_PATH, "圖五：顧客-企業-投資者關係生態心智圖（造血發動機 vs. 資本助燃劑健康循環）")
+        (56, 57, FIG1_PATH, 6.80, "圖一：2024 全球數據長（CDO）實證調查：企業 AI 商業預期（80%）與核心投產（6%）之準備度大斷崖暨成熟度結構"),
+        (66, 67, FIG2_PATH, 6.80, "圖二：人機協同數據治理大腦架構圖（剛性數據辭典、靈活大模型、人類專家防線）"),
+        (76, 77, FIG3_PATH, 6.40, "圖三：生成式 AI 市場研究之「價格敏感度混淆」實證實驗（真實消費者 vs. AI 模擬受訪者）"),
+        (96, 97, FIG4_PATH, 6.80, "圖四：高管直覺客戶重視價值與現實落差（主觀重要性 vs. 客戶真實權重與營收轉換率）"),
+        (111, 112, FIG5_PATH, 6.80, "圖五：顧客-企業-投資者關係生態心智圖（造血發動機 vs. 資本助燃劑健康循環）")
     ]
 
-    for p_img_idx, p_cap_idx, img_path, cap_text in figures:
+    for p_img_idx, p_cap_idx, img_path, w_in, cap_text in figures:
         p_img = doc.paragraphs[p_img_idx]
         p_cap = doc.paragraphs[p_cap_idx]
-        print(f"Updating Fig at P{p_img_idx}/P{p_cap_idx}: {cap_text[:25]}...")
-        configure_image_paragraph(p_img, img_path, width_in=6.90)
+        print(f"Updating Fig at P{p_img_idx}/P{p_cap_idx}: {cap_text[:30]}...")
+        configure_image_paragraph(p_img, img_path, width_in=w_in)
         configure_caption_paragraph(p_cap, cap_text)
 
     # Save ONLY to project docx
