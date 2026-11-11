@@ -632,16 +632,16 @@ def generate_figure4():
 # =============================================================================
 def generate_figure5():
     out_path = os.path.join(ASSETS_DIR, "fig5_ecosystem_mindmap.png")
-    fig = plt.figure(figsize=(18.0, 9.15), dpi=300, facecolor='#FFFFFF')
+    fig = plt.figure(figsize=(18.0, 9.35), dpi=300, facecolor='#FFFFFF')
     ax = fig.add_axes([0, 0, 1, 1], facecolor='#FFFFFF')
     ax.set_xlim(0, 18.0)
-    ax.set_ylim(0, 9.15)
+    ax.set_ylim(0, 9.35)
     ax.axis('off')
 
     # Master Header - tight top padding
-    ax.text(0.65, 8.98, "企業、顧客與投資者生態價值循環：造血發動機 vs. 資本助燃劑之平衡架構",
+    ax.text(0.65, 9.18, "企業、顧客與投資者生態價值循環：造血發動機 vs. 資本助燃劑之平衡架構",
             fontsize=21.5, fontweight='bold', color='#0F172A', ha='left', va='top')
-    ax.text(0.65, 8.54, "【商業第一性原理】「企業與顧客」是唯一造血引擎，「投資人」是外部加速助燃劑；短視討好投資人必將釀成結構性失靈",
+    ax.text(0.65, 8.74, "【商業第一性原理】「企業與顧客」是唯一造血引擎，「投資人」是外部加速助燃劑；短視討好投資人必將釀成結構性失靈",
             fontsize=14.0, fontweight='bold', color='#475569', ha='left', va='top')
 
     # Accent line
