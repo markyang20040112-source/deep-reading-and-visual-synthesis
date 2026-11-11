@@ -2,7 +2,7 @@
 r"""
 link_components.py
 Decoupled, publication-grade hyperlink & literature source components module:
-東吳大學企管系 3B 楊亞恩《從數據債到人機協同：生成式 AI 時代下的企業商業分析重構》
+企管系 3B 楊亞恩《從數據債到人機協同：生成式 AI 時代下的企業商業分析重構》
 
 Features & Architectural Design:
 1. Pure Decoupling & Safety:
@@ -112,7 +112,7 @@ TOOLS_DATA = [
 # Helper Functions: Native Hyperlink & Run Injection
 # =============================================================================
 def add_external_hyperlink(p, url, text, bold=False, italic=False,
-                           color_hex=COLOR_HYPERLINK_HEX, font_size_pt=10.5,
+                           color_hex=COLOR_HYPERLINK_HEX, font_size_pt=12.0,
                            font_chinese=FONT_CHINESE, font_western=FONT_WESTERN):
     """
     Appends a native Word external hyperlink element (<w:hyperlink>) to a paragraph.
@@ -145,7 +145,7 @@ def add_external_hyperlink(p, url, text, bold=False, italic=False,
     p._p.append(parse_xml(hyperlink_xml))
 
 
-def add_formatted_run(p, text, bold=False, italic=False, size_pt=10.5,
+def add_formatted_run(p, text, bold=False, italic=False, size_pt=12.0,
                       color_hex=COLOR_DARK_HEX, font_chinese=FONT_CHINESE, font_western=FONT_WESTERN):
     """
     Appends a regular styled run with full dual-font EastAsian/Ascii mappings.
@@ -153,7 +153,8 @@ def add_formatted_run(p, text, bold=False, italic=False, size_pt=10.5,
     run = p.add_run(text)
     run.bold = bold
     run.italic = italic
-    run.font.size = Pt(size_pt)
+    if size_pt is not None:
+        run.font.size = Pt(size_pt)
     run.font.name = font_western
 
     rPr = run._r.get_or_add_rPr()
@@ -165,6 +166,8 @@ def add_formatted_run(p, text, bold=False, italic=False, size_pt=10.5,
         f'w:cs="{font_western}"/>'
     )
     rPr.append(parse_xml(rFonts_xml))
+    if color_hex and color_hex != COLOR_DARK_HEX:
+        rPr.append(parse_xml(f'<w:color {nsdecls("w")} w:val="{color_hex}"/>'))
     return run
 
 
@@ -175,6 +178,10 @@ def build_sources_and_tools_section(doc, include_page_break=True):
     """
     Builds the publication-grade '伍、資料來源及使用工具&使用方法' section.
     100% compliant with user instructions:
+    - Heading 1 hierarchy matches Chapters 1-4 (Style '壹－', 18pt bold, pure 標楷體).
+    - Heading 2 hierarchy matches report standard (Style '一、', 14pt bold, pure 標楷體).
+    - Heading 3 hierarchy matches report standard (Style '1.', 12pt bold, pure 標楷體).
+    - Body line spacing (1.25 multiple / line=300) and 12pt font size matching entire article.
     - Zero broken traditional Chinese URLs (hbrtaiwan omitted).
     - Authentic HBR & YouTube verified URLs.
     - Pinned Commit SHA GitHub repository URL.
@@ -182,65 +189,72 @@ def build_sources_and_tools_section(doc, include_page_break=True):
     if include_page_break:
         doc.add_page_break()
 
-    # Section 伍 Title
-    p_sec = doc.add_paragraph(style='Normal')
-    pPr = p_sec._p.get_or_add_pPr()
-    pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="240" w:after="160" w:line="300" w:lineRule="auto"/>'))
-    add_formatted_run(p_sec, "伍、資料來源及使用工具&使用方法", bold=True, size_pt=14)
+    # Dynamic style resolution with safe fallback
+    available_styles = [s.name for s in doc.styles]
+    style_h1 = '壹－' if '壹－' in available_styles else 'Heading 1'
+    style_h2 = '一、' if '一、' in available_styles else 'Heading 2'
+    style_h3 = '1.' if '1.' in available_styles else 'Heading 3'
+    style_normal = 'Normal'
 
-    # Sub-heading 1: 一、資料來源
-    p_h1 = doc.add_paragraph(style='Normal')
-    pPr = p_h1._p.get_or_add_pPr()
-    pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="180" w:after="100" w:line="260" w:lineRule="auto"/>'))
-    add_formatted_run(p_h1, "一、資料來源", bold=True, size_pt=12)
+    # Section 伍 Title: Style '壹－' (Heading 1 in this document, 18pt bold)
+    p_sec = doc.add_paragraph(style=style_h1)
+    p_sec.paragraph_format.keep_with_next = True
+    p_sec._p.append(parse_xml(f'<w:bookmarkStart {nsdecls("w")} w:id="500" w:name="bm_part5"/>'))
+    add_formatted_run(p_sec, "伍、資料來源及使用工具&使用方法", bold=True, size_pt=18.0)
+    p_sec._p.append(parse_xml(f'<w:bookmarkEnd {nsdecls("w")} w:id="500"/>'))
+
+    # Sub-heading 1: 一、資料來源 (Style '一、', Heading 2, 14pt bold)
+    p_h1 = doc.add_paragraph(style=style_h2)
+    p_h1.paragraph_format.keep_with_next = True
+    p_h1._p.append(parse_xml(f'<w:bookmarkStart {nsdecls("w")} w:id="501" w:name="bm_part5_1"/>'))
+    add_formatted_run(p_h1, "一、資料來源", bold=True, size_pt=14.0)
+    p_h1._p.append(parse_xml(f'<w:bookmarkEnd {nsdecls("w")} w:id="501"/>'))
 
     # 5 Sources
     for src in SOURCES_DATA:
-        # Title paragraph
-        p_t = doc.add_paragraph(style='Normal')
-        pPr = p_t._p.get_or_add_pPr()
-        pPr.append(parse_xml(f'<w:ind {nsdecls("w")} w:firstLine="0" w:left="0"/>'))
-        pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="120" w:after="20" w:line="240" w:lineRule="auto"/>'))
-        add_formatted_run(p_t, src["title"], bold=True, size_pt=10.5)
+        # Title paragraph: Style '1.' (Heading 3, 12pt bold)
+        p_t = doc.add_paragraph(style=style_h3)
+        p_t.paragraph_format.keep_with_next = True
+        add_formatted_run(p_t, src["title"], bold=True, size_pt=12.0)
 
-        # Meta paragraph (Author & Year)
-        p_m = doc.add_paragraph(style='Normal')
+        # Meta paragraph: Style 'Normal', 12pt, 1.25 line spacing (300 dxa), indented 480 dxa
+        p_m = doc.add_paragraph(style=style_normal)
         pPr = p_m._p.get_or_add_pPr()
-        pPr.append(parse_xml(f'<w:ind {nsdecls("w")} w:firstLine="0" w:left="240"/>'))
-        pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="20" w:line="220" w:lineRule="auto"/>'))
-        add_formatted_run(p_m, src["meta"], bold=False, size_pt=10, color_hex=COLOR_MUTED_HEX)
+        pPr.append(parse_xml(f'<w:ind {nsdecls("w")} w:firstLine="0" w:left="480"/>'))
+        pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="40" w:line="300" w:lineRule="auto"/>'))
+        add_formatted_run(p_m, src["meta"], bold=False, size_pt=12.0, color_hex=COLOR_MUTED_HEX)
 
-        # Link paragraph (Journal & Genuine Hyperlink, Zero Chinese URLs)
-        p_l = doc.add_paragraph(style='Normal')
+        # Link paragraph: Style 'Normal', 12pt, 1.25 line spacing (300 dxa), indented 480 dxa
+        p_l = doc.add_paragraph(style=style_normal)
         pPr = p_l._p.get_or_add_pPr()
-        pPr.append(parse_xml(f'<w:ind {nsdecls("w")} w:firstLine="0" w:left="240"/>'))
-        pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="80" w:line="220" w:lineRule="auto"/>'))
-        add_formatted_run(p_l, src["journal_label"], bold=False, size_pt=10)
-        add_external_hyperlink(p_l, src["url"], src["link_text"], bold=False, font_size_pt=10)
-        add_formatted_run(p_l, src["tail"], bold=False, size_pt=10)
+        pPr.append(parse_xml(f'<w:ind {nsdecls("w")} w:firstLine="0" w:left="480"/>'))
+        pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="100" w:line="300" w:lineRule="auto"/>'))
+        add_formatted_run(p_l, src["journal_label"], bold=False, size_pt=12.0)
+        add_external_hyperlink(p_l, src["url"], src["link_text"], bold=False, font_size_pt=12.0)
+        add_formatted_run(p_l, src["tail"], bold=False, size_pt=12.0)
 
-    # Sub-heading 2: 二、使用工具&使用方法
-    p_h2 = doc.add_paragraph(style='Normal')
-    pPr = p_h2._p.get_or_add_pPr()
-    pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="240" w:after="100" w:line="260" w:lineRule="auto"/>'))
-    add_formatted_run(p_h2, "二、使用工具&使用方法", bold=True, size_pt=12)
+    # Sub-heading 2: 二、使用工具&使用方法 (Style '一、', Heading 2, 14pt bold)
+    p_h2 = doc.add_paragraph(style=style_h2)
+    p_h2.paragraph_format.keep_with_next = True
+    p_h2._p.append(parse_xml(f'<w:bookmarkStart {nsdecls("w")} w:id="502" w:name="bm_part5_2"/>'))
+    add_formatted_run(p_h2, "二、使用工具&使用方法", bold=True, size_pt=14.0)
+    p_h2._p.append(parse_xml(f'<w:bookmarkEnd {nsdecls("w")} w:id="502"/>'))
 
-    # Tool title
-    p_tool_t = doc.add_paragraph(style='Normal')
-    pPr = p_tool_t._p.get_or_add_pPr()
-    pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="60" w:after="80" w:line="240" w:lineRule="auto"/>'))
-    add_formatted_run(p_tool_t, "1. Antigravity IDE（與 Gemini、ChatGPT、Claude 多模型結合之智慧開發環境）", bold=True, size_pt=10.5)
+    # Tool title: Style '1.' (Heading 3, 12pt bold)
+    p_tool_t = doc.add_paragraph(style=style_h3)
+    p_tool_t.paragraph_format.keep_with_next = True
+    add_formatted_run(p_tool_t, "1. Antigravity IDE（與 Gemini、ChatGPT、Claude 多模型結合之智慧開發環境）", bold=True, size_pt=12.0)
 
-    # Tool bullet items
+    # Tool bullet items: Style 'Normal', 12pt, 1.25 line spacing, hanging indent 480 dxa
     for lbl, desc in TOOLS_DATA:
-        p_item = doc.add_paragraph(style='Normal')
+        p_item = doc.add_paragraph(style=style_normal)
         pPr = p_item._p.get_or_add_pPr()
-        pPr.append(parse_xml(f'<w:ind {nsdecls("w")} w:left="280" w:hanging="280"/>'))
-        pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="20" w:after="20" w:line="220" w:lineRule="auto"/>'))
-        add_formatted_run(p_item, lbl, bold=True, size_pt=10)
-        add_formatted_run(p_item, desc, bold=False, size_pt=10)
+        pPr.append(parse_xml(f'<w:ind {nsdecls("w")} w:left="480" w:hanging="480"/>'))
+        pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="20" w:after="40" w:line="300" w:lineRule="auto"/>'))
+        add_formatted_run(p_item, lbl, bold=True, size_pt=12.0)
+        add_formatted_run(p_item, desc, bold=False, size_pt=12.0)
         if "GitHub" in desc or "原始碼" in lbl:
-            add_external_hyperlink(p_item, URL_GITHUB_PINNED, "期中專題原始碼與分析工作區（GitHub 專案庫）", bold=True, font_size_pt=10)
+            add_external_hyperlink(p_item, URL_GITHUB_PINNED, "期中專題原始碼與分析工作區（GitHub 專案庫）", bold=True, font_size_pt=12.0)
 
     return doc
 
@@ -353,6 +367,15 @@ def apply_all_link_updates(doc):
                         t_nodes[0].text = "維基百科：2026年OpenAI智能體入侵HuggingFace事件"
                         for tn in t_nodes[1:]:
                             tn.text = ""
+                    for r_elem in h.xpath('.//w:r'):
+                        rPr = r_elem.find(qn('w:rPr'))
+                        if rPr is None:
+                            rPr = parse_xml(f'<w:rPr {nsdecls("w")}/>')
+                            r_elem.insert(0, rPr)
+                        for rf in list(rPr):
+                            if rf.tag.endswith('rFonts'):
+                                rPr.remove(rf)
+                        rPr.append(parse_xml(f'<w:rFonts {nsdecls("w")} w:ascii="標楷體" w:hAnsi="標楷體" w:eastAsia="標楷體" w:cs="標楷體"/>'))
                 # Check for GitHub link
                 elif "github.com" in target:
                     rels[r_id]._target = URL_GITHUB_PINNED
@@ -368,17 +391,39 @@ def apply_all_link_updates(doc):
             break
 
     if found_sec5_idx is not None:
-        # Delete existing placeholder paragraphs from found_sec5_idx to end of doc
-        p_elements_to_remove = [p._p for p in doc.paragraphs[found_sec5_idx:]]
+        # Scan backwards from found_sec5_idx to remove any preceding empty/page-break paragraphs
+        # so we eliminate all redundant blank pages between Chapter 4 and Chapter 5
+        start_remove_idx = found_sec5_idx
+        while start_remove_idx > 0:
+            prev_p = doc.paragraphs[start_remove_idx - 1]
+            if (prev_p.text.strip() == "" and
+                    len(prev_p._p.xpath('.//w:drawing')) == 0 and
+                    len(prev_p._p.xpath('.//w:tbl')) == 0):
+                start_remove_idx -= 1
+            else:
+                break
+
+        # Delete existing placeholder and empty page-break paragraphs from start_remove_idx to end of doc
+        p_elements_to_remove = [p._p for p in doc.paragraphs[start_remove_idx:]]
         for elem in p_elements_to_remove:
             parent = elem.getparent()
             if parent is not None:
                 parent.remove(elem)
-        # Re-build clean Section 伍
-        build_sources_and_tools_section(doc, include_page_break=True)
     else:
-        # If not found, simply append
-        build_sources_and_tools_section(doc, include_page_break=True)
+        # If not found, scan backwards from the end to remove any trailing empty paragraphs
+        while len(doc.paragraphs) > 0:
+            last_p = doc.paragraphs[-1]
+            if (last_p.text.strip() == "" and
+                    len(last_p._p.xpath('.//w:drawing')) == 0 and
+                    len(last_p._p.xpath('.//w:tbl')) == 0):
+                parent = last_p._p.getparent()
+                if parent is not None:
+                    parent.remove(last_p._p)
+            else:
+                break
+
+    # Re-build clean Section 伍 with exactly ONE page break
+    build_sources_and_tools_section(doc, include_page_break=True)
 
     return doc
 
