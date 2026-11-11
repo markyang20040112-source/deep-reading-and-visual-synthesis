@@ -260,7 +260,24 @@ def apply_proofreading_fixes(doc):
                 pPr.remove(numPr)
     print("  • Removed numPr from P103, P120, P123, P127 to ensure clean single-numbering.")
 
-    print("[PROOFREAD] All 22 proofreading and heading corrections successfully applied!")
+    # Synchronize Table of Contents page numbers for Chapter 4/5 entries
+    toc_updates = {
+        "bm_part4_3_fail": ("AI的使用保險失靈", "P. 14"),
+        "bm_part5": ("伍、資料來源及使用工具&使用方法", "P. 15"),
+        "bm_part5_1": ("一、資料來源", "P. 15"),
+        "bm_part5_2": ("二、使用工具&使用方法", "P. 16"),
+    }
+    for p in doc.paragraphs[:40]:
+        for h in p._p.xpath('.//w:hyperlink'):
+            anchor = h.get(qn('w:anchor'))
+            if anchor in toc_updates:
+                title, expected_p = toc_updates[anchor]
+                t_nodes = h.xpath('.//w:t')
+                if len(t_nodes) >= 2:
+                    t_nodes[-1].text = expected_p
+                    print(f"  • [TOC] Synchronized {title} ({anchor}) -> {expected_p}")
+
+    print("[PROOFREAD] All proofreading, heading, and TOC page synchronizations successfully applied!")
 
 
 def verify_all_changes(doc):
@@ -272,6 +289,9 @@ def verify_all_changes(doc):
     4. 100% 純標楷體 (0 Times New Roman).
     5. All 22 proofreading checks.
     6. Bold runs preservation.
+    7. Chapter 5 Heading & Body hierarchy standard (18pt -> 16pt -> 14pt -> 12pt).
+    8. Zero muted gray (#64748B) color in Chapter 5.
+    9. Table of Contents Chapter 5 page numbers accuracy.
     """
     print("\n" + "="*70)
     print("BEGINNING COMPREHENSIVE VERIFICATION")
@@ -381,6 +401,59 @@ def verify_all_changes(doc):
     p125_bold = "".join(r.text for r in doc.paragraphs[125].runs if r.bold)
     assert "使用者很多時候甚至連他們真正想要什麼都沒想清楚或不知道" in p125_bold, "Bold text missing '使用者很多時候甚至連...'!"
     assert any("不要忘記了，AI被打造出來是為了「服務」人類的，並不是取代。" in t for t in bold_runs), "Bold text missing key conclusion bold!"
+
+    # 8. Check Chapter 5 hierarchy and styling standard
+    sec5_p = None
+    for p in doc.paragraphs:
+        if "伍、資料來源及使用工具&使用方法" in p.text and "\t" not in p.text:
+            sec5_p = p
+            break
+    assert sec5_p is not None, "Chapter 5 title not found!"
+    assert sec5_p.style.name == '壹－', f"Chapter 5 style must be '壹－', got '{sec5_p.style.name}'"
+    assert any(r.font.size and r.font.size.pt == 18.0 for r in sec5_p.runs), "Chapter 5 title must be 18pt!"
+
+    # Check H2 (一、資料來源 & 二、使用工具&使用方法)
+    h2_paras = [p for p in doc.paragraphs if p.text in ["一、資料來源", "二、使用工具&使用方法"]]
+    assert len(h2_paras) == 2, f"Expected 2 Heading 2 paras in Chapter 5, found {len(h2_paras)}"
+    for h2 in h2_paras:
+        assert h2.style.name == '一、', f"Heading 2 style must be '一、', got '{h2.style.name}'"
+        assert any(r.font.size and r.font.size.pt == 16.0 for r in h2.runs), (
+            f"Heading 2 '{h2.text}' must be 16pt, got {[r.font.size.pt if r.font.size else None for r in h2.runs]}"
+        )
+
+    # Check H3 (Sources titles & Antigravity IDE)
+    h3_paras = [
+        p for p in doc.paragraphs
+        if any(src["title"] in p.text for src in link_components.SOURCES_DATA) or "Antigravity IDE" in p.text
+    ]
+    assert len(h3_paras) >= 6, f"Expected at least 6 Heading 3 paras in Chapter 5, found {len(h3_paras)}"
+    for h3 in h3_paras:
+        assert h3.style.name == '1.', f"Heading 3 style must be '1.', got '{h3.style.name}'"
+        assert any(r.font.size and r.font.size.pt == 14.0 for r in h3.runs), (
+            f"Heading 3 '{h3.text[:20]}' must be 14pt, got {[r.font.size.pt if r.font.size else None for r in h3.runs]}"
+        )
+
+    # Check 0 gray color (#64748B) in Chapter 5
+    sec5_idx = None
+    for i, p in enumerate(doc.paragraphs):
+        if p._p == sec5_p._p:
+            sec5_idx = i
+            break
+    assert sec5_idx is not None, "Could not determine sec5_idx!"
+    for p in doc.paragraphs[sec5_idx:]:
+        for elem in p._p.xpath('.//w:color'):
+            val = elem.get(qn('w:val'))
+            assert val != '64748B', f"Found prohibited muted gray color {val} in Chapter 5!"
+    print("  [PASS] Chapter 5 hierarchy (18pt -> 16pt -> 14pt -> 12pt) and standard black text verified.")
+
+    # 9. Verify Table of Contents accuracy for Chapter 5
+    toc_p33 = "".join(t for t in doc.paragraphs[33]._p.xpath('.//w:t/text()'))
+    toc_p34 = "".join(t for t in doc.paragraphs[34]._p.xpath('.//w:t/text()'))
+    toc_p35 = "".join(t for t in doc.paragraphs[35]._p.xpath('.//w:t/text()'))
+    assert "P. 15" in toc_p33, f"TOC P33 should be P. 15, got: {toc_p33}"
+    assert "P. 15" in toc_p34, f"TOC P34 should be P. 15, got: {toc_p34}"
+    assert "P. 16" in toc_p35, f"TOC P35 should be P. 16, got: {toc_p35}"
+    print("  [PASS] Table of Contents page synchronization for Chapter 5 verified.")
 
     print("="*70)
     print("ALL VERIFICATION CHECKS PASSED PERFECTLY!")

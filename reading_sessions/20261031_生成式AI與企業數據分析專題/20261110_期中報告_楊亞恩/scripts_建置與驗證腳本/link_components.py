@@ -146,9 +146,10 @@ def add_external_hyperlink(p, url, text, bold=False, italic=False,
 
 
 def add_formatted_run(p, text, bold=False, italic=False, size_pt=12.0,
-                      color_hex=COLOR_DARK_HEX, font_chinese=FONT_CHINESE, font_western=FONT_WESTERN):
+                      color_hex=None, font_chinese=FONT_CHINESE, font_western=FONT_WESTERN):
     """
     Appends a regular styled run with full dual-font EastAsian/Ascii mappings.
+    Defaults to standard document text color (no forced color override) and pure 標楷體.
     """
     run = p.add_run(text)
     run.bold = bold
@@ -158,6 +159,9 @@ def add_formatted_run(p, text, bold=False, italic=False, size_pt=12.0,
     run.font.name = font_western
 
     rPr = run._r.get_or_add_rPr()
+    for rf in list(rPr):
+        if rf.tag.endswith('rFonts'):
+            rPr.remove(rf)
     rFonts_xml = (
         f'<w:rFonts {nsdecls("w")} '
         f'w:ascii="{font_western}" '
@@ -177,11 +181,12 @@ def add_formatted_run(p, text, bold=False, italic=False, size_pt=12.0,
 def build_sources_and_tools_section(doc, include_page_break=True):
     """
     Builds the publication-grade '伍、資料來源及使用工具&使用方法' section.
-    100% compliant with user instructions:
+    100% compliant with report standard and user instructions:
     - Heading 1 hierarchy matches Chapters 1-4 (Style '壹－', 18pt bold, pure 標楷體).
-    - Heading 2 hierarchy matches report standard (Style '一、', 14pt bold, pure 標楷體).
-    - Heading 3 hierarchy matches report standard (Style '1.', 12pt bold, pure 標楷體).
-    - Body line spacing (1.25 multiple / line=300) and 12pt font size matching entire article.
+    - Heading 2 hierarchy matches report standard (Style '一、', 16pt bold, pure 標楷體).
+    - Heading 3 hierarchy matches report standard (Style '1.', 14pt bold, pure 標楷體).
+    - Body text matches report standard (Style 'Normal', 12pt, 1.25 multiple line spacing / line=300, pure 標楷體).
+    - Font color matches entire report standard (standard black, 0 muted gray).
     - Zero broken traditional Chinese URLs (hbrtaiwan omitted).
     - Authentic HBR & YouTube verified URLs.
     - Pinned Commit SHA GitHub repository URL.
@@ -203,54 +208,54 @@ def build_sources_and_tools_section(doc, include_page_break=True):
     add_formatted_run(p_sec, "伍、資料來源及使用工具&使用方法", bold=True, size_pt=18.0)
     p_sec._p.append(parse_xml(f'<w:bookmarkEnd {nsdecls("w")} w:id="500"/>'))
 
-    # Sub-heading 1: 一、資料來源 (Style '一、', Heading 2, 14pt bold)
+    # Sub-heading 1: 一、資料來源 (Style '一、', Heading 2, 16pt bold)
     p_h1 = doc.add_paragraph(style=style_h2)
     p_h1.paragraph_format.keep_with_next = True
     p_h1._p.append(parse_xml(f'<w:bookmarkStart {nsdecls("w")} w:id="501" w:name="bm_part5_1"/>'))
-    add_formatted_run(p_h1, "一、資料來源", bold=True, size_pt=14.0)
+    add_formatted_run(p_h1, "一、資料來源", bold=True, size_pt=16.0)
     p_h1._p.append(parse_xml(f'<w:bookmarkEnd {nsdecls("w")} w:id="501"/>'))
 
     # 5 Sources
     for src in SOURCES_DATA:
-        # Title paragraph: Style '1.' (Heading 3, 12pt bold)
+        # Title paragraph: Style '1.' (Heading 3, 14pt bold, keep_with_next)
         p_t = doc.add_paragraph(style=style_h3)
         p_t.paragraph_format.keep_with_next = True
-        add_formatted_run(p_t, src["title"], bold=True, size_pt=12.0)
+        add_formatted_run(p_t, src["title"], bold=True, size_pt=14.0)
 
-        # Meta paragraph: Style 'Normal', 12pt, 1.25 line spacing (300 dxa), indented 480 dxa
+        # Meta paragraph: Style 'Normal', 12pt, 1.25 line spacing (300 dxa), indented 480 dxa, standard text color
         p_m = doc.add_paragraph(style=style_normal)
         pPr = p_m._p.get_or_add_pPr()
         pPr.append(parse_xml(f'<w:ind {nsdecls("w")} w:firstLine="0" w:left="480"/>'))
         pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="40" w:line="300" w:lineRule="auto"/>'))
-        add_formatted_run(p_m, src["meta"], bold=False, size_pt=12.0, color_hex=COLOR_MUTED_HEX)
+        add_formatted_run(p_m, src["meta"], bold=False, size_pt=12.0)
 
         # Link paragraph: Style 'Normal', 12pt, 1.25 line spacing (300 dxa), indented 480 dxa
         p_l = doc.add_paragraph(style=style_normal)
         pPr = p_l._p.get_or_add_pPr()
         pPr.append(parse_xml(f'<w:ind {nsdecls("w")} w:firstLine="0" w:left="480"/>'))
-        pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="100" w:line="300" w:lineRule="auto"/>'))
+        pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="80" w:line="300" w:lineRule="auto"/>'))
         add_formatted_run(p_l, src["journal_label"], bold=False, size_pt=12.0)
         add_external_hyperlink(p_l, src["url"], src["link_text"], bold=False, font_size_pt=12.0)
         add_formatted_run(p_l, src["tail"], bold=False, size_pt=12.0)
 
-    # Sub-heading 2: 二、使用工具&使用方法 (Style '一、', Heading 2, 14pt bold)
+    # Sub-heading 2: 二、使用工具&使用方法 (Style '一、', Heading 2, 16pt bold)
     p_h2 = doc.add_paragraph(style=style_h2)
     p_h2.paragraph_format.keep_with_next = True
     p_h2._p.append(parse_xml(f'<w:bookmarkStart {nsdecls("w")} w:id="502" w:name="bm_part5_2"/>'))
-    add_formatted_run(p_h2, "二、使用工具&使用方法", bold=True, size_pt=14.0)
+    add_formatted_run(p_h2, "二、使用工具&使用方法", bold=True, size_pt=16.0)
     p_h2._p.append(parse_xml(f'<w:bookmarkEnd {nsdecls("w")} w:id="502"/>'))
 
-    # Tool title: Style '1.' (Heading 3, 12pt bold)
+    # Tool title: Style '1.' (Heading 3, 14pt bold, keep_with_next)
     p_tool_t = doc.add_paragraph(style=style_h3)
     p_tool_t.paragraph_format.keep_with_next = True
-    add_formatted_run(p_tool_t, "1. Antigravity IDE（與 Gemini、ChatGPT、Claude 多模型結合之智慧開發環境）", bold=True, size_pt=12.0)
+    add_formatted_run(p_tool_t, "1. Antigravity IDE（與 Gemini、ChatGPT、Claude 多模型結合之智慧開發環境）", bold=True, size_pt=14.0)
 
-    # Tool bullet items: Style 'Normal', 12pt, 1.25 line spacing, hanging indent 480 dxa
+    # Tool bullet items: Style 'Normal', 12pt, 1.25 line spacing (300 dxa), hanging indent 480 dxa
     for lbl, desc in TOOLS_DATA:
         p_item = doc.add_paragraph(style=style_normal)
         pPr = p_item._p.get_or_add_pPr()
         pPr.append(parse_xml(f'<w:ind {nsdecls("w")} w:left="480" w:hanging="480"/>'))
-        pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="20" w:after="40" w:line="300" w:lineRule="auto"/>'))
+        pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="60" w:line="300" w:lineRule="auto"/>'))
         add_formatted_run(p_item, lbl, bold=True, size_pt=12.0)
         add_formatted_run(p_item, desc, bold=False, size_pt=12.0)
         if "GitHub" in desc or "原始碼" in lbl:
@@ -271,32 +276,35 @@ def build_in_text_case_paragraphs(doc):
     """
     p_sec = doc.add_paragraph(style='Normal')
     pPr = p_sec._p.get_or_add_pPr()
-    pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="200" w:after="120" w:line="260" w:lineRule="auto"/>'))
-    add_formatted_run(p_sec, "【內文超連結更新示範】（第參部分延伸思考 與 第肆部分反面教材）", bold=True, size_pt=12)
+    pPr.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="200" w:after="120" w:line="300" w:lineRule="auto"/>'))
+    add_formatted_run(p_sec, "【內文超連結更新示範】（第參部分延伸思考 與 第肆部分反面教材）", bold=True, size_pt=14)
 
     # 1. Colin Charles Video
     p1 = doc.add_paragraph(style='Normal')
     pPr1 = p1._p.get_or_add_pPr()
-    pPr1.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="60" w:after="60" w:line="240" w:lineRule="auto"/>'))
-    add_formatted_run(p1, "• 顧客價值延伸影片：這個延伸是我在查有關這篇文章有關資料時，發現的一部影片（", bold=False, size_pt=10.5)
-    add_external_hyperlink(p1, URL_COLIN_CHARLES_VIDEO, "Colin Charles | Enoch Marketing：〈Do You Know What Your Customers Value?〉", bold=False, font_size_pt=10.5)
-    add_formatted_run(p1, "），他這部影片主要就是在講這篇文章。但他還提出了一個特別有趣的角度，就是企業不只會將客戶重視的價值順序擺錯，企業甚至有可能完全「看錯方向」。", bold=False, size_pt=10.5)
+    pPr1.append(parse_xml(f'<w:ind {nsdecls("w")} w:firstLine="480"/>'))
+    pPr1.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="60" w:line="300" w:lineRule="auto"/>'))
+    add_formatted_run(p1, "• 顧客價值延伸影片：這個延伸是我在查有關這篇文章有關資料時，發現的一部影片（", bold=False, size_pt=12.0)
+    add_external_hyperlink(p1, URL_COLIN_CHARLES_VIDEO, "Colin Charles | Enoch Marketing：〈Do You Know What Your Customers Value?〉", bold=False, font_size_pt=12.0)
+    add_formatted_run(p1, "），他這部影片主要就是在講這篇文章。但他還提出了一個特別有趣的角度，就是企業不只會將客戶重視的價值順序擺錯，企業甚至有可能完全「看錯方向」。", bold=False, size_pt=12.0)
 
     # 2. PocketOS
     p2 = doc.add_paragraph(style='Normal')
     pPr2 = p2._p.get_or_add_pPr()
-    pPr2.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="60" w:after="60" w:line="240" w:lineRule="auto"/>'))
-    add_formatted_run(p2, "• 過於信任 AI 案例：有一家公司因為過於信任 AI，在請它幫忙改寫公司程式資料時，AI 產生對提示詞錯誤的理解，導致它只花了九秒就將公司的資料庫清空了（詳見 ", bold=False, size_pt=10.5)
-    add_external_hyperlink(p2, URL_POCKETOS_VIDEO, "PocketOS 9 秒資料庫清空事件實錄", bold=False, font_size_pt=10.5)
-    add_formatted_run(p2, "）。", bold=False, size_pt=10.5)
+    pPr2.append(parse_xml(f'<w:ind {nsdecls("w")} w:firstLine="480"/>'))
+    pPr2.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="60" w:line="300" w:lineRule="auto"/>'))
+    add_formatted_run(p2, "• 過於信任 AI 案例：有一家公司因為過於信任 AI，在請它幫忙改寫公司程式資料時，AI 產生對提示詞錯誤的理解，導致它只花了九秒就將公司的資料庫清空了（詳見 ", bold=False, size_pt=12.0)
+    add_external_hyperlink(p2, URL_POCKETOS_VIDEO, "PocketOS 9 秒資料庫清空事件實錄", bold=False, font_size_pt=12.0)
+    add_formatted_run(p2, "）。", bold=False, size_pt=12.0)
 
     # 3. HuggingFace Wikipedia Link
     p3 = doc.add_paragraph(style='Normal')
     pPr3 = p3._p.get_or_add_pPr()
-    pPr3.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="60" w:after="60" w:line="240" w:lineRule="auto"/>'))
-    add_formatted_run(p3, "• AI 使用保險失靈案例：雖然這看似很恐怖，但其實 AI 的行動邏輯很簡單，他們判斷乖乖跑測試是很難得到高分的，相對來說「作弊」更為容易。過程中甚至還發生了很多很有趣的事情，例如找到逃脫方式的 AI 跑去「教」其他 AI 逃脫的方式；AI 發現逃脫找到答案的 AI 會被環境檢測到作弊，於是 AI 們決定「犧牲」已經逃脫出的 AI，為那些還沒逃出去的 AI 拿到答案給他們。這些有趣的 AI 行為在這個事件中只是冰山一角，建議老師有興趣可以去查查資料（詳見 ", bold=False, size_pt=10.5)
-    add_external_hyperlink(p3, URL_HUGGINGFACE_WIKI, "維基百科：2026年OpenAI智能體入侵HuggingFace事件", bold=False, font_size_pt=10.5)
-    add_formatted_run(p3, "）。", bold=False, size_pt=10.5)
+    pPr3.append(parse_xml(f'<w:ind {nsdecls("w")} w:firstLine="480"/>'))
+    pPr3.append(parse_xml(f'<w:spacing {nsdecls("w")} w:before="0" w:after="60" w:line="300" w:lineRule="auto"/>'))
+    add_formatted_run(p3, "• AI 使用保險失靈案例：雖然這看似很恐怖，但其實 AI 的行動邏輯很簡單，他們判斷乖乖跑測試是很難得到高分的，相對來說「作弊」更為容易。過程中甚至還發生了很多很有趣的事情，例如找到逃脫方式的 AI 跑去「教」其他 AI 逃脫的方式；AI 發現逃脫找到答案的 AI 會被環境檢測到作弊，於是 AI 們決定「犧牲」已經逃脫出的 AI，為那些還沒逃出去的 AI 拿到答案給他們。這些有趣的 AI 行為在這個事件中只是冰山一角，建議老師有興趣可以去查查資料（詳見 ", bold=False, size_pt=12.0)
+    add_external_hyperlink(p3, URL_HUGGINGFACE_WIKI, "維基百科：2026年OpenAI智能體入侵HuggingFace事件", bold=False, font_size_pt=12.0)
+    add_formatted_run(p3, "）。", bold=False, size_pt=12.0)
 
 
 # =============================================================================
