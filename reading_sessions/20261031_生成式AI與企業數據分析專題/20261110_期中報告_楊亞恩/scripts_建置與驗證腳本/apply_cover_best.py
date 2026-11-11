@@ -40,8 +40,8 @@ def insert_spacer(ref_p, pt_height):
     r.font.size = Pt(pt_height)
     return p
 
-# ==================== COVER PAGE (Golden Ratio 3-Zone Equilibrium) ====================
-# Zone 1: Top Breathing Space (Sky) - ~105 pt
+# ==================== COVER PAGE (Pure Minimalist Golden Ratio) ====================
+# Zone 1: Top Breathing Space (Sky) - ~105 pt down from top margin
 insert_spacer(first_p, 105)
 
 # Main Title: STRICTLY ONE SINGLE LINE (15.5pt, Bold, Deep Navy)
@@ -68,7 +68,7 @@ r_sub1.font.color.rgb = RGBColor(0x33, 0x41, 0x55)
 r_sub1._r.get_or_add_rPr().append(parse_xml(f'<w:rFonts {nsdecls("w")} w:eastAsia="標楷體" w:ascii="標楷體" w:hAnsi="標楷體"/>'))
 
 # Subtitle Line 2 (Staggered right-center)
-p_sub2 = insert_p_before(first_p, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=28)
+p_sub2 = insert_p_before(first_p, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=32)
 pPr_s2 = p_sub2._p.get_or_add_pPr()
 pPr_s2.append(parse_xml(f'<w:ind {nsdecls("w")} w:left="1440"/>')) # shifted right
 
@@ -78,21 +78,7 @@ r_sub2.font.size = Pt(13)
 r_sub2.font.color.rgb = RGBColor(0x33, 0x41, 0x55)
 r_sub2._r.get_or_add_rPr().append(parse_xml(f'<w:rFonts {nsdecls("w")} w:eastAsia="標楷體" w:ascii="標楷體" w:hAnsi="標楷體"/>'))
 
-# Zone 2: Elegant Middle Accent Line (0.75pt Navy hairline, ~5.6 cm wide)
-line_tbl = doc.add_table(rows=1, cols=1)
-first_p._p.addprevious(line_tbl._tbl)
-line_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-line_tblPr = line_tbl._tbl.tblPr
-line_tblPr.append(parse_xml(f'<w:tblBorders {nsdecls("w")}><w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="single" w:sz="8" w:space="0" w:color="1B365D"/><w:right w:val="none"/><w:insideH w:val="none"/><w:insideV w:val="none"/></w:tblBorders>'))
-cell = line_tbl.rows[0].cells[0]
-cell.width = Inches(2.2) # ~5.6 cm width
-p_line = cell.paragraphs[0]
-p_line.paragraph_format.space_before = Pt(0)
-p_line.paragraph_format.space_after = Pt(0)
-r_empty = p_line.add_run()
-r_empty.font.size = Pt(1)
-
-# Middle Spacing (pushed gracefully into lower-third golden section)
+# Zone 2: Pure Elegant Negative Space (Generous Golden Ratio Meadow - NO ARTIFICIAL LINE)
 insert_spacer(first_p, 85)
 insert_spacer(first_p, 85)
 insert_spacer(first_p, 85)
@@ -261,4 +247,4 @@ for p in doc.paragraphs:
         bm_id += 1
 
 doc.save(target_file)
-print('SUCCESS: Updated project Word doc with perfected Cover!')
+print('SUCCESS: Updated project Word doc with Pure Minimalist Cover (No artificial line)!')

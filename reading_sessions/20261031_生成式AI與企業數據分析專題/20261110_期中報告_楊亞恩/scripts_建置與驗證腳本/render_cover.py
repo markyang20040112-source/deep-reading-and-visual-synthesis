@@ -8,8 +8,9 @@ $p = $env:DOCX_PATH
 $out = $env:PDF_PATH
 $w = New-Object -ComObject Word.Application
 $w.Visible = $false
+$w.DisplayAlerts = 0
 try {
-    $doc = $w.Documents.Open($p)
+    $doc = $w.Documents.Open($p, $false, $true) # ReadOnly = True
     $doc.ExportAsFixedFormat($out, 17)
     $doc.Close([ref]0)
 } finally {
@@ -38,7 +39,7 @@ if os.path.exists(pdf_path):
     print(f"Number of drawings: {len(drawings)}")
     for d in drawings:
         r = d['rect']
-        print(f"Drawing: y0={r.y0:.1f}, y1={r.y1:.1f} ({r.y0/rect.height*100:.1f}%), width={r.width:.1f}, color={d.get('color')}")
+        print(f"Drawing: y0={r.y0:.1f}, y1={r.y1:.1f} ({r.y0/rect.height*100:.1f}%), width={r.width:.1f}")
     
     pix = page.get_pixmap(dpi=150)
     out_img = os.path.abspath(r'C:\Users\User\.gemini\antigravity\brain\1acca209-68d9-4ef2-a88e-a0aa523820c5\current_cover.png')
