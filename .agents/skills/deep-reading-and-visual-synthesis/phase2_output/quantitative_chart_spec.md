@@ -1,9 +1,26 @@
 # 量化實證圖表設計與出版級繪製規範（Format D: Quantitative Chart Spec）
 
-> **單一職責定位（Single Responsibility）**：本檔專責 **Format D（量化實證數據圖表 `.png`）** 的空間座標映射、折線／柱線複合差距表現、**鎖定版個人圖表配色規範（`Gephi · pastel` CIELAB / HCL 均衡色系）**、同質單色相漸層與跨面板色相區隔、指標語意同質化轉化，以及 `matplotlib` 出版級精準繪製規範。跨格式共用的組塊階層與白話由淺入深原則請見 [`visual_cognition_principles.md`](visual_cognition_principles.md)。
+> **單一職責定位（Single Responsibility）**：本檔專責 **Format D（量化實證數據圖表 `.png`）** 的**雙軌結構選型（`editorial_storytelling` 編輯室敘事圖解模式 vs. `pure_dataviz` 純資料視覺化／統計實證模式）**、空間座標映射、折線／柱線複合差距表現、**圖表配色設定集唯一權威定義（SSOT：支援擁有者鎖定版 `Gephi · pastel` 與外部使用者 CIELAB 衍生色票）**、同質單色相漸層與跨面板色相區隔、指標語意同質化轉化，以及 `matplotlib` 出版級精準繪製規範。
+> - **10 大分配與密度圖形完整指南**：凡涉及單變數／雙變數分布、密度估計與背景基準疊加分面比較（Context Overlay / Shadow Distribution），請連動讀取 **[`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)**。
+> - **筆風設定檔 100% 穿透綁定**：圖表主副標題、X/Y 軸籤、圖內標註氣泡（`Callouts`）與數值單位格式，100% 受當前啟用筆風設定檔之 **`Slot 6`（`Chart_And_Dashboard_MicroCopy`）** 與 **`Slot 8`（`Notation_Terminology_And_Guardrails`）** 控制（詳見 [`visual_cognition_principles.md`](visual_cognition_principles.md)）。
 >
-> 🔗 **【Format D（量化圖表）⇄ Format E（數據儀表板）雙向連動與同步更新鐵律】**：
-> 本檔（[`quantitative_chart_spec.md`](quantitative_chart_spec.md)）與 **[`data_dashboard_spec.md`](data_dashboard_spec.md)（Format E：數據儀表板規範）** 及 **[`scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)** 共用完全相同的「鎖定配色設定集」與「圖表視覺設計規則（座標映射、極性同質化、色階分流、去框座標軸、標籤對齊與製圖前確認條件）」。**往後凡涉及圖表配色或共通設計規則之任何新增、修改或技能進化（Step E3），必須強制同步更新本檔、`data_dashboard_spec.md` 與 `scripts/hcl_color_engine.py`，嚴禁單邊改動導致規則脫節！**
+> 🔗 **【Format D（量化圖表）⇄ Format E（數據儀表板）⇄ 分配圖形指南 雙向連動與同步更新鐵律】**：
+> 本檔（[`quantitative_chart_spec.md`](quantitative_chart_spec.md)）與 **[`data_dashboard_spec.md`](data_dashboard_spec.md)（Format E）**、**[`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)**、**[`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)** 及 **[`../scripts/gephi_palette.js`](../scripts/gephi_palette.js)** 共用完全相同的「配色設定集」與「圖表視覺設計規則」。**往後凡涉及圖表配色或共通設計規則之任何新增、修改或技能進化（Step E3），必須強制同步更新上述檔案，嚴禁單邊改動導致規則脫節！**
+
+---
+
+## 零、 結構級雙軌制：「編輯室敘事圖解 (`editorial_storytelling`)」vs.「純資料視覺化 (`pure_dataviz`)」與互動模式
+
+> [!IMPORTANT]
+> **核心決策原則（故事張力驅動 ＋ 使用者拍板確認）**：
+> 取消死板的「最小必要視覺化強制簡單優先」教條！圖表選型一律以**「最能深刻呈現數據背後的真實分布、結構異質性與故事張力」**為最高準則，並在生成前五維度確認關卡（Pre-Generation Confirmation Gate）向使用者確認採用哪一種圖表模式與互動節奏：
+
+| 比較維度 | 軌道 1：`editorial_storytelling`（編輯室敘事圖解模式） | 軌道 2：`pure_dataviz`（純資料視覺化／統計實證模式） |
+| :--- | :--- | :--- |
+| **核心目標與適用場景** | 針對高階簡報、策略報告、Medium 數據新聞專欄，一針見血傳遞**單一核心反差結論（Single Hook / Cliff Drop / Gap）** | 針對實證統計研究、開放資料集探索（EDA）、分配圖形導學，**忠實還原原始數據分布、多峰分化、尾部偏離與不確定性** |
+| **底層圖表結構差異** | 生成**高度合成與強視覺隱喻之結構**：<br>• 指標極性同質化拼接之物理斷崖折線＋直柱複合圖<br>• 共同基準線並排配對雙柱＋顯式剪刀差雙向箭頭圖<br>• 前 4 大彩色＋第 5 根長尾灰柱（`#CBD5E1`）之 `4+1` 聚焦聚合圖 | **嚴格保持原始變數維度獨立，不人為合成異質指標**：<br>• **10 大分配與密度圖形**（直方圖、非負截斷 KDE、ECDF、常態 Q-Q 圖、箱形圖、小提琴圖、山脊圖、2D 直方圖、2D KDE 等高線、背景基準疊加分面圖 Context Overlay — 詳見 [`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)）<br>• 散佈迴歸＋95% CI 信賴區間帶、點估計＋誤差線（Error Bars）、完整明細排行圖 |
+| **圖內標註與微文案（受筆風 `Slot 6` 控制）** | 搭配結論斷言式大標題、圖內醒目 `Δ` 差值膠囊、轉折流失原因氣泡與底部雙層 `【四字定位】` 說明籤 | 以**統計基準線（Mean / Median 強制白框描邊 `add_halo_vline`、IQR、固定比值斜率線）**與**極端觀測值定位圓點（`annotate_floor_extreme`，附註戶數規模脈絡）**取代大型口號氣泡；座標軸嚴格標明物理／機率密度單位與樣本數 $n$ |
+| **自由混搭與互動推進模式** | 支援 **`hybrid_custom`（混搭模式）**，並支援使用者於生成前選擇 **「一次批次生成（`batch_generation`）」** 或 **「逐步導學互動模式（`step_by_step_tutor`：一次呈現一張圖＋五步完整解說 $\rightarrow$ 停下等待使用者回應後再推進下一張）」**。 |
 
 ---
 
@@ -127,18 +144,26 @@
 ```python
 # === scripts/hcl_color_engine.py Black-Box API Signatures ===
 from hcl_color_engine import (
-    GEPHI_QUALITATIVE_HEX,      # ["#ECA072", "#5DBACD", "#E89BB6", "#8FBA88"]
-    GEPHI_LIGHT_BADGE_TINTS,    # ["#FFF3EA", "#EBF7F9", "#FFF0F5", "#F1F7EE"] (Zero-alpha 0.00 nodes)
-    GEPHI_SEQUENTIAL_SCALES,    # Dict["orange"|"blue"|"pink"|"green", List[5 hex nodes]]
-    GEPHI_DIVERGING_SCALE,      # List[9 hex nodes: #0E5B6B .. #F5F6F7 .. #884725]
-    GEPHI_DISCRETE_NEUTRALS,    # {"diverging_center": "#F5F6F7", "na_missing": "#D9D9D9", "other_aggregated": "#CBD5E1"}
-    get_sequential_color,       # (value, v_min, v_max, scale="orange", discrete_steps=False) -> str (True CIELAB interpolation)
-    get_diverging_color,        # (value, center=0.0, max_span=None, discrete_steps=False) -> str (Symmetric 9-node mapping)
-    bind_qualitative_colors,    # (categories, allow_top4_aggregation=False, other_label="其他項目合計") -> Dict[str, str] (Auto-maps '其他' to #CBD5E1)
-    get_category_badge_tint,    # (cat_or_key, category_color_map=None) -> str (Returns #FFF3EA / #EBF7F9 / #FFF0F5 / #F1F7EE)
-    despine_axes,               # (ax, grid_axis="y", grid_color="#CBD5E1", grid_linestyle="--", grid_alpha=0.65) -> None
-    export_gephi_palette_js,    # (output_path) -> str (Copies standalone gephi_palette.js into a Format E web project)
-    load_and_split_csv,         # (csv_path, numeric_cols=None, label_cols=None, subtotal_keywords=None, other_keywords=None, known_na_tokens=None) -> (df_raw, df_detail, df_other, df_subtotal, stats_report)
+    GEPHI_QUALITATIVE_HEX,              # Active 4 qualitative hex colors (Owner default: ["#ECA072", "#5DBACD", "#E89BB6", "#8FBA88"])
+    GEPHI_LIGHT_BADGE_TINTS,            # Active 4 zero-alpha 0.00 badge tints (Owner default: ["#FFF3EA", "#EBF7F9", "#FFF0F5", "#F1F7EE"])
+    GEPHI_SEQUENTIAL_SCALES,            # Dict["orange"|"blue"|"pink"|"green", List[5 hex nodes]]
+    GEPHI_DIVERGING_SCALE,              # List[9 hex nodes: #0E5B6B .. #F5F6F7 .. #884725]
+    GEPHI_DISCRETE_NEUTRALS,            # {"diverging_center": "#F5F6F7", "na_missing": "#D9D9D9", "other_aggregated": "#CBD5E1"}
+    check_user_identity_and_load_prefs, # (prefs_path=None, override_git_user=None) -> Dict (Enforces owner sync vs. external isolation)
+    build_palette_from_primary_hexes,   # (hex_list, palette_id="...", sync_js_path=None) -> Dict (CIELAB auto-derivation from 2~4 hexes)
+    activate_chart_palette,             # (palette_dict_or_id, prefs_path=None) -> Dict (Switches active runtime palette in-place)
+    get_sequential_color,               # (value, v_min, v_max, scale="orange", discrete_steps=False) -> str (True CIELAB interpolation)
+    get_diverging_color,                # (value, center=0.0, max_span=None, discrete_steps=False) -> str (Symmetric 9-node mapping)
+    bind_qualitative_colors,            # (categories, allow_top4_aggregation=False, other_label="其他項目合計") -> Dict[str, str]
+    get_category_badge_tint,            # (cat_or_key, category_color_map=None) -> str
+    despine_axes,                       # (ax, grid_axis="y", grid_color="#CBD5E1", grid_linestyle="--", grid_alpha=0.65) -> None
+    add_halo_vline,                     # (ax, x, color="#ECA072", linestyle="--", linewidth=2.2, halo_color="#FFFFFF", halo_width=4.8, label=None) -> Line2D
+    annotate_floor_extreme,             # (ax, x, y_floor=0.0, label_text="", dot_color="#97481B", arrow_height_ratio=0.14) -> Annotation
+    compute_clipped_kde,                # (data, x_min=0.0, x_max=None, bw_method="scott", grid_size=512) -> (x_grid, density_norm, h)
+    plot_clipped_kde,                   # (ax, data, x_min=0.0, x_max=None, bw_method="scott", color="#ECA072", fill_alpha=0.28) -> (x_grid, density_norm, h)
+    setup_context_overlay_grid,         # (n_panels, ncols=4, xlim=None, ylim=None, baseline_data=None, baseline_color="#CBD5E1") -> (fig, axes, bg_info)
+    export_gephi_palette_js,            # (output_path, palette_dict=None) -> str (Exports/syncs standalone gephi_palette.js)
+    load_and_split_csv,                 # (csv_path, numeric_cols=None, label_cols=None, ...) -> (df_raw, df_detail, df_other, df_subtotal, stats_report)
 )
 ```
 

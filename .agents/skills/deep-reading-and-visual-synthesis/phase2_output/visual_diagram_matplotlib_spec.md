@@ -1,6 +1,6 @@
 # 視覺化知識圖譜與概念架構圖規範（Format A: Visual Knowledge Diagram Spec）
 
-> **單一職責定位（Single Responsibility）**：本檔專責 **Format A（視覺化知識圖譜 `.png`）** 的多圖拆分策略、五大瑞士網格拓撲（T1～T5）、主幹分叉連線與 `matplotlib`（搭配 [`generate_mindmap.py`](../scripts/generate_mindmap.py) 引擎）座標級渲染工程守則。跨格式共用的組塊階層、白話由淺入深原則與基礎色票請見 [`visual_cognition_principles.md`](visual_cognition_principles.md)。
+> **單一職責定位（Single Responsibility）**：本檔專責 **Format A（視覺化知識圖譜 `.png`）** 的多圖拆分策略、五大瑞士網格拓撲（T1～T5）、主幹分叉連線與 `matplotlib`（搭配 [`generate_mindmap.py`](../scripts/generate_mindmap.py) 引擎）座標級渲染工程守則。跨格式共用的組塊階層、**筆風設定檔 8 大插槽綁定（Format A 全圖文字受 `Slot 1`、`Slot 4`、`Slot 5` 與 `Slot 8` 100% 控制）**與分層顏色設定集請見 [`visual_cognition_principles.md`](visual_cognition_principles.md)。
 
 > [!CAUTION]
 > **核心鐵律**：嚴禁使用擴散生圖模型（Imagen / DALL-E）繪製中文字圖表！所有繁體中文知識圖譜必須 100% 由 Python `matplotlib` 精確渲染。
@@ -20,7 +20,7 @@
 
 ## 二、 五大動態拓撲版型與主幹分叉路由（5 Topologies & Hierarchical Trunk-Fork）
 
-繪圖前必須根據知識結構，從以下 5 種 `0～100` 瑞士網格拓撲中挑選最匹配的一種，並落實 [`visual_cognition_principles.md`](visual_cognition_principles.md) 的 **$4 \to 2 \to 3$ 階層組塊** 與 **由淺入深（淺層現象 $\rightarrow$ 中層情境 $\rightarrow$ 深層價值）白話敘事**：
+繪圖前必須根據知識結構，從以下 5 種 `0～100` 瑞士網格拓撲中挑選最匹配的一種，並落實 [`visual_cognition_principles.md`](visual_cognition_principles.md) 的 **$4 \to 2 \to 3$ 階層組塊** 與 **當前啟用筆風設定檔（`Slot 1` 認知推進順序、`Slot 4` 條目開頭錨點格式、`Slot 5` 分區大標／卡片標題／有向箭頭謂詞膠囊 `Predicate_Verbs`／底部 Takeaway 橫幅語氣、以及 `Slot 8` 術語與禁用詞護欄）**：
 
 | 拓撲代號與名稱 | 適用知識結構 | `0～100` 瑞士網格空間配置與連線規範 |
 | :--- | :--- | :--- |
@@ -40,7 +40,8 @@
 ```python
 # === scripts/generate_mindmap.py Black-Box API Signatures ===
 from generate_mindmap import (
-    THEMES,                        # Dict: "swiss_editorial" (default), "hcl_scientific", "mckinsey_executive", "nature_academic", "warm_humanist"
+    THEMES,                        # Dict: "swiss_editorial", "modern_academic_slate", "warm_editorial_ivory", "hcl_scientific", "mckinsey_executive", "nature_academic", "warm_humanist"
+    resolve_diagram_theme,         # (theme="swiss_editorial") -> theme_dict (supports dynamic document_themes from user_preferences.json)
     configure_cjk_fonts,           # () -> None  (Sets Microsoft JhengHei / Noto Sans CJK TC)
     setup_publication_canvas,      # (figsize=(28.0, 18.5), dpi=240, theme="swiss_editorial") -> (fig, ax, theme_dict)
     draw_macro_zone,               # (ax, x, y, width, height, zone_title, theme, accent_key="primary", is_dashed=False) -> None
@@ -60,7 +61,7 @@ from generate_mindmap import (
 1. **畫布與大字級雙行滿版配適**：
    - 畫布固定為 `figsize=(28, 18.5)`、`dpi=240`（`ax.set_xlim(0, 100); ax.set_ylim(0, 100); ax.axis("off")`，僅輸出單一高畫質無損 `.png`）。
    - **字級硬指標**：主標題 `23.5pt`、卡片內文 **`11.8pt ~ 12.5pt`**、卡片標題 `14.6pt ~ 15.0pt`、分類徽章 `10.2pt ~ 10.8pt`、分區大標題 `13.6pt`、底部橫幅標題 `14.4pt`／內文 `12.4pt`。
-   - **雙行飽滿敘事（60～66 漢字／列點）**：每行約容納 34～36 個漢字；每條列點應撰寫 **60～66 字的完整白話敘事**，使其自然折為勻稱的 **2 滿行**，填滿卡片橫向寬度的 **`88%～92%`**。
+   - **雙行飽滿敘事（60～66 漢字／列點）**：每行約容納 34～36 個漢字；每條列點應依當前啟用筆風設定檔（`Slot 1` 認知推進順序與 `Slot 4` 開頭錨點格式）撰寫 **60～66 字的完整敘事**，使其自然折為勻稱的 **2 滿行**，填滿卡片橫向寬度的 **`88%～92%`**。
 2. **字型安全與全形縮排避頭尾保護**：
    - 引擎內建 `sanitize_cjk_glyphs()` 自動將微軟正黑體缺字（`➔`, `↔`, `⇄`）替換為安全字元（`→`, `×`），並以 `apply_kinsoku_shori()` 執行全形縮排避頭尾保護。
 3. **Tufte 四層 Z-Order 深度分離與走廊膠囊定位**：

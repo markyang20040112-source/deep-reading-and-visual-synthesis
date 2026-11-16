@@ -185,8 +185,99 @@ THEMES = {
             "synth":   {"main": "#6B4C7A", "pill_bg": "#F5F0F7"},
         },
         "hcl_contract": _HCL_ACCENTS,
-    }
+    },
+    "modern_academic_slate": {
+        "name": "Modern Academic Slate (Document Theme)",
+        "canvas_bg": "#F8FAFC",
+        "zone_bg": "#F1F5F9",
+        "zone_border": "#CBD5E1",
+        "card_bg": "#FFFFFF",
+        "card_border": "#CBD5E1",
+        "shadow": "#0F172A",
+        "text_title": "#0F172A",
+        "text_body": "#1E293B",
+        "muted_ink": "#475569",
+        "edge_line": "#94A3B8",
+        "hub_bg": "#0F172A",
+        "hub_border": "#38BDF8",
+        "hub_text": "#F8FAFC",
+        "hub_sub": "#38BDF8",
+        "accents": {
+            "primary": {"main": "#0284C7", "pill_bg": "#E0F2FE"},
+            "danger":  {"main": "#E11D48", "pill_bg": "#FFE4E6"},
+            "success": {"main": "#0D9488", "pill_bg": "#CCFBF1"},
+            "warn":    {"main": "#D97706", "pill_bg": "#FEF3C7"},
+            "synth":   {"main": "#4F46E5", "pill_bg": "#E0E7FF"},
+        },
+        "hcl_contract": _HCL_ACCENTS,
+    },
+    "warm_editorial_ivory": {
+        "name": "Warm Editorial Ivory (Document Theme)",
+        "canvas_bg": "#FAF8F5",
+        "zone_bg": "#F3EFE6",
+        "zone_border": "#E5E0D8",
+        "card_bg": "#FFFFFF",
+        "card_border": "#E5E0D8",
+        "shadow": "#1C1917",
+        "text_title": "#1C1917",
+        "text_body": "#292524",
+        "muted_ink": "#57534E",
+        "edge_line": "#A8A29E",
+        "hub_bg": "#1C1917",
+        "hub_border": "#ECA072",
+        "hub_text": "#FAF8F5",
+        "hub_sub": "#ECA072",
+        "accents": {
+            "primary": {"main": "#9A3412", "pill_bg": "#FFEDD5"},
+            "danger":  {"main": "#BE123C", "pill_bg": "#FFE4E6"},
+            "success": {"main": "#15803D", "pill_bg": "#DCFCE7"},
+            "warn":    {"main": "#B45309", "pill_bg": "#FEF3C7"},
+            "synth":   {"main": "#6B4C7A", "pill_bg": "#F5F0F7"},
+        },
+        "hcl_contract": _HCL_ACCENTS,
+    },
 }
+
+
+def resolve_diagram_theme(theme="swiss_editorial"):
+    """Resolve diagram theme dict by name, including dynamic document_themes in config/user_preferences.json."""
+    if isinstance(theme, dict):
+        return theme
+    theme_id = str(theme or "swiss_editorial").strip()
+    if theme_id in THEMES:
+        base = dict(THEMES[theme_id])
+    else:
+        base = dict(THEMES["swiss_editorial"])
+    try:
+        import json
+        prefs_file = Path(__file__).resolve().parents[1] / "config" / "user_preferences.json"
+        if prefs_file.exists():
+            prefs = json.loads(prefs_file.read_text(encoding="utf-8"))
+            doc_themes = prefs.get("color_sets", {}).get("document_themes", {})
+            if theme_id in doc_themes:
+                dt = doc_themes[theme_id]
+                base = dict(THEMES.get(theme_id, THEMES["swiss_editorial"]))
+                base["name"] = dt.get("theme_name", dt.get("name", base["name"]))
+                base["canvas_bg"] = dt.get("bg_canvas", base["canvas_bg"])
+                base["card_bg"] = dt.get("bg_card", base["card_bg"])
+                base["card_border"] = dt.get("border_card", base["card_border"])
+                base["zone_border"] = dt.get("border_card", base["zone_border"])
+                base["text_title"] = dt.get("ink_primary", base["text_title"])
+                base["shadow"] = dt.get("ink_primary", base["shadow"])
+                base["text_body"] = dt.get("ink_secondary", base["text_body"])
+                base["muted_ink"] = dt.get("ink_muted", base["muted_ink"])
+                base["hub_bg"] = dt.get("bookend_dark_bg", dt.get("dark_bookend_bg", base["hub_bg"]))
+                base["hub_border"] = dt.get("bookend_accent", dt.get("dark_bookend_accent", base["hub_border"]))
+                base["hub_sub"] = dt.get("bookend_accent", dt.get("dark_bookend_accent", base["hub_sub"]))
+                accents = dict(base.get("accents", {}))
+                accents["primary"] = {"main": dt.get("primary_accent", "#0284C7"), "pill_bg": dt.get("primary_tint", "#E0F2FE")}
+                accents["danger"] = {"main": dt.get("danger_accent", "#E11D48"), "pill_bg": dt.get("danger_tint", "#FFE4E6")}
+                accents["success"] = {"main": dt.get("success_accent", "#0D9488"), "pill_bg": dt.get("success_tint", "#CCFBF1")}
+                accents["warn"] = {"main": dt.get("warn_accent", "#D97706"), "pill_bg": dt.get("warn_tint", "#FEF3C7")}
+                base["accents"] = accents
+    except Exception:
+        pass
+    return base
 
 
 
@@ -834,7 +925,7 @@ def setup_publication_canvas(figsize=(28.0, 18.5), dpi=240, theme="swiss_editori
     Returns (fig, ax, theme_dict).
     """
     configure_cjk_fonts()
-    theme_dict = THEMES.get(theme, THEMES["swiss_editorial"]) if isinstance(theme, str) else (theme or THEMES["swiss_editorial"])
+    theme_dict = resolve_diagram_theme(theme)
     fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
     fig.patch.set_facecolor(theme_dict["canvas_bg"])
     ax.set_facecolor(theme_dict["canvas_bg"])
@@ -846,12 +937,7 @@ def setup_publication_canvas(figsize=(28.0, 18.5), dpi=240, theme="swiss_editori
 
 def save_publication_figure(fig, output_path, theme=None, dpi=240):
     """Saves high-DPI lossless PNG figure for razor-sharp CJK text."""
-    if theme is None:
-        theme_dict = THEMES["swiss_editorial"]
-    elif isinstance(theme, str):
-        theme_dict = THEMES.get(theme, THEMES["swiss_editorial"])
-    else:
-        theme_dict = theme
+    theme_dict = resolve_diagram_theme(theme) if theme is not None else THEMES["swiss_editorial"]
     plt.subplots_adjust(left=0.01, right=0.99, top=0.98, bottom=0.02)
     fig.savefig(
         output_path,

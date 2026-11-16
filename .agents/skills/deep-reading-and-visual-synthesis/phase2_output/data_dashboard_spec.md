@@ -1,9 +1,11 @@
 # 數據儀表板設計與互動／靜態雙模態實作規範（Format E: Data Dashboard Spec）
 
-> **單一職責定位（Single Responsibility）**：本檔專責 **Format E（數據儀表板：互動式 Web 數據儀表板 `.html`/`.css`/`.js` ＋ 出版級靜態全景儀表板圖 `.png`）** 的**動態圖表選型與版面配適架構（嚴禁寫死圖表類型與呈現格式）**、**鎖定版個人圖表配色規範（`Gephi · pastel` CIELAB / HCL 均衡色系）**、跨視角固定色序綁定，以及**零後端自包含（Self-Contained）前端工程、獨立 Git 儲存庫綁定與靜態網站發布（GitHub Pages 等）驗收守則**。跨格式共用的組塊階層（$4 \to 2 \to 3$）與白話由淺入深原則請見 [`visual_cognition_principles.md`](visual_cognition_principles.md)。
+> **單一職責定位（Single Responsibility）**：本檔專責 **Format E（數據儀表板：互動式 Web 數據儀表板 `.html`/`.css`/`.js` ＋ 出版級靜態全景儀表板圖 `.png`）** 的**動態圖表選型與雙軌模式配適（支援 `editorial_storytelling` 敘事圖解與 `pure_dataviz` 純資料視覺化／10 大分配圖形，嚴禁寫死圖表類型與呈現格式）**、**圖表配色設定集前端實作（支援擁有者鎖定版 `Gephi · pastel` 與外部使用者 CIELAB 衍生色票）**、跨視角固定色序綁定，以及**零後端自包含（Self-Contained）前端工程、獨立 Git 儲存庫綁定與靜態網站發布（GitHub Pages 等）驗收守則**。
+> - **筆風設定檔 100% 穿透綁定**：儀表板頂部標題、KPI 摘要卡、頁籤命名、座標軸籤、圖內標註與互動 Tooltip 解說微文案，100% 受當前啟用筆風設定檔之 **`Slot 6`（`Chart_And_Dashboard_MicroCopy`）** 與 **`Slot 8`（`Notation_Terminology_And_Guardrails`）** 控制（詳見 [`visual_cognition_principles.md`](visual_cognition_principles.md)）。
+> - **10 大分配與密度圖形連動**：當儀表板包含連續變數分布、核密度、箱形／小提琴／山脊圖或背景基準疊加分面比較（Context Overlay / Shadow Distribution）視角時，請連動遵守 **[`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)**。
 >
-> 🔗 **【Format E（數據儀表板）⇄ Format D（量化圖表）雙向連動與同步更新鐵律】**：
-> 本檔（[`data_dashboard_spec.md`](data_dashboard_spec.md)）與 **[`quantitative_chart_spec.md`](quantitative_chart_spec.md)（Format D：量化實證圖表規範）** 及 **[`scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)** 屬於**雙向連動共生規範**，共用完全相同的「鎖定配色設定集」與「圖表視覺設計規則（座標映射、極性同質化、色階分流、去框座標軸、標籤對齊與製圖前 6 項確認條件）」。**往後凡涉及圖表配色或共通設計規則之任何新增、修改或技能進化（Step E3），必須強制同步更新本檔、`quantitative_chart_spec.md` 與 `scripts/hcl_color_engine.py`，嚴禁單邊改動導致規則脫節！**
+> 🔗 **【Format E（數據儀表板）⇄ Format D（量化圖表）⇄ 分配圖形指南 雙向連動與同步更新鐵律】**：
+> 本檔（[`data_dashboard_spec.md`](data_dashboard_spec.md)）與 **[`quantitative_chart_spec.md`](quantitative_chart_spec.md)（Format D）**、**[`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)**、**[`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)** 及 **[`../scripts/gephi_palette.js`](../scripts/gephi_palette.js)** 屬於**雙向連動共生規範**，共用完全相同的「配色設定集」與「圖表視覺設計規則」。**往後凡涉及圖表配色或共通設計規則之任何新增、修改或技能進化（Step E3），必須強制同步更新上述檔案，嚴禁單邊改動導致規則脫節！**
 
 ---
 
@@ -24,7 +26,7 @@
 | **3. 多維度結構組成與核心支柱拆解**<br>*(Part-to-Whole / Structural Composition)* | • **堆疊長條／直柱圖（Stacked Bar / Column，支援總額與 `100%` 佔比切換）**<br>• **群組並排比較圖（Grouped Bar）、矩形樹圖（Treemap）或旭日圖（Sunburst）** | • 類別數 $\le 4$ 時依序綁定**固定類別四色**。<br>• 若原始細項超過 4 個（如數十個細目），向使用者確認擴充方式，或啟用**「智慧 4+1 聚焦視角」**：自動萃取前四大核心支柱綁定四色，長尾細項聚合為第五項**典雅灰 `#CBD5E1`**（並可提供切換開關）。 |
 | **4. 多實體規模排行／常態化強度對比**<br>*(Entity Ranking / Normalized Per-Capita Magnitude)* | • **橫向排行長條圖（Horizontal Ranking Leaderboard）**<br>• **棒棒糖排行圖（Lollipop Chart）或點陣分佈圖（Dot Plot）** | • 依數值正規化位置 $p \in [0, 1]$ 映射至 **5 階循序色階**（主視角預設用**暖杏橘系循序**；若為單一類別深鑽或次面板對照則用**霧靄藍系循序**），低值淺、高值深。 |
 | **5. 基準正負偏差／期比增減／達標率檢視**<br>*(Deviation from Reference / YoY Growth / Variance)* | • **雙向發散長條圖（Diverging Bar / Butterfly Chart）**<br>• **正負偏差熱力矩陣（Diverging Heatmap）或瀑布圖（Waterfall Chart）** | • 嚴格鎖定 **9 階對稱發散色階**：以指定業務基準（如偏差 `0%` 或達標率 `100%`）為中心 `#F5F6F7`，負向／未達標往**霧靄藍系（極值 `#0E5B6B`）**延伸，正向／超標往**暖杏橘系（極值 `#884725`）**延伸。 |
-| **6. 多變數關聯、交叉分佈與單項深鑽探索**<br>*(Multi-Variate Correlation / Distribution / Deep-Dive)* | • **雙軸散佈／氣泡圖（Scatter / Bubble Plot，含象限基準線）**<br>• **交叉維度熱力圖（Matrix Heatmap）、箱形圖（Boxplot）或單維度深鑽器（Deep-Dive Selector）** | • 氣泡或分群類別綁定固定四色序；熱力強度使用 CIELAB 5 階循序或 9 階發散插值，嚴禁使用 Alpha 透明度冒充明度深淺。 |
+| **6. 多變數關聯、10 大分配與密度圖形與背景基準分面深鑽**<br>*(Multi-Variate Correlation / 10 Distribution Plots / Context Overlay)* | • **10 大分配與密度圖形**（直方圖、非負截斷 KDE、ECDF、常態 Q-Q 圖、箱形圖、小提琴圖、山脊圖、2D 直方圖、2D 密度等高線圖、**背景基準疊加分面圖 Context Overlay / Shadow Distribution** — 詳見 [`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)）<br>• **雙軸散佈／氣泡圖（含固定比值斜率參考線）或交叉熱力圖** | • 嚴格遵守 [`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md) 之非負邊界截斷、面積正規化為 $1$、固定座標軸與背景淡灰基準（`#CBD5E1`）8 大鐵律；嚴禁使用 Alpha 透明度冒充明度深淺。 |
 
 ### 2. 動態呈現方式與版面拓撲（Adaptive Presentation & Layout Topologies）
 遵循 **Shneiderman (1996) 視覺資訊尋求箴言（*"Overview first, zoom and filter, then details-on-demand"*）** 與 [`visual_cognition_principles.md`](visual_cognition_principles.md) 之 **$4 \to 2 \to 3$ 階層組塊原則**，依資料規模與使用者需求動態選擇呈現架構（不寫死單一面板結構）：
@@ -52,12 +54,14 @@
 ```javascript
 // === scripts/gephi_palette.js (window.GephiPalette) Black-Box API Signatures ===
 const {
-  PALETTE,               // { categories: ['#ECA072','#5DBACD','#E89BB6','#8FBA88'], badgeTints: ['#FFF3EA','#EBF7F9','#FFF0F5','#F1F7EE'], other: '#CBD5E1', na: '#D9D9D9', divergingCenter: '#F5F6F7', seqOrange, seqBlue, seqPink, seqGreen, divergingHex }
-  labInterpolate,        // (hexList, t) -> '#RRGGBB' (True CIELAB piecewise linear interpolation)
-  getSequentialColor,    // (val, min, max, scale='orange', discreteSteps=false) -> '#RRGGBB' (Enforces (val - min)/(max - min) normalization)
-  getDivergingColor,     // (val, center=0, maxSpan=1, discreteSteps=false) -> '#RRGGBB' (Symmetric 9-node mapping around #F5F6F7)
-  bindQualitativeColors, // (categories, allowTop4Aggregation=true, otherLabel='其他項目合計') -> { colorMap, badgeTintMap, top4Categories, otherCategories }
-  getCategoryBadgeTint,  // (catOrKey, badgeTintMap) -> '#FFF3EA' | '#EBF7F9' | '#FFF0F5' | '#F1F7EE' | '#F1F5F9'
+  PALETTE,                        // { categories, badgeTints, other: '#CBD5E1', na: '#D9D9D9', divergingCenter: '#F5F6F7', seqOrange, seqBlue, seqPink, seqGreen, divergingHex }
+  labInterpolate,                 // (hexList, t) -> '#RRGGBB' (True CIELAB piecewise linear interpolation)
+  getSequentialColor,             // (val, min, max, scale='orange', discreteSteps=false) -> '#RRGGBB' (Enforces (val - min)/(max - min) normalization)
+  getDivergingColor,              // (val, center=0, maxSpan=1, discreteSteps=false) -> '#RRGGBB' (Symmetric 9-node mapping around #F5F6F7)
+  bindQualitativeColors,          // (categories, allowTop4Aggregation=true, otherLabel='其他項目合計') -> { colorMap, badgeTintMap, top4Categories, otherCategories }
+  getCategoryBadgeTint,           // (catOrKey, badgeTintMap) -> '#FFF3EA' | '#EBF7F9' | '#FFF0F5' | '#F1F7EE' | '#F1F5F9'
+  buildPaletteFromPrimaryHexes,   // (hexList) -> customPaletteObj (CIELAB auto-derivation from 2~4 primary hex colors)
+  setActivePalette,               // (customPaletteObj) -> PALETTE (Switches active frontend palette in-place)
 } = window.GephiPalette;
 ```
 

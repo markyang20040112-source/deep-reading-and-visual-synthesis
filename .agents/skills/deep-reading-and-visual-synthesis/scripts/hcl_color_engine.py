@@ -15,7 +15,7 @@ Implements:
 """
 
 import math
-from typing import List, Tuple, Dict, Optional
+from typing import List, Tuple, Dict, Optional, Sequence
 
 # D65 standard illuminant white point constants
 XN = 0.95047
@@ -674,21 +674,669 @@ def despine_axes(
         ax.grid(axis=grid_axis, linestyle=grid_linestyle, color=grid_color, alpha=grid_alpha, zorder=0)
 
 
-def export_gephi_palette_js(output_path: str) -> str:
+def _normalize_hex(hex_code: str) -> str:
+    """Validate and normalize #RGB / RGB / #RRGGBB / RRGGBB to canonical uppercase #RRGGBB."""
+    import re
+    clean = str(hex_code or "").strip().lstrip("#")
+    if len(clean) == 3:
+        clean = "".join(ch * 2 for ch in clean)
+    if len(clean) != 6 or not re.fullmatch(r"[0-9A-Fa-f]{6}", clean):
+        raise ValueError(f"Invalid hex color: {hex_code!r}")
+    return f"#{clean.upper()}"
+
+
+def export_gephi_palette_js(output_path: str, palette_dict: Optional[Dict[str, object]] = None) -> str:
     """
-    Export the standalone pure-JS Gephi · pastel CIELAB color engine (`gephi_palette.js`)
+    Export the standalone pure-JS CIELAB color engine (`gephi_palette.js`)
     to `output_path` so Format E web dashboards share 100% identical color math with Python.
+    If `palette_dict` is provided, embeds that palette's colors into the generated JS file.
     """
+    import json
+    import re
     from pathlib import Path
     src_js = Path(__file__).resolve().parent / "gephi_palette.js"
     out_file = Path(output_path).resolve()
     out_file.parent.mkdir(parents=True, exist_ok=True)
-    if src_js.exists():
-        content = src_js.read_text(encoding="utf-8")
-        out_file.write_text(content, encoding="utf-8")
-    else:
+    if not src_js.exists():
         raise FileNotFoundError(f"Master gephi_palette.js not found at {src_js}")
+    content = src_js.read_text(encoding="utf-8")
+    if palette_dict is not None:
+        cats = list(palette_dict.get("qualitative_4") or palette_dict.get("categories") or GEPHI_QUALITATIVE_HEX)
+        tints = list(palette_dict.get("light_badge_tints_4") or palette_dict.get("badgeTints") or GEPHI_LIGHT_BADGE_TINTS)
+        seqs = dict(palette_dict.get("sequential_scales") or {})
+        seq_orange = list(seqs.get("orange") or palette_dict.get("seqOrange") or GEPHI_SEQUENTIAL_SCALES["orange"])
+        seq_blue = list(seqs.get("blue") or palette_dict.get("seqBlue") or GEPHI_SEQUENTIAL_SCALES["blue"])
+        seq_pink = list(seqs.get("pink") or palette_dict.get("seqPink") or GEPHI_SEQUENTIAL_SCALES["pink"])
+        seq_green = list(seqs.get("green") or palette_dict.get("seqGreen") or GEPHI_SEQUENTIAL_SCALES["green"])
+        div9 = list(palette_dict.get("diverging_9") or palette_dict.get("divergingHex") or GEPHI_DIVERGING_SCALE)
+        neutrals = dict(palette_dict.get("discrete_neutrals") or {})
+        other_hex = neutrals.get("other_aggregated") or palette_dict.get("other") or "#CBD5E1"
+        na_hex = neutrals.get("na_missing") or palette_dict.get("na") or "#D9D9D9"
+        div_center = neutrals.get("diverging_center") or palette_dict.get("divergingCenter") or "#F5F6F7"
+        replacement_block = (
+            "  const PALETTE = {\n"
+            f"    categories: {json.dumps(cats)},\n"
+            f"    badgeTints: {json.dumps(tints)},\n"
+            f"    other: {json.dumps(other_hex)},\n"
+            f"    na: {json.dumps(na_hex)},\n"
+            f"    divergingCenter: {json.dumps(div_center)},\n"
+            f"    seqOrange: {json.dumps(seq_orange)},\n"
+            f"    seqBlue:   {json.dumps(seq_blue)},\n"
+            f"    seqPink:   {json.dumps(seq_pink)},\n"
+            f"    seqGreen:  {json.dumps(seq_green)},\n"
+            f"    divergingHex: {json.dumps(div9)}\n"
+            "  };"
+        )
+        content = re.sub(
+            r"  const PALETTE = \{[\s\S]*?\n  \};",
+            replacement_block,
+            content,
+            count=1,
+        )
+    out_file.write_text(content, encoding="utf-8")
     return str(out_file)
+
+
+# -------------------------------------------------------------------------
+# User Identity Verification, Owner Isolation & Multi-Palette Derivation
+# -------------------------------------------------------------------------
+
+OWNER_GITHUB_ID = "markyang20040112-source"
+
+
+def _detect_local_git_user(repo_dir: Optional[str] = None) -> str:
+    """Detect current Git user identity via env override, git config user.name, or user.email."""
+    import os
+    import subprocess
+    from pathlib import Path
+
+    env_user = os.environ.get("DEEP_READING_GIT_USER")
+    if env_user is not None:
+        return env_user.strip()
+
+    cwd = str(Path(repo_dir).resolve()) if repo_dir else str(Path(__file__).resolve().parents[1])
+    for cmd in (["git", "config", "user.name"], ["git", "config", "user.email"]):
+        try:
+            res = subprocess.run(
+                cmd,
+                cwd=cwd,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=3,
+                check=False,
+            )
+            val = (res.stdout or "").strip()
+            if val:
+                if "@" in val:
+                    val = val.split("@", 1)[0].strip()
+                return val
+        except Exception:
+            continue
+    return ""
+
+
+def _detect_local_os_user() -> str:
+    """Detect current OS login username for Git-less external user persistence."""
+    import getpass
+    import os
+    env_override = os.environ.get("DEEP_READING_LOCAL_USER")
+    if env_override is not None:
+        return env_override.strip()
+    try:
+        return (getpass.getuser() or "").strip()
+    except Exception:
+        return (os.environ.get("USERNAME") or os.environ.get("USER") or "").strip()
+
+
+def _is_gh_owner_authenticated() -> bool:
+    """Return True if GitHub CLI (`gh`) is logged in as OWNER_GITHUB_ID."""
+    import shutil
+    import subprocess
+    if not shutil.which("gh"):
+        return False
+    try:
+        res = subprocess.run(
+            ["gh", "api", "user", "--jq", ".login"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=4,
+            check=False,
+        )
+        return res.returncode == 0 and res.stdout.strip().lower() == OWNER_GITHUB_ID.lower()
+    except Exception:
+        return False
+
+
+def check_user_identity_and_load_prefs(
+    prefs_path: Optional[str] = None,
+    override_git_user: Optional[str] = None,
+    allow_workspace_fallback: bool = True,
+    override_local_user: Optional[str] = None,
+) -> Dict[str, object]:
+    """
+    Verify local Git / OS user identity and load `config/user_preferences.json`.
+    - Owner Dual-Device Seamless Sync: Verified via local Git identity (`markyang20040112-source`),
+      authenticated `gh` CLI login, or private home-directory marker `~/.deep_reading_owner_verified`
+      (never by public repo files like `reading_sessions/` alone, preventing clone false-positives).
+    - Strict External User Isolation: Strips and isolates all `owner_only: true` palettes and
+      `available_owner_styles` for non-owners. Supports both Git-bound (`bound_git_user`) and
+      Git-less local OS-bound (`bound_local_user`) persistence once onboarding is completed.
+    """
+    import copy
+    import json
+    from pathlib import Path
+
+    skill_root = Path(__file__).resolve().parents[1]
+    workspace_root = skill_root.parents[2] if len(skill_root.parents) >= 3 else skill_root.parent
+    cfg_dir = skill_root / "config"
+    target_prefs = Path(prefs_path).resolve() if prefs_path else (cfg_dir / "user_preferences.json")
+    template_prefs = cfg_dir / "user_preferences.template.json"
+
+    if target_prefs.exists():
+        raw_prefs = json.loads(target_prefs.read_text(encoding="utf-8"))
+    elif template_prefs.exists():
+        raw_prefs = json.loads(template_prefs.read_text(encoding="utf-8"))
+    else:
+        raw_prefs = {}
+
+    detected_user = (
+        override_git_user.strip()
+        if override_git_user is not None
+        else _detect_local_git_user(str(workspace_root))
+    )
+    detected_local_user = (
+        override_local_user.strip()
+        if override_local_user is not None
+        else _detect_local_os_user()
+    )
+
+    bound_user = str(raw_prefs.get("bound_git_user") or "").strip()
+    bound_local_user = str(raw_prefs.get("bound_local_user") or "").strip()
+    is_owner = False
+
+    if detected_user.lower() == OWNER_GITHUB_ID.lower():
+        is_owner = True
+    elif not detected_user and allow_workspace_fallback and override_git_user is None:
+        owner_marker = Path.home() / ".deep_reading_owner_verified"
+        if owner_marker.exists() or _is_gh_owner_authenticated():
+            is_owner = True
+
+    if is_owner:
+        effective = copy.deepcopy(raw_prefs)
+        effective["is_owner"] = True
+        effective["isolated_external_user"] = False
+        effective["detected_git_user"] = detected_user or OWNER_GITHUB_ID
+        effective["detected_local_user"] = detected_local_user
+        effective["onboarding_completed"] = True
+        return effective
+
+    # External user path: check if external user already completed onboarding (via Git OR local OS identity)
+    git_matched = bool(
+        detected_user
+        and bound_user
+        and detected_user.lower() == bound_user.lower()
+        and bound_user.lower() != OWNER_GITHUB_ID.lower()
+    )
+    local_matched = bool(
+        not detected_user
+        and detected_local_user
+        and bound_local_user
+        and detected_local_user.lower() == bound_local_user.lower()
+        and bound_user.lower() != OWNER_GITHUB_ID.lower()
+    )
+
+    if (git_matched or local_matched) and bool(raw_prefs.get("onboarding_completed", False)):
+        effective = copy.deepcopy(raw_prefs)
+        # Still ensure owner_only items remain isolated
+        palettes = effective.get("color_sets", {}).get("chart_palettes", {})
+        effective.setdefault("color_sets", {})["chart_palettes"] = {
+            k: v for k, v in palettes.items() if not v.get("owner_only", False)
+        }
+        effective.setdefault("writing_styles", {})["available_owner_styles"] = []
+        effective["is_owner"] = False
+        effective["isolated_external_user"] = False
+        effective["detected_git_user"] = detected_user
+        effective["detected_local_user"] = detected_local_user
+        return effective
+
+    # External uninitialized user: strictly isolate all owner_only assets and force onboarding
+    if template_prefs.exists():
+        effective = json.loads(template_prefs.read_text(encoding="utf-8"))
+    else:
+        effective = copy.deepcopy(raw_prefs)
+
+    palettes = effective.get("color_sets", {}).get("chart_palettes", {})
+    effective.setdefault("color_sets", {})["chart_palettes"] = {
+        k: v for k, v in palettes.items() if not v.get("owner_only", False)
+    }
+    effective["color_sets"]["active_chart_palette_id"] = None
+    effective.setdefault("writing_styles", {})["available_owner_styles"] = []
+    effective["writing_styles"]["active_style_id"] = None
+    effective["bound_git_user"] = detected_user or None
+    effective["bound_local_user"] = detected_local_user or None
+    effective["is_owner"] = False
+    effective["isolated_external_user"] = True
+    effective["detected_git_user"] = detected_user
+    effective["detected_local_user"] = detected_local_user
+    effective["onboarding_completed"] = False
+    return effective
+
+
+def build_palette_from_primary_hexes(
+    hex_list: List[str],
+    palette_id: str = "custom_cielab_palette",
+    palette_name: str = "Custom CIELAB Palette",
+    sync_js_path: Optional[str] = None,
+) -> Dict[str, object]:
+    """
+    Build a complete Format D & E chart palette from 2 to 4 primary HEX colors using CIELAB interpolation:
+    - Normalizes or expands 2~4 input colors into 4 qualitative base colors.
+    - Derives `0.00` zero-alpha light badge surface tints (mixed 88% toward pure white #FFFFFF in CIELAB).
+    - Derives 4 sets of 5-node sequential scales (`orange`/`primary`, `blue`/`secondary`, `pink`/`tertiary`, `green`/`quaternary`).
+    - Derives a 9-node symmetric diverging scale (`secondary[1.00]` <-> `#F5F6F7` <-> `primary[1.00]`).
+    - Optionally syncs and regenerates `gephi_palette.js` at `sync_js_path`.
+    """
+    raw_inputs = [str(h).strip() for h in (hex_list or []) if str(h).strip()]
+    if len(raw_inputs) < 2 or len(raw_inputs) > 4:
+        raise ValueError(f"build_palette_from_primary_hexes requires 2 to 4 hex colors; got {len(raw_inputs)}.")
+
+    # Validate and normalize hex format to canonical #RRGGBB
+    cleaned = [_normalize_hex(h) for h in raw_inputs]
+
+    qual_4 = list(cleaned)
+    if len(qual_4) == 2:
+        # Derive 3rd and 4th balanced colors by rotating in Lab (a*, b*) plane at L*=72
+        l1, a1, b1 = hex_to_lab(qual_4[0])
+        l2, a2, b2 = hex_to_lab(qual_4[1])
+        qual_4.append(lab_to_hex(72.0, -b1 * 0.85, a1 * 0.85))
+        qual_4.append(lab_to_hex(72.0, -b2 * 0.85, a2 * 0.85))
+    elif len(qual_4) == 3:
+        l1, a1, b1 = hex_to_lab(qual_4[0])
+        qual_4.append(lab_to_hex(72.0, -a1 * 0.75, -b1 * 0.75))
+
+    scale_keys = ["orange", "blue", "pink", "green"]
+    seq_scales: Dict[str, List[str]] = {}
+    badge_tints: List[str] = []
+
+    for idx, base_hex in enumerate(qual_4[:4]):
+        l_b, a_b, b_b = hex_to_lab(base_hex)
+        # 0.00 ultra-light zero-alpha tint (L* ≈ 96.5, low chroma)
+        node_00 = lab_to_hex(96.5, a_b * 0.14, b_b * 0.14)
+        # 0.25 light node
+        node_25 = lab_interpolate([node_00, base_hex], 0.50)
+        # 0.50 base color
+        node_50 = base_hex
+        # 1.00 ultra-deep node (L* ≈ 32, rich chroma)
+        node_100 = lab_to_hex(max(26.0, min(36.0, l_b * 0.46)), a_b * 1.12, b_b * 1.12)
+        # 0.75 deep node
+        node_75 = lab_interpolate([base_hex, node_100], 0.50)
+
+        seq_scales[scale_keys[idx]] = [node_00, node_25, node_50, node_75, node_100]
+        badge_tints.append(node_00)
+
+    neg_extreme = seq_scales["blue"][4]
+    neg_mid = seq_scales["blue"][2]
+    center_neutral = "#F5F6F7"
+    pos_mid = seq_scales["orange"][2]
+    pos_extreme = seq_scales["orange"][4]
+
+    diverging_9 = [
+        neg_extreme,
+        lab_interpolate([neg_extreme, neg_mid], 0.50),
+        neg_mid,
+        lab_interpolate([neg_mid, center_neutral], 0.55),
+        center_neutral,
+        lab_interpolate([center_neutral, pos_mid], 0.45),
+        pos_mid,
+        lab_interpolate([pos_mid, pos_extreme], 0.50),
+        pos_extreme,
+    ]
+
+    palette_obj: Dict[str, object] = {
+        "palette_id": palette_id,
+        "palette_name": palette_name,
+        "owner_only": False,
+        "qualitative_4": qual_4[:4],
+        "light_badge_tints_4": badge_tints,
+        "sequential_scales": seq_scales,
+        "diverging_9": diverging_9,
+        "discrete_neutrals": {
+            "diverging_center": center_neutral,
+            "na_missing": "#D9D9D9",
+            "other_aggregated": "#CBD5E1",
+            "context_baseline_gray": "#CBD5E1",
+        },
+        # JS-compatible aliases so objects can be passed interchangeably between Python and JS
+        "categories": qual_4[:4],
+        "badgeTints": badge_tints,
+        "seqOrange": seq_scales["orange"],
+        "seqBlue": seq_scales["blue"],
+        "seqPink": seq_scales["pink"],
+        "seqGreen": seq_scales["green"],
+        "divergingHex": diverging_9,
+    }
+
+    if sync_js_path:
+        export_gephi_palette_js(sync_js_path, palette_dict=palette_obj)
+
+    return palette_obj
+
+
+def activate_chart_palette(palette_dict_or_id: object, prefs_path: Optional[str] = None) -> Dict[str, object]:
+    """
+    Switch the active runtime palette in `hcl_color_engine` (updating module-level lists/dicts in-place
+    so existing imports remain 100% synchronized).
+    Accepts either a palette dict (from `build_palette_from_primary_hexes` or JS `buildPaletteFromPrimaryHexes`)
+    or a `palette_id` string present in `config/user_preferences.json`.
+    """
+    if isinstance(palette_dict_or_id, str):
+        prefs = check_user_identity_and_load_prefs(prefs_path=prefs_path)
+        palettes = prefs.get("color_sets", {}).get("chart_palettes", {})
+        lookup_id = palette_dict_or_id
+        if lookup_id not in palettes and lookup_id in ("gephi_pastel", "owner_gephi_pastel") and "gephi_pastel_locked" in palettes:
+            lookup_id = "gephi_pastel_locked"
+        if lookup_id not in palettes:
+            raise KeyError(
+                f"Palette '{palette_dict_or_id}' not found or isolated for current user. "
+                f"Available palettes: {list(palettes.keys())}"
+            )
+        p_dict = palettes[lookup_id]
+    elif isinstance(palette_dict_or_id, dict):
+        p_dict = palette_dict_or_id
+    else:
+        raise TypeError("palette_dict_or_id must be a palette_id str or palette dict.")
+
+    qual = [_normalize_hex(c) for c in (p_dict.get("qualitative_4") or p_dict.get("categories") or [])]
+    tints = [_normalize_hex(c) for c in (p_dict.get("light_badge_tints_4") or p_dict.get("badgeTints") or [])]
+    raw_seqs = dict(p_dict.get("sequential_scales") or {})
+    seqs = {
+        "orange": list(raw_seqs.get("orange") or p_dict.get("seqOrange") or GEPHI_SEQUENTIAL_SCALES["orange"]),
+        "blue": list(raw_seqs.get("blue") or p_dict.get("seqBlue") or GEPHI_SEQUENTIAL_SCALES["blue"]),
+        "pink": list(raw_seqs.get("pink") or p_dict.get("seqPink") or GEPHI_SEQUENTIAL_SCALES["pink"]),
+        "green": list(raw_seqs.get("green") or p_dict.get("seqGreen") or GEPHI_SEQUENTIAL_SCALES["green"]),
+    }
+    div9 = list(p_dict.get("diverging_9") or p_dict.get("divergingHex") or GEPHI_DIVERGING_SCALE)
+    neutrals = dict(p_dict.get("discrete_neutrals") or {})
+
+    GEPHI_QUALITATIVE_HEX[:] = qual
+    GEPHI_LIGHT_BADGE_TINTS[:] = tints
+    for k in ("orange", "blue", "pink", "green"):
+        if k in seqs:
+            GEPHI_SEQUENTIAL_SCALES[k] = list(seqs[k])
+    GEPHI_DIVERGING_SCALE[:] = div9
+    GEPHI_DISCRETE_NEUTRALS.update(neutrals)
+
+    GEPHI_QUALITATIVE_NAMED["primary_orange"] = qual[0]
+    GEPHI_QUALITATIVE_NAMED["secondary_blue"] = qual[1]
+    GEPHI_QUALITATIVE_NAMED["tertiary_pink"] = qual[2]
+    GEPHI_QUALITATIVE_NAMED["quaternary_green"] = qual[3]
+
+    GEPHI_LIGHT_BADGE_TINTS_MAP.clear()
+    GEPHI_LIGHT_BADGE_TINTS_MAP.update({
+        "0": tints[0], "1": tints[1], "2": tints[2], "3": tints[3],
+        "orange": tints[0], "primary": tints[0], "primary_orange": tints[0], qual[0].upper(): tints[0],
+        "blue": tints[1], "secondary": tints[1], "secondary_blue": tints[1], qual[1].upper(): tints[1],
+        "pink": tints[2], "tertiary": tints[2], "tertiary_pink": tints[2], qual[2].upper(): tints[2],
+        "green": tints[3], "quaternary": tints[3], "quaternary_green": tints[3], qual[3].upper(): tints[3],
+    })
+    return p_dict
+
+
+# -------------------------------------------------------------------------
+# Distribution & Density Chart Guardrail Helpers (Step 4 Spec Integration)
+# -------------------------------------------------------------------------
+
+def add_halo_vline(
+    ax: object,
+    x: float,
+    color: str = "#ECA072",
+    linestyle: str = "--",
+    linewidth: float = 2.2,
+    halo_color: str = "#FFFFFF",
+    halo_width: float = 4.8,
+    label: Optional[str] = None,
+    zorder: int = 5,
+):
+    """
+    Draw a vertical reference line (e.g. Mean / Median on a Histogram or KDE plot) with a mandatory
+    white outer stroke/halo so it never visually merges with dark bars or bin boundaries.
+    """
+    import matplotlib.patheffects as patheffects
+
+    line = ax.axvline(
+        x=float(x),
+        color=color,
+        linestyle=linestyle,
+        linewidth=linewidth,
+        label=label,
+        zorder=zorder,
+    )
+    line.set_path_effects([
+        patheffects.Stroke(linewidth=halo_width, foreground=halo_color),
+        patheffects.Normal(),
+    ])
+    return line
+
+
+def annotate_floor_extreme(
+    ax: object,
+    x: float,
+    y_floor: float = 0.0,
+    label_text: str = "",
+    dot_color: str = "#97481B",
+    dot_size: float = 46.0,
+    arrow_height_ratio: float = 0.14,
+    text_offset_x: float = 0.0,
+    fontsize: float = 9.5,
+    zorder: int = 6,
+    label: Optional[str] = None,
+    color: Optional[str] = None,
+):
+    """
+    Safely annotate a right-tail extreme value whose histogram bar height is tiny (e.g. n=1, ~0.3% of Y-axis)
+    and sits nearly flat on the horizontal axis:
+    - Places a high-contrast anchor dot directly on the bottom axis at `(x, y_floor)` (with white halo).
+    - Uses a short vertical arrow pointing straight down to the anchor dot instead of a long diagonal
+      arrow pointing at empty air.
+    """
+    if label is not None and not label_text:
+        label_text = label
+    if color is not None:
+        dot_color = color
+    y_min, y_max = ax.get_ylim()
+    y_span = max(1e-6, y_max - y_min)
+    text_y = float(y_floor) + y_span * float(arrow_height_ratio)
+
+    ax.scatter(
+        [float(x)],
+        [float(y_floor)],
+        s=dot_size,
+        color=dot_color,
+        edgecolors="#FFFFFF",
+        linewidths=1.5,
+        zorder=zorder + 1,
+        clip_on=False,
+    )
+    ann = ax.annotate(
+        str(label_text),
+        xy=(float(x), float(y_floor)),
+        xytext=(float(x) + float(text_offset_x), text_y),
+        ha="center",
+        va="bottom",
+        fontsize=fontsize,
+        fontweight="bold",
+        color="#0F172A",
+        bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFF3EA", edgecolor=dot_color, linewidth=1.1),
+        arrowprops=dict(arrowstyle="-|>", color=dot_color, lw=1.6, shrinkA=2, shrinkB=4),
+        zorder=zorder + 2,
+    )
+    return ann
+
+
+def compute_clipped_kde(
+    data: Sequence[float],
+    x_min: Optional[float] = 0.0,
+    x_max: Optional[float] = None,
+    bw_method: object = "scott",
+    grid_size: int = 512,
+) -> Tuple[object, object, float]:
+    """
+    Compute a 1D Gaussian Kernel Density Estimate with strict boundary clipping (e.g. `x >= 0` for non-negative
+    variables like income/revenue) and area renormalization so `integral(density, x_min..x_max) == 1.0`.
+    Returns `(x_grid, density_normalized, bandwidth_h)`.
+    """
+    import numpy as np
+
+    arr = np.asarray([float(v) for v in data if _parse_numeric_or_na(v) is not None], dtype="float64")
+    if arr.size == 0:
+        raise ValueError("compute_clipped_kde received empty numeric data.")
+
+    low_bound = float(x_min) if x_min is not None else float(arr.min())
+    high_bound = float(x_max) if x_max is not None else float(arr.max())
+    if high_bound <= low_bound:
+        high_bound = low_bound + 1.0
+
+    n = arr.size
+    std_val = float(np.std(arr, ddof=1)) if n > 1 else 1.0
+    iqr_val = float(np.percentile(arr, 75) - np.percentile(arr, 25)) if n > 1 else std_val
+    sigma = min(std_val, iqr_val / 1.34) if (iqr_val > 0 and std_val > 0) else max(std_val, 1e-6)
+
+    if isinstance(bw_method, (int, float)):
+        h = float(bw_method)
+    elif str(bw_method).lower() == "silverman":
+        h = 0.9 * sigma * (n ** (-0.2))
+    else:
+        # Scott's rule default
+        h = 1.06 * std_val * (n ** (-0.2))
+    h = max(h, (high_bound - low_bound) * 1e-3)
+
+    x_grid = np.linspace(low_bound, high_bound, int(max(64, grid_size)))
+    diffs = (x_grid[:, None] - arr[None, :]) / h
+    raw_density = np.mean(np.exp(-0.5 * (diffs ** 2)), axis=1) / (h * math.sqrt(2.0 * math.pi))
+
+    trapz_fn = getattr(np, "trapezoid", None) or getattr(np, "trapz")
+    area = float(trapz_fn(raw_density, x_grid))
+    if area > 1e-12:
+        density_norm = raw_density / area
+    else:
+        density_norm = raw_density
+
+    return x_grid, density_norm, float(h)
+
+
+def plot_clipped_kde(
+    ax: object,
+    data: Sequence[float],
+    x_min: Optional[float] = 0.0,
+    x_max: Optional[float] = None,
+    bw_method: object = "scott",
+    grid_size: int = 512,
+    color: str = "#ECA072",
+    fill_color: Optional[str] = None,
+    fill_alpha: float = 0.28,
+    linewidth: float = 2.2,
+    label: Optional[str] = None,
+    zorder: int = 3,
+) -> Tuple[object, object, float]:
+    """
+    Plot a boundary-clipped, unit-area-renormalized (`Area = 1.0`) KDE curve on `ax`.
+    Prevents Gaussian kernel spillover into impossible negative regions (`x < 0`).
+    """
+    x_grid, density_norm, h = compute_clipped_kde(
+        data, x_min=x_min, x_max=x_max, bw_method=bw_method, grid_size=grid_size
+    )
+    ax.plot(x_grid, density_norm, color=color, linewidth=linewidth, label=label, zorder=zorder)
+    if fill_color is not None or fill_alpha > 0:
+        fc = fill_color if fill_color is not None else color
+        ax.fill_between(x_grid, 0.0, density_norm, color=fc, alpha=fill_alpha, zorder=max(1, zorder - 1))
+    return x_grid, density_norm, h
+
+
+def setup_context_overlay_grid(
+    n_panels: int,
+    ncols: int = 4,
+    figsize_per_panel: Tuple[float, float] = (4.2, 3.2),
+    dpi: int = 300,
+    xlim: Optional[Tuple[float, float]] = None,
+    ylim: Optional[Tuple[float, float]] = None,
+    baseline_data: Optional[Sequence[float]] = None,
+    baseline_x_min: float = 0.0,
+    baseline_bw: object = "scott",
+    baseline_color: str = "#CBD5E1",
+    baseline_fill_alpha: float = 0.35,
+    baseline_label: str = "全體基準分布 (Context)",
+):
+    """
+    Create a small-multiples facet grid enforcing the 8 Iron Laws of Context Overlay / Shadow Distribution:
+    1. Plots the identical light-gray (`#CBD5E1`) full-population / baseline-year normalized density curve
+       in the background of every active subplot (`zorder=1`).
+    2. Locks identical X and Y axis limits across all panels (`sharex=True, sharey=True`), preventing deceptive
+       per-panel auto-scaling.
+    3. Returns `(fig, active_axes, baseline_info)` where `baseline_info` contains `{"x_grid", "density", "h"}`.
+    """
+    import matplotlib.pyplot as plt
+
+    n_panels = max(1, int(n_panels))
+    ncols = max(1, min(int(ncols), n_panels))
+    nrows = int(math.ceil(n_panels / float(ncols)))
+
+    fig_w = figsize_per_panel[0] * ncols
+    fig_h = figsize_per_panel[1] * nrows
+    fig, axes = plt.subplots(
+        nrows=nrows,
+        ncols=ncols,
+        figsize=(fig_w, fig_h),
+        dpi=dpi,
+        sharex=True,
+        sharey=True,
+        squeeze=False,
+    )
+    axes_flat = [ax for row in axes for ax in row]
+
+    baseline_info = None
+    if baseline_data is not None and len(baseline_data) > 0:
+        x_max_bound = xlim[1] if xlim is not None else None
+        x_min_bound = xlim[0] if xlim is not None else baseline_x_min
+        bg_x, bg_y, bg_h = compute_clipped_kde(
+            baseline_data, x_min=x_min_bound, x_max=x_max_bound, bw_method=baseline_bw
+        )
+        baseline_info = {"x_grid": bg_x, "density": bg_y, "h": bg_h}
+
+    active_axes = []
+    for idx, ax in enumerate(axes_flat):
+        if idx >= n_panels:
+            ax.set_visible(False)
+            continue
+        despine_axes(ax, grid_axis="y")
+        if baseline_info is not None:
+            ax.plot(
+                baseline_info["x_grid"],
+                baseline_info["density"],
+                color="#94A3B8",
+                linewidth=1.3,
+                linestyle="-",
+                label=baseline_label if idx == 0 else None,
+                zorder=1,
+            )
+            ax.fill_between(
+                baseline_info["x_grid"],
+                0.0,
+                baseline_info["density"],
+                color=baseline_color,
+                alpha=baseline_fill_alpha,
+                zorder=1,
+            )
+        if xlim is not None:
+            ax.set_xlim(xlim[0], xlim[1])
+        if ylim is not None:
+            ax.set_ylim(ylim[0], ylim[1])
+        active_axes.append(ax)
+
+    return fig, active_axes, baseline_info
 
 
 class _LiteSeries:

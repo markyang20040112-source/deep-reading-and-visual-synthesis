@@ -60,39 +60,69 @@
     ]
   };
 
-  const SCALE_ALIASES = {
-    orange: PALETTE.seqOrange,
-    primary: PALETTE.seqOrange,
-    primary_orange: PALETTE.seqOrange,
-    '1': PALETTE.seqOrange,
-    blue: PALETTE.seqBlue,
-    secondary: PALETTE.seqBlue,
-    secondary_blue: PALETTE.seqBlue,
-    '2': PALETTE.seqBlue,
-    pink: PALETTE.seqPink,
-    tertiary: PALETTE.seqPink,
-    tertiary_pink: PALETTE.seqPink,
-    '3': PALETTE.seqPink,
-    green: PALETTE.seqGreen,
-    quaternary: PALETTE.seqGreen,
-    quaternary_green: PALETTE.seqGreen,
-    '4': PALETTE.seqGreen
-  };
+  const SCALE_ALIASES = {};
+  const BADGE_TINT_LOOKUP = {};
 
-  const BADGE_TINT_LOOKUP = {
-    '0': '#FFF3EA',
-    '1': '#EBF7F9',
-    '2': '#FFF0F5',
-    '3': '#F1F7EE',
-    orange: '#FFF3EA',
-    blue: '#EBF7F9',
-    pink: '#FFF0F5',
-    green: '#F1F7EE',
-    '#ECA072': '#FFF3EA',
-    '#5DBACD': '#EBF7F9',
-    '#E89BB6': '#FFF0F5',
-    '#8FBA88': '#F1F7EE'
-  };
+  function normalizeHex(hexCode) {
+    let clean = String(hexCode || '').trim().replace(/^#/, '');
+    if (clean.length === 3) {
+      clean = clean[0] + clean[0] + clean[1] + clean[1] + clean[2] + clean[2];
+    }
+    if (clean.length !== 6 || !/^[0-9A-Fa-f]{6}$/.test(clean)) {
+      throw new Error(`Invalid hex color: '${hexCode}'`);
+    }
+    return `#${clean.toUpperCase()}`;
+  }
+
+  function rebuildLookups() {
+    SCALE_ALIASES.orange = PALETTE.seqOrange;
+    SCALE_ALIASES.primary = PALETTE.seqOrange;
+    SCALE_ALIASES.primary_orange = PALETTE.seqOrange;
+    SCALE_ALIASES['1'] = PALETTE.seqOrange;
+    SCALE_ALIASES.blue = PALETTE.seqBlue;
+    SCALE_ALIASES.secondary = PALETTE.seqBlue;
+    SCALE_ALIASES.secondary_blue = PALETTE.seqBlue;
+    SCALE_ALIASES['2'] = PALETTE.seqBlue;
+    SCALE_ALIASES.pink = PALETTE.seqPink;
+    SCALE_ALIASES.tertiary = PALETTE.seqPink;
+    SCALE_ALIASES.tertiary_pink = PALETTE.seqPink;
+    SCALE_ALIASES['3'] = PALETTE.seqPink;
+    SCALE_ALIASES.green = PALETTE.seqGreen;
+    SCALE_ALIASES.quaternary = PALETTE.seqGreen;
+    SCALE_ALIASES.quaternary_green = PALETTE.seqGreen;
+    SCALE_ALIASES['4'] = PALETTE.seqGreen;
+
+    Object.keys(BADGE_TINT_LOOKUP).forEach(k => {
+      delete BADGE_TINT_LOOKUP[k];
+    });
+    const tints = PALETTE.badgeTints || [];
+    const cats = PALETTE.categories || [];
+    if (tints.length >= 4) {
+      BADGE_TINT_LOOKUP['0'] = tints[0];
+      BADGE_TINT_LOOKUP['1'] = tints[1];
+      BADGE_TINT_LOOKUP['2'] = tints[2];
+      BADGE_TINT_LOOKUP['3'] = tints[3];
+      BADGE_TINT_LOOKUP.orange = tints[0];
+      BADGE_TINT_LOOKUP.primary = tints[0];
+      BADGE_TINT_LOOKUP.primary_orange = tints[0];
+      BADGE_TINT_LOOKUP.blue = tints[1];
+      BADGE_TINT_LOOKUP.secondary = tints[1];
+      BADGE_TINT_LOOKUP.secondary_blue = tints[1];
+      BADGE_TINT_LOOKUP.pink = tints[2];
+      BADGE_TINT_LOOKUP.tertiary = tints[2];
+      BADGE_TINT_LOOKUP.tertiary_pink = tints[2];
+      BADGE_TINT_LOOKUP.green = tints[3];
+      BADGE_TINT_LOOKUP.quaternary = tints[3];
+      BADGE_TINT_LOOKUP.quaternary_green = tints[3];
+      for (let i = 0; i < 4; i++) {
+        if (cats[i]) {
+          BADGE_TINT_LOOKUP[String(cats[i]).toUpperCase()] = tints[i];
+        }
+      }
+    }
+  }
+
+  rebuildLookups();
 
   function hexToRgb(hexCode) {
     let clean = String(hexCode || '').trim().replace(/^#/, '');
@@ -314,6 +344,115 @@
     );
   }
 
+  function buildPaletteFromPrimaryHexes(hexList) {
+    const rawList = (hexList || []).map(h => String(h || '').trim()).filter(Boolean);
+    if (rawList.length < 2 || rawList.length > 4) {
+      throw new Error(`buildPaletteFromPrimaryHexes requires 2 to 4 hex colors; got ${rawList.length}`);
+    }
+    const cleaned = rawList.map(h => normalizeHex(h));
+    const qual4 = cleaned.slice();
+    if (qual4.length === 2) {
+      const [, a1, b1] = hexToLab(qual4[0]);
+      const [, a2, b2] = hexToLab(qual4[1]);
+      qual4.push(labToHex(72.0, -b1 * 0.85, a1 * 0.85));
+      qual4.push(labToHex(72.0, -b2 * 0.85, a2 * 0.85));
+    } else if (qual4.length === 3) {
+      const [, a1, b1] = hexToLab(qual4[0]);
+      qual4.push(labToHex(72.0, -a1 * 0.75, -b1 * 0.75));
+    }
+
+    const scaleKeys = ['seqOrange', 'seqBlue', 'seqPink', 'seqGreen'];
+    const badgeTints = [];
+    const seqs = {};
+
+    qual4.slice(0, 4).forEach((baseHex, idx) => {
+      const [lb, ab, bb] = hexToLab(baseHex);
+      const node00 = labToHex(96.5, ab * 0.14, bb * 0.14);
+      const node25 = labInterpolate([node00, baseHex], 0.50);
+      const node50 = baseHex;
+      const node100 = labToHex(Math.max(26.0, Math.min(36.0, lb * 0.46)), ab * 1.12, bb * 1.12);
+      const node75 = labInterpolate([baseHex, node100], 0.50);
+      seqs[scaleKeys[idx]] = [node00, node25, node50, node75, node100];
+      badgeTints.push(node00);
+    });
+
+    const negExtreme = seqs.seqBlue[4];
+    const negMid = seqs.seqBlue[2];
+    const centerNeutral = '#F5F6F7';
+    const posMid = seqs.seqOrange[2];
+    const posExtreme = seqs.seqOrange[4];
+
+    const divergingHex = [
+      negExtreme,
+      labInterpolate([negExtreme, negMid], 0.50),
+      negMid,
+      labInterpolate([negMid, centerNeutral], 0.55),
+      centerNeutral,
+      labInterpolate([centerNeutral, posMid], 0.45),
+      posMid,
+      labInterpolate([posMid, posExtreme], 0.50),
+      posExtreme
+    ];
+
+    return {
+      categories: qual4.slice(0, 4),
+      badgeTints,
+      other: '#CBD5E1',
+      na: '#D9D9D9',
+      divergingCenter: centerNeutral,
+      seqOrange: seqs.seqOrange,
+      seqBlue: seqs.seqBlue,
+      seqPink: seqs.seqPink,
+      seqGreen: seqs.seqGreen,
+      divergingHex,
+      qualitative_4: qual4.slice(0, 4),
+      light_badge_tints_4: badgeTints,
+      sequential_scales: {
+        orange: seqs.seqOrange,
+        blue: seqs.seqBlue,
+        pink: seqs.seqPink,
+        green: seqs.seqGreen
+      },
+      diverging_9: divergingHex,
+      discrete_neutrals: {
+        diverging_center: centerNeutral,
+        na_missing: '#D9D9D9',
+        other_aggregated: '#CBD5E1',
+        context_baseline_gray: '#CBD5E1'
+      }
+    };
+  }
+
+  function setActivePalette(customPalette) {
+    if (!customPalette || typeof customPalette !== 'object') return PALETTE;
+    const cats = customPalette.categories || customPalette.qualitative_4;
+    if (Array.isArray(cats) && cats.length === 4) {
+      PALETTE.categories = cats.map(c => normalizeHex(c));
+    }
+    const tints = customPalette.badgeTints || customPalette.light_badge_tints_4;
+    if (Array.isArray(tints) && tints.length === 4) {
+      PALETTE.badgeTints = tints.map(c => normalizeHex(c));
+    }
+    const pySeqs = customPalette.sequential_scales || {};
+    const seqMapping = {
+      seqOrange: customPalette.seqOrange || pySeqs.orange,
+      seqBlue: customPalette.seqBlue || pySeqs.blue,
+      seqPink: customPalette.seqPink || pySeqs.pink,
+      seqGreen: customPalette.seqGreen || pySeqs.green
+    };
+    Object.keys(seqMapping).forEach(k => {
+      if (Array.isArray(seqMapping[k]) && seqMapping[k].length > 0) {
+        PALETTE[k] = seqMapping[k].slice();
+      }
+    });
+    const div9 = customPalette.divergingHex || customPalette.diverging_9;
+    if (Array.isArray(div9) && div9.length > 0) {
+      PALETTE.divergingHex = div9.slice();
+    }
+    rebuildLookups();
+    return PALETTE;
+  }
+
   return {
     PALETTE,
     hexToRgb,
@@ -323,6 +462,8 @@
     getSequentialColor,
     getDivergingColor,
     bindQualitativeColors,
-    getCategoryBadgeTint
+    getCategoryBadgeTint,
+    buildPaletteFromPrimaryHexes,
+    setActivePalette
   };
 });

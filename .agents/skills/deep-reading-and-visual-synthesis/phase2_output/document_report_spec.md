@@ -1,6 +1,6 @@
 # 結構化深度報告、雙模態排版與 Medium 數據敘事專欄規範（Format B: Document Report & Medium Column Spec）
 
-> **單一職責定位（Single Responsibility）**：本檔專責 **Format B（結構化深度分析報告 `.md` + 高解析印刷級 `.pdf` 體裁 1～4，以及文體 5：Medium 每週一圖數據敘事專欄 `.md`）** 的文體選擇、注意力節律排版、Playwright A4 印刷 CSS 規格、防斷框工程守則，以及 Medium 專欄 `<= 1,600` 字原生語法與「參考資料來源（僅附：1.官方資料集網址、2.資料涵蓋期間）」分離計字規範。跨格式共用的組塊階層、白話由淺入深原則與基礎色票請見 [`visual_cognition_principles.md`](visual_cognition_principles.md)。
+> **單一職責定位（Single Responsibility）**：本檔專責 **Format B（結構化深度分析報告 `.md` + 高解析印刷級 `.pdf` 體裁 1～4，以及文體 5：Medium 每週一圖數據敘事專欄 `.md`）** 的文體選擇、注意力節律排版、Playwright A4 印刷 CSS 規格、防斷框工程守則，以及 Medium 專欄 `<= 1,600` 字原生語法與「參考資料來源（僅附：1.官方資料集網址、2.資料涵蓋期間）」分離計字規範。跨格式共用的組塊階層、**筆風設定檔 8 大插槽綁定（Format B 正文散文、表格/卡片錨點、公式導讀、圖說與禁用詞受 `Slot 1`、`Slot 3`、`Slot 4` 與 `Slot 8` 100% 控制）**與分層顏色設定集請見 [`visual_cognition_principles.md`](visual_cognition_principles.md)。
 
 ---
 
@@ -28,9 +28,9 @@
 ### 1. 「注意力波峰與波谷」交錯節律（Attention Peak-and-Valley Cadence）
 - **理論依據**：**雙碼理論（Dual-Coding Theory, Paivio 1986）** 與 **認知負荷理論（Sweller 2011）**。若整份報告全部堆滿卡片與表格，會引發嚴重的「視覺網格疲勞（Grid Fatigue）」；若全部皆為純文字長段落，則缺乏結構錨點。
 - **強制交錯結構**：每一個大章節（Section）必須遵循 **「敘事波谷（Narrative Valley）$\rightarrow$ 結構波峰（Structural Peak）$\rightarrow$ 洞見收斂（Synthesis Takeaway）」** 的節律：
-  1. **章節前導與過渡敘事段落（Narrative Exposition Paragraphs）**：在進入高密度表格、架構圖或公式前，**必須撰寫未經壓縮的完整散文段落（每段約 180～280 漢字）**，流暢交代背景脈絡、因果推演與「為什麼這件事對決策者至關重要」，建立閱讀呼吸感與邏輯連貫性。
-  2. **高密度結構化視覺組件（Tables / Parallel Anatomy Matrices / Cards）**：將多維度對比、階段指標或正反案例收斂為對齊矩陣或雙欄卡片。卡片與表格內的條目一律採用 `● 【白話核心錨點】` 開頭並落實「由淺入深（淺層現象 $\rightarrow$ 中層情境 $\rightarrow$ 深層對策）」。
-  3. **獨立公式展示塊（Display Equation Box）**：凡涉及數學、統計或邏輯關係式，一律抽離為獨立置中的展示區塊，並在下方緊接「白話直覺翻譯（Plain-Language Walkthrough）」，逐項解釋每個符號的真實業務意義。
+  1. **章節前導與過渡敘事段落（Narrative Exposition Paragraphs — 受筆風檔 `Slot 3` 控制）**：在進入高密度表格、架構圖或公式前，**必須撰寫未經壓縮的完整散文段落（每段約 180～280 漢字，段落節奏、破題句式與粗體密度嚴格遵循當前筆風檔 `Slot 3`）**，流暢交代背景脈絡、因果推演與核心問題意識，建立閱讀呼吸感與邏輯連貫性。
+  2. **高密度結構化視覺組件（Tables / Parallel Anatomy Matrices / Cards — 受筆風檔 `Slot 1` & `Slot 4` 控制）**：將多維度對比、階段指標或正反案例收斂為對齊矩陣或雙欄卡片。卡片與表格內的條目開頭錨點格式（`Anchor_Format`）與三階資訊展開順序，**嚴格遵循當前啟用筆風設定檔之 `Slot 1` 與 `Slot 4` 規範**（例如在 `plain_first_progressive` 筆風下採用 `● 【白話核心錨點】` 由淺入深；在 `rigorous_empirical_stat` 筆風下採用精確統計維度或證據紀律標籤）。
+  3. **獨立公式展示塊（Display Equation Box — 受筆風檔 `Slot 4` 控制）**：凡涉及數學、統計或邏輯關係式，一律抽離為獨立置中的展示區塊，並在下方緊接符合當前筆風檔 `Slot 4` 規範之公式導讀（逐項解釋每個符號的真實業務或統計意義與加權口徑）。
 
 ### 2. 原創精煉圖表嵌入與「寬幅圖譜 A4 橫向滿版專頁」法則（Seamless Visual Integration & Landscape Figure Page）
 - 報告必須直接嵌入 Phase 2 生成的高解析度資訊圖譜（Format A）與量化實證圖表（Format D，或數據儀表板靜態全景圖 Format E），使用 `<figure>` 搭配完整圖說（Caption），並於前後正文進行**圖文互文導讀**（嚴禁「只貼圖不解說」）。
@@ -115,12 +115,12 @@ from verify_visual_outputs import (
 
 ### 3. GitHub 單一檔案協作紀錄自動推送與課堂 Google Doc 繳交懶人區塊
 - 將 Phase 1 從「廣角候選切角選單 $\rightarrow$ 互動延伸討論 $\rightarrow$ 漏斗收束定案」的完整討論過程詳實寫入 `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`。
-- 自動執行 `git add`、`git commit` 與 `git push` 上傳至公開 GitHub 倉庫（`https://github.com/s12161144/deep-reading-and-visual-synthesis`，或依 `git remote get-url origin` 實際綁定之公開倉庫網址如 `https://github.com/markyang20040112-source/deep-reading-and-visual-synthesis`），並在回覆結尾直接印出符合課堂 Google Doc（[每週一圖：作業範例](https://docs.google.com/document/d/1ZQUB9kwHqW162xjAFyPbVNEs-kJQteMvxohhGVhCad0/edit?usp=sharing)）格式的一鍵複製繳交區塊（含該次 `01_phase1_socratic_log.md` 的 **GitHub 單一檔案 `blob/main/...` 完整網址**）：
+- 自動執行 `git add`、`git commit` 與 `git push` 上傳至公開 GitHub 倉庫（依 `git remote get-url origin` 實際綁定之公開倉庫網址，預設為 `https://github.com/markyang20040112-source/deep-reading-and-visual-synthesis`），並在回覆結尾直接印出符合課堂 Google Doc（[每週一圖：作業範例](https://docs.google.com/document/d/1ZQUB9kwHqW162xjAFyPbVNEs-kJQteMvxohhGVhCad0/edit?usp=sharing)）格式的一鍵複製繳交區塊（含該次 `01_phase1_socratic_log.md` 的 **GitHub 單一檔案 `blob/main/...` 完整網址**）：
   ```text
   {學號} {姓名}
   {您的 medium.com 報導連結}
   {您在 Gemini 網頁版製作資料說明書的分享連結 (AI 對話 1)}
-  https://github.com/s12161144/deep-reading-and-visual-synthesis/blob/main/reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md
+  https://github.com/markyang20040112-source/deep-reading-and-visual-synthesis/blob/main/reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md
   ```
 
 

@@ -10,20 +10,60 @@ Provides reusable building blocks:
 - compile_html_to_pdf(html_content_or_path, output_pdf_path, cleanup_temp_html=True) -> str
 """
 
+import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 
-def build_report_css(theme: str = "modern_sans", body_pt: float = 10.8) -> str:
+def load_document_theme(doc_theme_id: Optional[str] = None) -> Dict[str, str]:
+    """Load the active document_theme from config/user_preferences.json (with safe defaults)."""
+    default_theme = {
+        "bg_canvas": "#FFFFFF",
+        "bg_card": "#FFFFFF",
+        "border_card": "#CBD5E1",
+        "ink_primary": "#0F172A",
+        "ink_secondary": "#1E293B",
+        "ink_muted": "#475569",
+        "primary_accent": "#0284C7",
+        "primary_tint": "#E0F2FE",
+        "warn_accent": "#D97706",
+        "warn_tint": "#FEF3C7",
+        "success_accent": "#0D9488",
+        "success_tint": "#CCFBF1",
+        "danger_accent": "#E11D48",
+        "danger_tint": "#FFE4E6",
+    }
+    try:
+        prefs_file = Path(__file__).resolve().parents[1] / "config" / "user_preferences.json"
+        if prefs_file.exists():
+            prefs = json.loads(prefs_file.read_text(encoding="utf-8"))
+            color_sets = prefs.get("color_sets", {})
+            themes = color_sets.get("document_themes", {})
+            chosen_id = doc_theme_id or color_sets.get("active_document_theme_id") or "modern_academic_slate"
+            if chosen_id in themes:
+                merged = dict(default_theme)
+                merged.update(themes[chosen_id])
+                return merged
+    except Exception:
+        pass
+    return default_theme
+
+
+def build_report_css(
+    theme: str = "modern_sans",
+    body_pt: float = 10.8,
+    doc_theme_id: Optional[str] = None,
+) -> str:
     """
     Generate publication-grade A4 print CSS with:
     - 189mm expansive printable width (@page margin: 11mm 10.5mm 12mm 10.5mm)
     - Dedicated A4 Landscape page rule (@page landscape-fig + .landscape-page) for 28"x18.5" or 24"x14" wide figures
-    - Theme support:
+    - Typography theme support:
       * "modern_sans": Microsoft JhengHei / PingFang TC / Noto Sans CJK TC, clean unindented paragraphs
       * "clreq_kaiti": DFKai-SB (標楷體) + Times New Roman, with `p { text-indent: 2em; }` for narrative paragraphs
+    - Layered Document Color Theme support (`doc_theme_id` from `config/user_preferences.json`)
     - Chapter-boundary page breaks (`h2.chapter-start`, `.page-break`)
     - Anti-clipping & border-safe flex/grid cards (`break-inside: avoid`, no fixed height, no `overflow: hidden`)
     - Ehrenberg three-line tables & formula sandwich boxes (`.equation-box`)
@@ -35,6 +75,15 @@ def build_report_css(theme: str = "modern_sans", body_pt: float = 10.8) -> str:
     else:
         font_stack = '"Microsoft JhengHei", "PingFang TC", "Noto Sans CJK TC", -apple-system, sans-serif'
         p_indent_rule = "text-indent: 0;"
+
+    dt = load_document_theme(doc_theme_id)
+    primary_acc = dt.get("primary_accent", "#0284C7")
+    primary_tint = dt.get("primary_tint", "#E0F2FE")
+    ink_pri = dt.get("ink_primary", "#0F172A")
+    ink_sec = dt.get("ink_secondary", "#1E293B")
+    ink_muted = dt.get("ink_muted", "#475569")
+    border_c = dt.get("border_card", "#CBD5E1")
+    bg_card = dt.get("bg_card", "#FFFFFF")
 
     pt_val = max(9.2, min(11.5, float(body_pt)))
 
@@ -61,14 +110,14 @@ html, body {{
   font-family: {font_stack};
   font-size: {pt_val}pt;
   line-height: 1.68;
-  color: #1E293B;
+  color: {ink_sec};
   background-color: #FFFFFF;
 }}
 
 h1 {{
   font-size: 21pt;
   font-weight: 800;
-  color: #0F172A;
+  color: {ink_pri};
   line-height: 1.3;
   margin: 0 0 8px 0;
 }}
@@ -76,8 +125,8 @@ h1 {{
 h2 {{
   font-size: 14.5pt;
   font-weight: 700;
-  color: #0F172A;
-  border-bottom: 2px solid #0284C7;
+  color: {ink_pri};
+  border-bottom: 2px solid {primary_acc};
   padding-bottom: 4px;
   margin: 16px 0 10px 0;
   break-after: avoid;
@@ -92,7 +141,7 @@ h2.chapter-start, .page-break {{
 h3 {{
   font-size: 12pt;
   font-weight: 700;
-  color: #0F172A;
+  color: {ink_pri};
   margin: 12px 0 6px 0;
   break-after: avoid;
   page-break-after: avoid;
@@ -136,9 +185,9 @@ td p, th p, .card p, .card-body p, .callout p, .equation-box p, figcaption, .no-
 }}
 
 .card {{
-  border: 1.5px solid #CBD5E1;
+  border: 1.5px solid {border_c};
   border-radius: 8px;
-  background: #FFFFFF;
+  background: {bg_card};
   display: flex;
   flex-direction: column;
 }}
@@ -147,9 +196,9 @@ td p, th p, .card p, .card-body p, .callout p, .equation-box p, figcaption, .no-
   padding: 6px 10px;
   font-size: 10.5pt;
   font-weight: 700;
-  color: #0F172A;
-  background: #F1F5F9;
-  border-bottom: 1px solid #CBD5E1;
+  color: {ink_pri};
+  background: {primary_tint};
+  border-bottom: 1px solid {border_c};
   border-radius: 6px 6px 0 0;
 }}
 
@@ -157,7 +206,7 @@ td p, th p, .card p, .card-body p, .callout p, .equation-box p, figcaption, .no-
   padding: 8px 10px;
   font-size: 9.8pt;
   line-height: 1.54;
-  color: #1E293B;
+  color: {ink_sec};
 }}
 
 .badge {{
@@ -166,8 +215,8 @@ td p, th p, .card p, .card-body p, .callout p, .equation-box p, figcaption, .no-
   font-size: 9pt;
   font-weight: 700;
   border-radius: 999px;
-  background: #E0F2FE;
-  color: #0284C7;
+  background: {primary_tint};
+  color: {primary_acc};
   white-space: nowrap;
 }}
 
@@ -181,8 +230,8 @@ table {{
 }}
 
 thead tr {{
-  border-top: 2px solid #0F172A;
-  border-bottom: 1.5px solid #0F172A;
+  border-top: 2px solid {ink_pri};
+  border-bottom: 1.5px solid {ink_pri};
   background: #F8FAFC;
 }}
 
@@ -191,7 +240,7 @@ tbody tr {{
 }}
 
 tbody tr:last-child {{
-  border-bottom: 2px solid #0F172A;
+  border-bottom: 2px solid {ink_pri};
 }}
 
 th, td {{
@@ -202,7 +251,7 @@ th, td {{
 
 th {{
   font-weight: 700;
-  color: #0F172A;
+  color: {ink_pri};
 }}
 
 /* Display Equation Box (Formula Sandwich) */
@@ -210,7 +259,7 @@ th {{
   margin: 10px 0;
   padding: 9px 14px;
   background: #F8FAFC;
-  border-left: 4px solid #0284C7;
+  border-left: 4px solid {primary_acc};
   border-top: 1px solid #E2E8F0;
   border-right: 1px solid #E2E8F0;
   border-bottom: 1px solid #E2E8F0;
@@ -221,7 +270,7 @@ th {{
   text-align: center;
   font-weight: 700;
   font-size: 11pt;
-  color: #0F172A;
+  color: {ink_pri};
   margin-bottom: 5px;
 }}
 
@@ -234,14 +283,14 @@ figure {{
 figure img {{
   max-width: 100%;
   height: auto;
-  border: 1px solid #E2E8F0;
+  border: 1px solid {border_c};
   border-radius: 6px;
 }}
 
 figcaption {{
   margin-top: 5px;
   font-size: 9.2pt;
-  color: #475569;
+  color: {ink_muted};
   line-height: 1.45;
   text-align: left;
 }}
@@ -269,9 +318,10 @@ def wrap_report_html(
     theme: str = "modern_sans",
     body_pt: float = 10.8,
     extra_css: str = "",
+    doc_theme_id: Optional[str] = None,
 ) -> str:
     """Wrap report HTML body with standardized DOCTYPE, UTF-8 meta, and A4 print CSS."""
-    base_css = build_report_css(theme=theme, body_pt=body_pt)
+    base_css = build_report_css(theme=theme, body_pt=body_pt, doc_theme_id=doc_theme_id)
     return f"""<!DOCTYPE html>
 <html lang="zh-TW">
 <head>

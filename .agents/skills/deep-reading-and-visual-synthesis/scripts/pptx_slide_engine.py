@@ -15,6 +15,8 @@ Provides reusable building blocks:
 - validate_layout_sequence(layouts, require_bookends=True, min_distinct=5) -> bool
 """
 
+import json
+from pathlib import Path
 import unicodedata
 from typing import List, Dict, Optional, Sequence, Tuple
 from pptx import Presentation
@@ -24,6 +26,39 @@ from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
 
 FONT_FAMILY = "Microsoft JhengHei"
+
+
+def load_document_theme(doc_theme_id: Optional[str] = None) -> Dict[str, str]:
+    """Load the active document_theme from config/user_preferences.json (with safe defaults)."""
+    default_theme = {
+        "bg_canvas": "#F8FAFC",
+        "bg_card": "#FFFFFF",
+        "border_card": "#CBD5E1",
+        "ink_primary": "#0F172A",
+        "ink_secondary": "#1E293B",
+        "ink_muted": "#475569",
+        "primary_accent": "#0284C7",
+        "primary_tint": "#E0F2FE",
+        "warn_accent": "#D97706",
+        "success_accent": "#0D9488",
+        "danger_accent": "#E11D48",
+        "bookend_dark_bg": "#0F172A",
+        "bookend_accent": "#38BDF8",
+    }
+    try:
+        prefs_file = Path(__file__).resolve().parents[1] / "config" / "user_preferences.json"
+        if prefs_file.exists():
+            prefs = json.loads(prefs_file.read_text(encoding="utf-8"))
+            color_sets = prefs.get("color_sets", {})
+            themes = color_sets.get("document_themes", {})
+            chosen_id = doc_theme_id or color_sets.get("active_document_theme_id") or "modern_academic_slate"
+            if chosen_id in themes:
+                merged = dict(default_theme)
+                merged.update(themes[chosen_id])
+                return merged
+    except Exception:
+        pass
+    return default_theme
 
 
 def hex_to_rgb_color(hex_str: str) -> RGBColor:
@@ -58,12 +93,17 @@ def create_widescreen_presentation() -> Presentation:
     return prs
 
 
-def set_slide_background(slide, bg_hex: str = "#F8FAFC") -> None:
-    """Set solid background color for a slide."""
+def set_slide_background(
+    slide,
+    bg_hex: Optional[str] = None,
+    doc_theme_id: Optional[str] = None,
+) -> None:
+    """Set solid background color for a slide (defaults to active document_theme['bg_canvas'])."""
+    resolved_bg = bg_hex if bg_hex is not None else load_document_theme(doc_theme_id).get("bg_canvas", "#F8FAFC")
     bg = slide.background
     fill = bg.fill
     fill.solid()
-    fill.fore_color.rgb = hex_to_rgb_color(bg_hex)
+    fill.fore_color.rgb = hex_to_rgb_color(resolved_bg)
 
 
 def add_speaker_notes(slide, notes_text: str) -> None:
@@ -79,16 +119,22 @@ def add_zone1_header(
     slide,
     chapter_pill_text: str,
     assertion_headline: str,
-    pill_bg_hex: str = "#0284C7",
+    pill_bg_hex: Optional[str] = None,
     pill_fg_hex: str = "#FFFFFF",
-    headline_hex: str = "#0F172A",
+    headline_hex: Optional[str] = None,
     headline_pt: float = 20.5,
+    doc_theme_id: Optional[str] = None,
 ) -> None:
     """
     Render Zone 1 (Top 15% height, y = 0.0" to 1.18"):
     - Top margin 0.15" -> Chapter pill (top=0.15", height=0.28", exact text-hug width, 9.5pt Bold).
     - Breathing gap 0.15" -> Assertion headline (top=0.58", height=0.44", 19.5~22pt Bold, MSO_ANCHOR.MIDDLE).
     """
+    dt = load_document_theme(doc_theme_id)
+    resolved_pill_bg = pill_bg_hex if pill_bg_hex is not None else dt.get("primary_accent", "#0284C7")
+    resolved_headline = headline_hex if headline_hex is not None else dt.get("ink_primary", "#0F172A")
+    resolved_divider = dt.get("border_card", "#CBD5E1")
+
     pill_w = calc_pill_width(chapter_pill_text, font_pt=9.5, pad_in=0.22)
     pill = slide.shapes.add_shape(
         MSO_SHAPE.ROUNDED_RECTANGLE,
@@ -96,7 +142,7 @@ def add_zone1_header(
     )
     pill.adjustments[0] = 0.5
     pill.fill.solid()
-    pill.fill.fore_color.rgb = hex_to_rgb_color(pill_bg_hex)
+    pill.fill.fore_color.rgb = hex_to_rgb_color(resolved_pill_bg)
     pill.line.fill.background()
 
     tf_pill = pill.text_frame
@@ -129,37 +175,42 @@ def add_zone1_header(
     p_head.font.name = FONT_FAMILY
     p_head.font.size = Pt(max(19.5, min(22.0, float(headline_pt))))
     p_head.font.bold = True
-    p_head.font.color.rgb = hex_to_rgb_color(headline_hex)
+    p_head.font.color.rgb = hex_to_rgb_color(resolved_headline)
 
     divider = slide.shapes.add_shape(
         MSO_SHAPE.RECTANGLE,
         Inches(0.50), Inches(1.14), Inches(12.333), Inches(0.015)
     )
     divider.fill.solid()
-    divider.fill.fore_color.rgb = hex_to_rgb_color("#CBD5E1")
+    divider.fill.fore_color.rgb = hex_to_rgb_color(resolved_divider)
     divider.line.fill.background()
 
 
 def add_zone3_footer(
     slide,
     takeaway_text: str,
-    bg_hex: str = "#0F172A",
-    border_hex: str = "#0284C7",
+    bg_hex: Optional[str] = None,
+    border_hex: Optional[str] = None,
     fg_hex: str = "#F8FAFC",
     font_pt: float = 13.0,
+    doc_theme_id: Optional[str] = None,
 ) -> None:
     """
     Render Zone 3 (Bottom 10% height, y = 6.68" to 7.22"):
     Full-width high-contrast action takeaway banner (12.5~14.0pt).
     """
+    dt = load_document_theme(doc_theme_id)
+    resolved_bg = bg_hex if bg_hex is not None else dt.get("bookend_dark_bg", dt.get("ink_primary", "#0F172A"))
+    resolved_border = border_hex if border_hex is not None else dt.get("primary_accent", "#0284C7")
+
     banner = slide.shapes.add_shape(
         MSO_SHAPE.ROUNDED_RECTANGLE,
         Inches(0.50), Inches(6.68), Inches(12.333), Inches(0.54)
     )
     banner.adjustments[0] = 0.18
     banner.fill.solid()
-    banner.fill.fore_color.rgb = hex_to_rgb_color(bg_hex)
-    banner.line.color.rgb = hex_to_rgb_color(border_hex)
+    banner.fill.fore_color.rgb = hex_to_rgb_color(resolved_bg)
+    banner.line.color.rgb = hex_to_rgb_color(resolved_border)
     banner.line.width = Pt(1.5)
 
     tf = banner.text_frame
@@ -184,14 +235,19 @@ def add_bookend_slide_s0(
     subtitle_text: str = "",
     kpi_cards: Optional[List[Dict[str, str]]] = None,
     speaker_notes: Optional[str] = None,
-    bg_hex: str = "#0F172A",
-    accent_hex: str = "#38BDF8",
+    bg_hex: Optional[str] = None,
+    accent_hex: Optional[str] = None,
+    doc_theme_id: Optional[str] = None,
     **kwargs,
 ):
     """
     Add an S0 Dark Bookend Slide (for Slide 1 Cover or Final Slide Peak-End Summary).
     `kpi_cards`: list of up to 3 dicts: [{"title": str, "value": str, "desc": str, "accent": "#38BDF8"}, ...]
     """
+    dt = load_document_theme(doc_theme_id)
+    resolved_bg = bg_hex if bg_hex is not None else dt.get("bookend_dark_bg", "#0F172A")
+    resolved_accent = accent_hex if accent_hex is not None else dt.get("bookend_accent", "#38BDF8")
+
     if not main_title and "title" in kwargs:
         main_title = str(kwargs["title"])
     if not subtitle_text and "subtitle" in kwargs:
@@ -205,7 +261,7 @@ def add_bookend_slide_s0(
             ]
     blank_layout = prs.slide_layouts[6]
     slide = prs.slides.add_slide(blank_layout)
-    set_slide_background(slide, bg_hex)
+    set_slide_background(slide, resolved_bg)
 
     pill_w = calc_pill_width(badge_text, font_pt=10.5, pad_in=0.28)
     pill = slide.shapes.add_shape(
@@ -215,7 +271,7 @@ def add_bookend_slide_s0(
     pill.adjustments[0] = 0.5
     pill.fill.solid()
     pill.fill.fore_color.rgb = hex_to_rgb_color("#1E293B")
-    pill.line.color.rgb = hex_to_rgb_color(accent_hex)
+    pill.line.color.rgb = hex_to_rgb_color(resolved_accent)
     pill.line.width = Pt(1.2)
     tf_p = pill.text_frame
     tf_p.vertical_anchor = MSO_ANCHOR.MIDDLE
@@ -225,7 +281,7 @@ def add_bookend_slide_s0(
     p0.font.name = FONT_FAMILY
     p0.font.size = Pt(10.5)
     p0.font.bold = True
-    p0.font.color.rgb = hex_to_rgb_color(accent_hex)
+    p0.font.color.rgb = hex_to_rgb_color(resolved_accent)
 
     t_box = slide.shapes.add_textbox(Inches(0.65), Inches(1.25), Inches(12.0), Inches(1.45))
     tf_t = t_box.text_frame
@@ -252,11 +308,17 @@ def add_bookend_slide_s0(
         total_w = 12.033
         gap = 0.28
         card_w = (total_w - gap * (n - 1)) / n
-        for idx, card in enumerate(kpi_cards[:n]):
+        for idx, raw_card in enumerate(kpi_cards[:n]):
+            if isinstance(raw_card, dict):
+                card = raw_card
+            elif isinstance(raw_card, (list, tuple)) and len(raw_card) >= 2:
+                card = {"title": raw_card[0], "desc": raw_card[1]} if len(raw_card) == 2 else {"title": raw_card[0], "value": raw_card[1], "desc": raw_card[2]}
+            else:
+                card = {"title": str(raw_card), "desc": ""}
             cx = 0.65 + idx * (card_w + gap)
             cy = 3.85
             ch = 2.95
-            c_acc = card.get("accent", accent_hex)
+            c_acc = card.get("accent", resolved_accent)
             box = slide.shapes.add_shape(
                 MSO_SHAPE.ROUNDED_RECTANGLE,
                 Inches(cx), Inches(cy), Inches(card_w), Inches(ch)
@@ -311,6 +373,7 @@ def draw_parallel_row_cards(
     spotlight_idx: Optional[int] = None,
     body_font_pt: Optional[float] = None,
     width_ratios: Optional[List[float]] = None,
+    doc_theme_id: Optional[str] = None,
 ) -> List[Tuple[float, float, float, float]]:
     """
     Render 2, 3, or 4 parallel column cards in Zone 2 with horizontal row-slot alignment:
@@ -325,6 +388,13 @@ def draw_parallel_row_cards(
     n_cols = len(cards_spec)
     if n_cols == 0:
         return []
+
+    dt = load_document_theme(doc_theme_id)
+    theme_primary = dt.get("primary_accent", "#0284C7")
+    theme_border = dt.get("border_card", "#CBD5E1")
+    theme_card_bg = dt.get("bg_card", "#FFFFFF")
+    theme_ink_pri = dt.get("ink_primary", "#0F172A")
+    theme_ink_sec = dt.get("ink_secondary", "#1E293B")
 
     if body_font_pt is None:
         resolved_pt = 13.5 if n_cols <= 2 else 12.0
@@ -356,11 +426,11 @@ def draw_parallel_row_cards(
     for idx, card in enumerate(cards_spec):
         cw = col_widths[idx]
         is_spot = (spotlight_idx == idx) if spotlight_idx is not None else bool(card.get("is_spotlight", False))
-        accent_hex = str(card.get("accent", "#0284C7" if is_spot else "#64748B"))
-        border_hex = accent_hex if is_spot else "#CBD5E1"
-        card_bg_hex = str(card.get("bg", "#FFFFFF"))
+        accent_hex = str(card.get("accent", theme_primary if is_spot else "#64748B"))
+        border_hex = accent_hex if is_spot else theme_border
+        card_bg_hex = str(card.get("bg", theme_card_bg))
         header_bg_hex = accent_hex if is_spot else "#F1F5F9"
-        header_fg_hex = "#FFFFFF" if is_spot else "#0F172A"
+        header_fg_hex = "#FFFFFF" if is_spot else theme_ink_pri
 
         base_rect = slide.shapes.add_shape(
             MSO_SHAPE.ROUNDED_RECTANGLE,
@@ -426,7 +496,7 @@ def draw_parallel_row_cards(
                     p.text = str(seg).strip()
                     p.font.name = FONT_FAMILY
                     p.font.size = Pt(resolved_pt)
-                    p.font.color.rgb = hex_to_rgb_color("#1E293B")
+                    p.font.color.rgb = hex_to_rgb_color(theme_ink_sec)
                     p.line_spacing = 1.28
                     p.space_after = Pt(4)
 

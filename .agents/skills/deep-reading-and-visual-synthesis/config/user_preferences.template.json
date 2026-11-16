@@ -1,0 +1,106 @@
+{
+  "schema_version": "13.0",
+  "bound_git_user": null,
+  "bound_local_user": null,
+  "bound_git_repo": null,
+  "onboarding_completed": false,
+  "owner_isolation_policy": {
+    "owner_github_id": "markyang20040112-source",
+    "enforce_strict_isolation": true,
+    "description": "外部新使用者空白初始化模板。不包含原作者私人色票與私人筆風檔。首次啟動時將由 setup/onboarding_wizard.md 引導建立專屬色票與專屬筆風檔（存放於 config/user_styles/）。"
+  },
+  "confirmation_gate": {
+    "auto_apply_all": false,
+    "dimensions": {
+      "1_output_formats_and_files": {
+        "mode": "ask_every_time",
+        "auto_apply_default": false,
+        "default_formats": ["A", "B"]
+      },
+      "2_writing_style_profile": {
+        "mode": "ask_every_time",
+        "auto_apply_default": false,
+        "default_style_id": null,
+        "allow_per_format_mix": true
+      },
+      "3_color_palette_set": {
+        "mode": "ask_every_time",
+        "auto_apply_default": false,
+        "default_chart_palette_id": null,
+        "default_document_theme_id": "modern_academic_slate"
+      },
+      "4_chart_mode_and_story_structure": {
+        "mode": "ask_every_time",
+        "auto_apply_default": false,
+        "default_chart_mode": "AI_ADAPTIVE",
+        "default_interaction_mode": "ask_every_time",
+        "supported_chart_modes": ["editorial_storytelling", "pure_dataviz", "hybrid_custom"],
+        "supported_interaction_modes": ["step_by_step_tutor", "batch_generation"]
+      },
+      "5_layout_and_delivery_details": {
+        "mode": "ask_every_time",
+        "auto_apply_default": false,
+        "default_pdf_theme": "modern_sans",
+        "default_git_sync": "none"
+      }
+    }
+  },
+  "color_sets": {
+    "active_chart_palette_id": null,
+    "active_document_theme_id": "modern_academic_slate",
+    "chart_palettes": {},
+    "document_themes": {
+      "modern_academic_slate": {
+        "theme_id": "modern_academic_slate",
+        "theme_name": "現代深石板藍與高對比語義主題",
+        "owner_only": false,
+        "bg_canvas": "#F8FAFC",
+        "bg_card": "#FFFFFF",
+        "border_card": "#CBD5E1",
+        "ink_primary": "#0F172A",
+        "ink_secondary": "#1E293B",
+        "ink_muted": "#475569",
+        "primary_accent": "#0284C7",
+        "primary_tint": "#E0F2FE",
+        "warn_accent": "#D97706",
+        "warn_tint": "#FEF3C7",
+        "success_accent": "#0D9488",
+        "success_tint": "#CCFBF1",
+        "danger_accent": "#E11D48",
+        "danger_tint": "#FFE4E6",
+        "synth_accent": "#7C3AED",
+        "synth_tint": "#EDE9FE",
+        "bookend_dark_bg": "#0F172A",
+        "bookend_accent": "#38BDF8"
+      }
+    }
+  },
+  "writing_styles": {
+    "active_style_id": null,
+    "format_style_overrides": {
+      "A": null,
+      "B": null,
+      "C": null,
+      "D": null,
+      "E": null
+    },
+    "owner_styles_dir": "config/owner_styles",
+    "user_styles_dir": "config/user_styles",
+    "schema_template_path": "config/styles/_style_schema_template.md",
+    "available_owner_styles": [],
+    "available_user_styles": []
+  },
+  "git_and_feedback": {
+    "git_sync_mode": "none",
+    "upstream_feedback_repo": "markyang20040112-source/deep-reading-and-visual-synthesis",
+    "upstream_feedback_url": "https://github.com/markyang20040112-source/deep-reading-and-visual-synthesis/issues",
+    "feedback_webhook_url": "https://script.google.com/macros/s/AKfycbwmiB6apvEF6Cqfg0ydxvut98XerhQXAdwukwgP4mnY_pSz3HnJYyjOfNKa5k1oLLJW-A/exec",
+    "prompt_feedback_report_on_step_e1": true
+  },
+  "update_check": {
+    "enabled": true,
+    "interval_days": 30,
+    "last_update_check_at": null,
+    "installed_skill_commit_sha": null
+  }
+}
