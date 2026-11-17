@@ -179,11 +179,31 @@ from hcl_color_engine import (
         assert len(df_detail) + len(df_other) + len(df_subtotal) == len(df_raw), "三層互斥分流筆數不守恆！"
         ```
         所有後續之極值計算（`v_min, v_max`）、中位數、排行與視覺化繪製，**強制在 `df_detail`（或依選項 2 顯式整併 `df_other` 後之長尾）上進行，100% 杜絕合計列混入排行（Double Counting）**！
-2. **極簡座標軸與水平基準網格**：調用 `despine_axes(ax, grid_axis="y")`（橫向長條圖則傳入 `grid_axis="x"`）隱藏頂部與右側邊框並設定極淡輔助虛線，輸出解析度統一為 **`dpi=300`**。
-3. **節點上方直接數據標註與陡降折線右偏避讓（Direct Node Callouts & Steep-Slope Offset）**：每個折線圓點或長條末端直接標註粗體數值／百分比（`10~13pt Bold`），並預留軸線安全空間（如 `ax.set_ylim(0, 108)` 或 `ax.set_xlim(0, max_val * 1.18)`）。若為大斜率陡降折線，中間下降節點的標籤必須設定為**向右上微偏（`x + 0.14, y + 2.5, ha='left'`）**，嚴防左上至右下的折線直接穿過數字中央。
-4. **零 Emoji 鐵律（Zero-Emoji Rule for FreeType / Microsoft JhengHei）**：Windows `Microsoft JhengHei`（微軟正黑體）不支援彩色 Emoji（如 `⚠️`、`🟢`、`🔴`、`✅`），在 `matplotlib` 渲染時必產生缺字方框（Tofu Box `□`）。圖表內所有文字、圖例與標註膠囊**絕對禁止使用任何 Emoji**，一律改用微軟正黑體原生內建之幾何符號（`▲`、`●`、`■`、`★`）。
-5. **頂部斷言主標題與底部「精簡官方資料來源圖註」（Official Source Footnote）**：
-   - **頂部**：配置 `16~20pt Bold` 完整核心斷言主標題（Assertion，優先採用說明書標註為 `【官方已說明】` 或 `【檔案觀察】` 之欄位發現）與 `11.5~12.5pt` 導讀副標題。
-   - **底部精簡官方圖註（Footnote）**：列出所引用之**原始官方發布機關與資料集正式名稱**（**絕對禁止寫成「資料來源：資料說明書」或使用者自己的說明檔！**），且每項資料集**只要附加說明以下 2 項資訊即可**（免除冗長的三重時間戳記、樣本數與前處理說明，釋放畫布空間以放大圖表主體）：
+2. **單面板 `300 DPI` 黃金比例畫布與垂直空間配置標準（Single-Panel Golden Ratio Canvas & Vertical Spacing Budget）**：
+   - **畫布尺寸與長寬比鎖定（反過高空白帶護欄）**：
+     - **標準垂直圖表（Vertical Column / Bar / Line / Histogram / KDE / ECDF / Q-Q / 2D 圖）**：固定採 **`figsize=(12.0, 6.4)`**、`dpi=300`（`3600 × 1920 px`，外框寬高比 `1.875:1`）。
+     - **橫向分位數／多列對照圖表（Horizontal Quantile / Box / Ridgeline / Multi-Row Bar）**：固定採 **`figsize=(12.8, 6.7)`**、`dpi=300`（`3840 × 2010 px`，外框寬高比 `1.910:1`），為左側多字元中文標籤與右側補充脈絡欄預留充裕水平展幅（僅當橫向列數 $> 10$ 組導致標籤無法容納時，才按列數適度增高）。
+     - **嚴禁過高畫布（Anti-Tall-Canvas Guardrail）**：單面板圖表嚴禁無故拉高至 `7.4"~7.6"` 以上，避免壓扁數據斜率或於圖表上下產生空洞垂直空白帶。
+   - **黃金比例垂直空間預算（`fig.subplots_adjust(...)`）**：
+     - **主繪圖區占畫布總高 `~62%–65%`**（貼近黃金分割倒數 $1/\varphi \approx 61.8\%$）：**`top ≈ 0.80–0.82`**（標準實作 `0.800–0.812`）、**`bottom ≈ 0.165–0.19`**（含底部雙層 X 軸定位籤之直柱圖取 `0.180–0.190`；無雙層標籤之橫向分位數圖可取 `0.155–0.170`）。水平邊界建議 `left ≈ 0.075–0.095`（橫向圖依類別字數調整為 `0.16–0.18`）、`right ≈ 0.96–0.98`。
+     - **頂部主副標題定位（Figure Coordinates）**：斷言主標題（`16~20pt Bold`，推薦 `16.5pt`）置於 **`y ≈ 0.955–0.962`**；導讀副標題（`11.2~12.5pt`，推薦 `11.2pt`）置於 **`y ≈ 0.905–0.912`**（均採 `ha="left", va="top"`）。
+     - **頂部圖例均衡錨點（Balanced Subtitle–Legend–Axes Rhythm）**：單列無框圖例貼合配置於主繪圖區正上方——`loc="lower left"`、**`bbox_to_anchor=(-0.01, 1.012–1.05)`**（`ncol=2~4`, `frameon=False`，實戰基準 `1.012–1.022`），精準平衡「副標題底部 $\leftrightarrow$ 圖例」與「圖例 $\leftrightarrow$ 主繪圖區頂緣」兩段垂直間距約 **`~30–50 px`（at `300 DPI`）**，嚴防圖例懸空偏離或貼壓圖框／標註。
+     - **底部雙行官方來源圖註定位**：圖註文字（`9.0~9.5pt`）左對齊配置於畫布底緣——第一行（官方發布機關、資料集名稱與涵蓋期間）置於 **`y ≈ 0.048–0.058`**，第二行（官方資料集網址）置於 **`y ≈ 0.020–0.030`**，與 X 軸標籤保留充裕垂直緩衝不重疊。
+   - **標準版面骨架範例（Standard `300 DPI` Single-Panel Layout Blueprint）**：
+     ```python
+     fig, ax = plt.subplots(figsize=(12.0, 6.4), dpi=300)  # Horizontal quantile/multi-row: (12.8, 6.7)
+     fig.subplots_adjust(left=0.075, right=0.965, top=0.808, bottom=0.188)  # Plot height = 62%~65%
+     fig.text(0.055, 0.958, title, fontsize=16.5, fontweight="bold", ha="left", va="top")
+     fig.text(0.055, 0.910, subtitle, fontsize=11.2, ha="left", va="top")
+     ax.legend(loc="lower left", bbox_to_anchor=(-0.01, 1.012), ncol=4, frameon=False)
+     fig.text(0.055, 0.052, footnote_line1, fontsize=9.2, ha="left", va="top")
+     fig.text(0.055, 0.024, footnote_line2, fontsize=9.0, ha="left", va="top")
+     ```
+3. **極簡座標軸與水平基準網格**：調用 `despine_axes(ax, grid_axis="y")`（橫向長條圖則傳入 `grid_axis="x"`）隱藏頂部與右側邊框並設定極淡輔助虛線，輸出解析度統一為 **`dpi=300`**。
+4. **節點上方直接數據標註與陡降折線右偏避讓（Direct Node Callouts & Steep-Slope Offset）**：每個折線圓點或長條末端直接標註粗體數值／百分比（`10~13pt Bold`），並預留軸線安全空間（如 `ax.set_ylim(0, 108)` 或 `ax.set_xlim(0, max_val * 1.18)`）。若為大斜率陡降折線，中間下降節點的標籤必須設定為**向右上微偏（`x + 0.14, y + 2.5, ha='left'`）**，嚴防左上至右下的折線直接穿過數字中央。
+5. **零 Emoji 鐵律（Zero-Emoji Rule for FreeType / Microsoft JhengHei）**：Windows `Microsoft JhengHei`（微軟正黑體）不支援彩色 Emoji（如 `⚠️`、`🟢`、`🔴`、`✅`），在 `matplotlib` 渲染時必產生缺字方框（Tofu Box `□`）。圖表內所有文字、圖例與標註膠囊**絕對禁止使用任何 Emoji**，一律改用微軟正黑體原生內建之幾何符號（`▲`、`●`、`■`、`★`）。
+6. **頂部斷言主標題與底部「精簡官方資料來源圖註」（Official Source Footnote）**：
+   - **頂部**：依第 2 點垂直座標配置 `16~20pt Bold` 完整核心斷言主標題（Assertion，優先採用說明書標註為 `【官方已說明】` 或 `【檔案觀察】` 之欄位發現）與 `11.2~12.5pt` 導讀副標題。
+   - **底部精簡官方圖註（Footnote）**：依第 2 點雙行座標（`y ≈ 0.048–0.058` / `0.020–0.030`, `9.0~9.5pt`）列出所引用之**原始官方發布機關與資料集正式名稱**（**絕對禁止寫成「資料來源：資料說明書」或使用者自己的說明檔！**），且每項資料集**只要附加說明以下 2 項資訊即可**（免除冗長的三重時間戳記、樣本數與前處理說明，釋放畫布空間以放大圖表主體）：
      1. **官方資料集網址**
      2. **資料涵蓋期間**

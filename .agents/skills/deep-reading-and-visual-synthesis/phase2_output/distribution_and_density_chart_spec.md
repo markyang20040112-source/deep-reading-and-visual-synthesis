@@ -113,3 +113,10 @@ from hcl_color_engine import (
     setup_context_overlay_grid, # (n_panels, ncols=4, figsize_per_panel=(4.2, 3.2), dpi=300, xlim=None, ylim=None, baseline_data=None, baseline_x_min=0.0, baseline_bw="scott", baseline_color="#CBD5E1") -> (fig, active_axes, baseline_info)
 )
 ```
+
+- **畫布比例與出版級垂直空間配置同步規範（與 [`quantitative_chart_spec.md`](quantitative_chart_spec.md) 第四節 100% 連動）**：
+  1. **單面板分配圖形（圖形 ① 直方圖、② KDE、③ ECDF、④ 常態 Q-Q、⑤ 箱形圖、⑥ 小提琴圖、⑦ 山脊圖、⑧ 2D 直方圖、⑨ 2D KDE 等高線及橫向分位數圖）**：
+     - 強制套用 [`quantitative_chart_spec.md`](quantitative_chart_spec.md) 第四節之 **單面板 `300 DPI` 黃金比例畫布與垂直空間預算**：直立／雙變數圖形採 **`figsize=(12.0, 6.4)`**（`dpi=300`）；橫向分位數、箱形圖或山脊圖採 **`figsize=(12.8, 6.7)`**（`dpi=300`，僅當分組數 $G > 10$ 致標籤擁擠時按列數適度增高），嚴禁使用過高畫布產生上下空白帶。
+     - 主繪圖區占畫布總高 **`~62%–65%`**（`top ≈ 0.80–0.82`, `bottom ≈ 0.165–0.19`；無雙層 X 軸定位籤之純數值橫軸圖可調至 `bottom ≈ 0.155`），主標題置於 `y ≈ 0.955–0.962`、副標題置於 `y ≈ 0.905–0.912`、頂部圖例貼合繪圖區上緣（`loc="lower left", bbox_to_anchor=(-0.01, 1.012–1.05)`，維持副標題–圖例與圖例–軸線約 `~30–50 px` 均衡間距）、雙行精簡官方來源圖註置於 `y ≈ 0.048–0.058` / `0.020–0.030`。
+  2. **多面板背景基準分面網格（圖形 ⑩ `setup_context_overlay_grid()`）**：
+     - 維持寬比例子圖單元格 **`figsize_per_panel=(4.2, 3.2)`**、`dpi=300`（如 $2 \times 4$ 分面即 `16.8" × 6.4"`），並預留頂部主副標題／共用圖例與底部雙行官方來源圖註之垂直緩衝空間，避免分面網格壓扁或標籤重疊。
