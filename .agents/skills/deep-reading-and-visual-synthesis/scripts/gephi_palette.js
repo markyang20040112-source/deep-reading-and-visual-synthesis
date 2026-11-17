@@ -1,15 +1,15 @@
 /**
  * gephi_palette.js
- * Locked Chart & Data Dashboard Color Engine (Format D <-> Format E SSOT).
- * Grounded in ggsci Gephi · pastel (CIELAB / HCL L*≈72 balanced), Brewer (1994), and Zeileis et al. (2020).
+ * Chart & Data Dashboard Color Engine (Format D <-> Format E SSOT).
+ * Grounded in CIELAB / HCL perceptual spacing, Brewer (1994), and Zeileis et al. (2020).
  *
  * Provides:
- * - PALETTE: Locked 4 qualitative colors, 4 zero-alpha light badge tints, four 5-node sequential scales, 9-node diverging scale.
+ * - PALETTE: 4 qualitative colors, 4 zero-alpha light badge tints, four 5-node sequential scales, 9-node diverging scale.
  * - labInterpolate(hexList, t): True CIELAB piecewise linear interpolation (zero alpha channel abuse).
  * - getSequentialColor(val, min, max, scale, discreteSteps): Proper (v - min) / (max - min) normalization.
  * - getDivergingColor(val, center, maxSpan, discreteSteps): Symmetric 9-node diverging mapping around center (#F5F6F7).
  * - bindQualitativeColors(categories, allowTop4Aggregation, otherLabel): Global category color + zero-alpha badge tint binding.
- * - getCategoryBadgeTint(catOrKey, badgeTintMap): Returns #FFF3EA / #EBF7F9 / #FFF0F5 / #F1F7EE (or #F1F5F9).
+ * - getCategoryBadgeTint(catOrKey, badgeTintMap): Returns the zero-alpha 0.00 badge tint (or #F1F5F9 fallback).
  */
 
 (function (root, factory) {
@@ -27,36 +27,36 @@
 
   const PALETTE = {
     categories: [
-      '#ECA072', // 1. 主色：暖杏蜜橘 (Warm Apricot Orange)
-      '#5DBACD', // 2. 次色：霧靄青藍 (Misty Cyan-Blue)
-      '#E89BB6', // 3. 第三色：落櫻粉黛 (Sakura Rose Pink)
-      '#8FBA88'  // 4. 第四色：鼠尾草綠 (Sage Green)
+      '#3B82F6', // 1. Primary: Royal Blue
+      '#0D9488', // 2. Secondary: Teal
+      '#F59E0B', // 3. Tertiary: Warm Amber
+      '#6366F1'  // 4. Quaternary: Indigo
     ],
     badgeTints: [
-      '#FFF3EA', // 1. 主色暖杏橘系 0.00 極淺底色 (零 Alpha 表格/UI 徽章底色)
-      '#EBF7F9', // 2. 次色霧靄藍系 0.00 極淺底色
-      '#FFF0F5', // 3. 第三色落櫻粉系 0.00 極淺底色
-      '#F1F7EE'  // 4. 第四色鼠尾草綠系 0.00 極淺底色
+      '#F1F5FE', // 1. Primary 0.00 light tint
+      '#ECF6F5', // 2. Secondary 0.00 light tint
+      '#FEF6E9', // 3. Tertiary 0.00 light tint
+      '#F3F2FE'  // 4. Quaternary 0.00 light tint
     ],
     other: '#CBD5E1',           // 4+1 長尾聚合「其他項目」典雅淺灰
     na: '#D9D9D9',              // 缺失值（NA / Null）預設標記色
     divergingCenter: '#F5F6F7', // 發散中心（極低彩度中性冷灰）
 
-    seqOrange: ['#FFF3EA', '#FBD8C0', '#ECA072', '#CA6F35', '#97481B'],
-    seqBlue:   ['#EBF7F9', '#BCE2EB', '#5DBACD', '#2C8B9F', '#0E5B6B'],
-    seqPink:   ['#FFF0F5', '#F9CEE0', '#E89BB6', '#C46487', '#8D3658'],
-    seqGreen:  ['#F1F7EE', '#D0E5CC', '#8FBA88', '#5E8F56', '#396032'],
+    seqOrange: ['#F1F5FE', '#A4C2FB', '#3B82F6', '#234F97', '#0D244C'],
+    seqBlue:   ['#ECF6F5', '#94CBC5', '#0D9488', '#075951', '#022D28'],
+    seqPink:   ['#FEF6E9', '#FAD08C', '#F59E0B', '#9A6105', '#4D2E00'],
+    seqGreen:  ['#F3F2FE', '#B3B2FA', '#6366F1', '#3B3D96', '#1B1C4E'],
 
     divergingHex: [
-      '#0E5B6B', // 0.000 (-100% 偏差極端：負向極值深墨青)
-      '#257F92', // 0.125 (-75% 偏差：負向中深)
-      '#5DBACD', // 0.250 (-50% 偏差：負向中度)
-      '#B2DFE9', // 0.375 (-25% 偏差：負向輕度)
-      '#F5F6F7', // 0.500 (0% 偏差：中立基準中心)
-      '#FBD9C2', // 0.625 (+25% 偏差：正向輕度)
-      '#ECA072', // 0.750 (+50% 偏差：正向中度)
-      '#B4693A', // 0.875 (+75% 偏差：正向中深)
-      '#884725'  // 1.000 (+100% 偏差極端：正向極值深栗橘)
+      '#022D28', // 0.000 (-100% negative extreme)
+      '#075951', // 0.125 (-75%)
+      '#0D9488', // 0.250 (-50%)
+      '#94CBC5', // 0.375 (-25%)
+      '#F5F6F7', // 0.500 (0% neutral center)
+      '#A4C2FB', // 0.625 (+25%)
+      '#3B82F6', // 0.750 (+50%)
+      '#234F97', // 0.875 (+75%)
+      '#0D244C'  // 1.000 (+100% positive extreme)
     ]
   };
 

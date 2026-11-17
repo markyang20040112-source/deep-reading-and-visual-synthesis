@@ -36,6 +36,8 @@ PROTECTED_REL_PREFIXES = (
     "config/user_preferences.json",
     "config/user_styles/",
     "config/user_styles\\",
+    "config/owner_styles/",
+    "config/owner_styles\\",
 )
 
 
@@ -215,7 +217,7 @@ def is_protected_relative_path(rel_path: str) -> bool:
     norm = rel_path.replace("\\", "/").lstrip("./")
     if norm == "config/user_preferences.json":
         return True
-    if norm.startswith("config/user_styles/"):
+    if norm.startswith("config/user_styles/") or norm.startswith("config/owner_styles/"):
         return True
     return False
 

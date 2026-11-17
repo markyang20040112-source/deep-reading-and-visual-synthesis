@@ -224,9 +224,9 @@ THEMES = {
         "muted_ink": "#57534E",
         "edge_line": "#A8A29E",
         "hub_bg": "#1C1917",
-        "hub_border": "#ECA072",
+        "hub_border": "#D97706",
         "hub_text": "#FAF8F5",
-        "hub_sub": "#ECA072",
+        "hub_sub": "#D97706",
         "accents": {
             "primary": {"main": "#9A3412", "pill_bg": "#FFEDD5"},
             "danger":  {"main": "#BE123C", "pill_bg": "#FFE4E6"},
@@ -268,6 +268,7 @@ def resolve_diagram_theme(theme="swiss_editorial"):
                 base["muted_ink"] = dt.get("ink_muted", base["muted_ink"])
                 base["hub_bg"] = dt.get("bookend_dark_bg", dt.get("dark_bookend_bg", base["hub_bg"]))
                 base["hub_border"] = dt.get("bookend_accent", dt.get("dark_bookend_accent", base["hub_border"]))
+                base["hub_sub"] = dt.get("bookend_accent", dt.get("dark_bookend_accent", base["hub_sub"]))
                 base["hub_sub"] = dt.get("bookend_accent", dt.get("dark_bookend_accent", base["hub_sub"]))
                 accents = dict(base.get("accents", {}))
                 accents["primary"] = {"main": dt.get("primary_accent", "#0284C7"), "pill_bg": dt.get("primary_tint", "#E0F2FE")}

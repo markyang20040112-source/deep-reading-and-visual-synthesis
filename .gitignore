@@ -4,3 +4,5 @@ _temp*
 
 ~$*
 reading_sessions/
+.agents/skills/deep-reading-and-visual-synthesis/config/owner_styles/
+.agents/skills/deep-reading-and-visual-synthesis/config/user_preferences.json

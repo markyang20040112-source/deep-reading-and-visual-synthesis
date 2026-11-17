@@ -22,10 +22,10 @@
 | 核心數據特徵與分析任務 | 動態選配之最佳圖表類型（依資料特性自由組合，不限單一形式） | 連動設計與配色規則（詳見第二、三節及 [`quantitative_chart_spec.md`](quantitative_chart_spec.md)） |
 | :--- | :--- | :--- |
 | **1. 跨階段留存遞減／漏斗流失／時序軌跡演進**<br>*(Stage Progression / Funnel / Time-Series Trajectory)* | • **XY 軸空間重力折線＋直柱複合圖（Combo Column + Drop Line Trajectory）**<br>• **多序列趨勢折線圖／面積軌跡圖（Multi-Series Line / Area Chart）** | • **強制空間重力映射**：X 軸為由左至右階段／時間推進，Y 軸為垂直高度（嚴禁將遞減階段塞入水平長條圖 Y 軸）。<br>• 單一指標採用**主色循序（暖杏橘系）**；多類別軌跡依**固定四色序**綁定，並標註關鍵斷崖落差 $\Delta$。 |
-| **2. 同實體內部雙指標反差／預期 vs. 實際落差**<br>*(Paired Dual-Metric Contrast / Target vs. Actual)* | • **共同基準線並排配對雙柱＋剪刀差標註圖（Paired Dual-Bar + Explicit Gap Callout）**<br>• **啞鈴跨距圖（Dumbbell Plot）或子彈圖（Bullet Chart）** | • 嚴禁使用單一折線表達同案雙維落差。<br>• 第一指標（基準／預期）綁定**主色暖杏蜜橘 `#ECA072`**，第二指標（對比／實際）綁定**次色霧靄青藍 `#5DBACD`**，並直接標註差值膠囊（`Δ = ±XX%`）。 |
+| **2. 同實體內部雙指標反差／預期 vs. 實際落差**<br>*(Paired Dual-Metric Contrast / Target vs. Actual)* | • **共同基準線並排配對雙柱＋剪刀差標註圖（Paired Dual-Bar + Explicit Gap Callout）**<br>• **啞鈴跨距圖（Dumbbell Plot）或子彈圖（Bullet Chart）** | • 嚴禁使用單一折線表達同案雙維落差。<br>• 第一指標（基準／預期）綁定**主色（色序 1：`PALETTE.categories[0]`）**，第二指標（對比／實際）綁定**次色（色序 2：`PALETTE.categories[1]`）**，並直接標註差值膠囊（`Δ = ±XX%`）。 |
 | **3. 多維度結構組成與核心支柱拆解**<br>*(Part-to-Whole / Structural Composition)* | • **堆疊長條／直柱圖（Stacked Bar / Column，支援總額與 `100%` 佔比切換）**<br>• **群組並排比較圖（Grouped Bar）、矩形樹圖（Treemap）或旭日圖（Sunburst）** | • 類別數 $\le 4$ 時依序綁定**固定類別四色**。<br>• 若原始細項超過 4 個（如數十個細目），向使用者確認擴充方式，或啟用**「智慧 4+1 聚焦視角」**：自動萃取前四大核心支柱綁定四色，長尾細項聚合為第五項**典雅灰 `#CBD5E1`**（並可提供切換開關）。 |
 | **4. 多實體規模排行／常態化強度對比**<br>*(Entity Ranking / Normalized Per-Capita Magnitude)* | • **橫向排行長條圖（Horizontal Ranking Leaderboard）**<br>• **棒棒糖排行圖（Lollipop Chart）或點陣分佈圖（Dot Plot）** | • 依數值正規化位置 $p \in [0, 1]$ 映射至 **5 階循序色階**（主視角預設用**暖杏橘系循序**；若為單一類別深鑽或次面板對照則用**霧靄藍系循序**），低值淺、高值深。 |
-| **5. 基準正負偏差／期比增減／達標率檢視**<br>*(Deviation from Reference / YoY Growth / Variance)* | • **雙向發散長條圖（Diverging Bar / Butterfly Chart）**<br>• **正負偏差熱力矩陣（Diverging Heatmap）或瀑布圖（Waterfall Chart）** | • 嚴格鎖定 **9 階對稱發散色階**：以指定業務基準（如偏差 `0%` 或達標率 `100%`）為中心 `#F5F6F7`，負向／未達標往**霧靄藍系（極值 `#0E5B6B`）**延伸，正向／超標往**暖杏橘系（極值 `#884725`）**延伸。 |
+| **5. 基準正負偏差／期比增減／達標率檢視**<br>*(Deviation from Reference / YoY Growth / Variance)* | • **雙向發散長條圖（Diverging Bar / Butterfly Chart）**<br>• **正負偏差熱力矩陣（Diverging Heatmap）或瀑布圖（Waterfall Chart）** | • 嚴格鎖定 **9 階對稱發散色階（`PALETTE.divergingHex`）**：以指定業務基準（如偏差 `0%` 或達標率 `100%`）為中心 `#F5F6F7`，負向／未達標往**次色系負向極值（`divergingHex[0]`）**延伸，正向／超標往**主色系正向極值（`divergingHex[8]`）**延伸。 |
 | **6. 多變數關聯、10 大分配與密度圖形與背景基準分面深鑽**<br>*(Multi-Variate Correlation / 10 Distribution Plots / Context Overlay)* | • **10 大分配與密度圖形**（直方圖、非負截斷 KDE、ECDF、常態 Q-Q 圖、箱形圖、小提琴圖、山脊圖、2D 直方圖、2D 密度等高線圖、**背景基準疊加分面圖 Context Overlay / Shadow Distribution** — 詳見 [`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)）<br>• **雙軸散佈／氣泡圖（含固定比值斜率參考線）或交叉熱力圖** | • 嚴格遵守 [`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md) 之非負邊界截斷、面積正規化為 $1$、固定座標軸與背景淡灰基準（`#CBD5E1`）8 大鐵律；嚴禁使用 Alpha 透明度冒充明度深淺。 |
 
 ### 2. 動態呈現方式與版面拓撲（Adaptive Presentation & Layout Topologies）
@@ -45,7 +45,7 @@
 
 ## 二、 鎖定版圖表配色前端實作與黑盒引擎 API（Frontend Color Implementation & Black-Box API — 雙向連動 SSOT）
 
-> **單一事實來源（SSOT）**：完整之 **無序類別 4 色表、4 組 5 階循序色階表、9 階對稱發散色階表，以及製圖前 6 項確認條件與 5 大執行鐵律**，權威收納於 **[`quantitative_chart_spec.md`](quantitative_chart_spec.md) 第三節**（源自 [個人圖表配色設定 Google Doc](https://docs.google.com/document/d/1puNpLGR7hYcyvZL1DZMdUpmP9fXM-TQcxu1N6QyGb1E/edit?usp=sharing)，`ggsci` `Gephi · pastel` $L^* \approx 72$ 均衡版）。本節僅定義前端 CSS/JS 變數映射與黑盒 API 呼叫規範，避免跨檔重複。
+> **單一事實來源（SSOT）**：完整之 **無序類別 4 色表、4 組 5 階循序色階表、9 階對稱發散色階表，以及製圖前 6 項確認條件與 5 大執行鐵律**，權威收納於 **[`quantitative_chart_spec.md`](quantitative_chart_spec.md) 第三節**（由本機 `config/user_preferences.json` 動態驅動，公開倉庫僅附中性預設與 CIELAB 自動推導引擎）。本節僅定義前端 CSS/JS 變數映射與黑盒 API 呼叫規範，避免跨檔重複。
 
 ### 1. 黑盒色彩引擎 API 簽名（`scripts/gephi_palette.js` ⇄ `scripts/hcl_color_engine.py`）
 > [!IMPORTANT]
@@ -59,27 +59,27 @@ const {
   getSequentialColor,             // (val, min, max, scale='orange', discreteSteps=false) -> '#RRGGBB' (Enforces (val - min)/(max - min) normalization)
   getDivergingColor,              // (val, center=0, maxSpan=1, discreteSteps=false) -> '#RRGGBB' (Symmetric 9-node mapping around #F5F6F7)
   bindQualitativeColors,          // (categories, allowTop4Aggregation=true, otherLabel='其他項目合計') -> { colorMap, badgeTintMap, top4Categories, otherCategories }
-  getCategoryBadgeTint,           // (catOrKey, badgeTintMap) -> '#FFF3EA' | '#EBF7F9' | '#FFF0F5' | '#F1F7EE' | '#F1F5F9'
+  getCategoryBadgeTint,           // (catOrKey, badgeTintMap) -> active PALETTE.badgeTints[0..3] | '#F1F5F9'
   buildPaletteFromPrimaryHexes,   // (hexList) -> customPaletteObj (CIELAB auto-derivation from 2~4 primary hex colors)
   setActivePalette,               // (customPaletteObj) -> PALETTE (Switches active frontend palette in-place)
 } = window.GephiPalette;
 ```
 
 ### 2. 前端 `css/style.css` 標準 `:root` 變數與四大色彩工程鐵律
-1. **CSS `:root` 集中變數映射**：
+1. **CSS `:root` 集中變數映射**（數值須與當前啟用 `PALETTE.categories` 與 `PALETTE.badgeTints` 100% 同步）：
    ```css
    :root {
-     --color-cat-1: #ECA072; --tint-cat-1: #FFF3EA; /* 1. 主色暖杏蜜橘 & 0.00 極淺底色 */
-     --color-cat-2: #5DBACD; --tint-cat-2: #EBF7F9; /* 2. 次色霧靄青藍 & 0.00 極淺底色 */
-     --color-cat-3: #E89BB6; --tint-cat-3: #FFF0F5; /* 3. 第三色落櫻粉黛 & 0.00 極淺底色 */
-     --color-cat-4: #8FBA88; --tint-cat-4: #F1F7EE; /* 4. 第四色鼠尾草綠 & 0.00 極淺底色 */
+     --color-cat-1: <PALETTE.categories[0]>; --tint-cat-1: <PALETTE.badgeTints[0]>; /* 1. 主色（色序 1）& 0.00 極淺底色 */
+     --color-cat-2: <PALETTE.categories[1]>; --tint-cat-2: <PALETTE.badgeTints[1]>; /* 2. 次色（色序 2）& 0.00 極淺底色 */
+     --color-cat-3: <PALETTE.categories[2]>; --tint-cat-3: <PALETTE.badgeTints[2]>; /* 3. 第三色（色序 3）& 0.00 極淺底色 */
+     --color-cat-4: <PALETTE.categories[3]>; --tint-cat-4: <PALETTE.badgeTints[3]>; /* 4. 第四色（色序 4）& 0.00 極淺底色 */
      --color-other: #CBD5E1; --color-na:   #D9D9D9; --div-zero: #F5F6F7;
    }
    ```
 2. **跨視角同名類別色彩鎖定（Global `categoryColorMap` Lock）**：
    - 初始化時必須針對全資料集呼叫 `bindQualitativeColors(sortedCats, true)` 建立全域固定 `categoryColorMap` 與 `badgeTintMap`。當使用者切換地區分組、排序或頁籤時，必須從 `categoryColorMap[cat]` 取色，**嚴禁依當前畫面陣列 `idx` 重新計算 Top 4 或換色**。
 3. **零 Alpha 透明度鐵律與 `0.00` 淺底色徽章（Zero-Alpha Badge Tints）**：
-   - **嚴禁使用 Alpha 透明度（如 `rgba(...)` 或 `${hex}20`）冒充數值明度或表格膠囊底色**！明細表或 UI 內的類別標籤底色，必須一律使用對應循序色階的 `0.00` 極淺節點（`#FFF3EA`、`#EBF7F9`、`#FFF0F5`、`#F1F7EE`，直接調用 `getCategoryBadgeTint(cat, badgeTintMap)`）。
+   - **嚴禁使用 Alpha 透明度（如 `rgba(...)` 或 `${hex}20`）冒充數值明度或表格膠囊底色**！明細表或 UI 內的類別標籤底色，必須一律使用對應循序色階的 `0.00` 極淺節點（直接調用 `getCategoryBadgeTint(cat, badgeTintMap)`）。
 4. **正確數值正規化公式、`>4` 類別展開防呆與原表 `df_other` 雙重語義消歧**：
    - **純明細 `df_detail` 正規化公式**：連續循序圖表必須先剔除合計／小計列（`df_subtotal`），傳入純明細 `df_detail` 之真實 `vMin` 與 `vMax` 調用 `getSequentialColor(val, vMin, vMax, scale)`（依 $(v - v_{\min}) / (v_{\max} - v_{\min})$ 正規化，**嚴禁簡化為 $v / v_{\max}$ 或混入合計列極值**）。
    - **超過 4 個無序類別之展開規範與原表 `df_other` 消歧**：預設啟用「**智慧 4+1 聚焦視角**」（前四大綁定四色，其餘聚合為 `#CBD5E1`）。**嚴禁讓原表自帶的 `其他` 列（`df_other`）混入前四大彩色主色柱，亦嚴禁同屏出現兩個「其他」**！若原表存在 `df_other`，須依與使用者拍板之策略選用：**選項 1（純明細聚焦＋註腳揭露原表其他項）** 或 **選項 2（長尾透明整併，傳入 `otherLabel: '其餘明細與原表其他項合計'`）**。若提供「展開全部細項」切換開關，展開時**必須維持前四大為固定四色、其餘細項採用典雅結構灰階（`#CBD5E1` / `#94A3B8`）搭配滑鼠懸停高亮（`emphasis: { focus: 'series' }`），或自動切換為單一循序色階之橫向排行圖，絕對禁止將 5 階循序色階拿去模除循環（`seqOrange[idx % 5]`）塗抹 30 個無序類別**！
@@ -115,7 +115,7 @@ const {
 - `index.html`：響應式語義化佈局（頂部標題與資料來源聲明、動態維度控制列、KPI 摘要卡片區、主視覺化圖表區、底部搜尋明細表與 CSV 匯出按鈕）。
   - **【純相對路徑鐵律（Strict `./` Relative Paths）】**：`index.html`、`css/style.css` 與 `js/dashboard.js` 內部引用任何本地資源時，**必須一律使用明確的 `./` 相對路徑**（如 `./css/style.css`、`./js/gephi_palette.js`、`./js/dashboard.js`、`./data/<dataset>_data.js`、`fetch('./data/<dataset>_data.json')`），**嚴禁使用以 `/` 開頭的根目錄絕對路徑**（如 `/css/style.css`），確保同時 100% 相容於：(1) 檔案總管 `file://` 直接雙擊開啟、(2) 獨立網域根目錄，以及 (3) GitHub Pages 子路徑網站（`https://<username>.github.io/<repo-name>/`）而絕不發生 404 破圖或腳本載入失敗！
   - **【禁用執行期 `cdn.tailwindcss.com` 鐵律（Zero Runtime Tailwind CDN）】**：**嚴禁依賴 `<script src="https://cdn.tailwindcss.com"></script>`**（不僅產生 Console 生產環境警告，更會導致離線環境版面崩潰）！所有網格、卡片、按鈕、表格與響應式排版樣式必須完整編寫於本地 `./css/style.css` 中。
-- `css/style.css`：於 `:root` 集中定義鎖定版配色設定集之所有 CSS 變數（`--color-cat-1: #ECA072`、`--tint-cat-1: #FFF3EA` 等）與完整自包含 UI 樣式，確保零外部 CSS 框架依賴。
+- `css/style.css`：於 `:root` 集中定義當前啟用配色設定集之所有 CSS 變數（`--color-cat-1`、`--tint-cat-1` 等，與 `js/gephi_palette.js` 同步）與完整自包含 UI 樣式，確保零外部 CSS 框架依賴。
 - `js/gephi_palette.js` ＋ `js/dashboard.js`：由 `hcl_color_engine.export_gephi_palette_js("./js/gephi_palette.js")` 匯出權威 CIELAB 色彩引擎，`dashboard.js` 直接調用 `window.GephiPalette` 完成全域固定類別色碼映射、`(v - min)/(max - min)` 循序插值與 9 階對稱發散取色，並監聽 `window.addEventListener('resize', ...)` 自動自適應縮放。
 - `data/<dataset>_data.js` ＋ `data/<dataset>_data.json`：**【離線雙載入防 CORS 鐵律】** 為了讓使用者在檔案總管直接雙擊 `index.html`（`file://` 協定）時不會因瀏覽器阻擋 `fetch('*.json')` 而白屏，必須同時將結構化資料輸出為 `data/<dataset>_data.js`（內含 `window.DASHBOARD_DATA = ...` 並於 `index.html` 以 `<script src="./data/<dataset>_data.js">` 引入）與標準 `.json` 檔！
 - `.nojekyll`：於儀表板專案根目錄建立空白 `.nojekyll` 檔，防止 GitHub Pages 啟動 Jekyll 編譯器而忽略底線開頭檔案或拖慢部署速度。

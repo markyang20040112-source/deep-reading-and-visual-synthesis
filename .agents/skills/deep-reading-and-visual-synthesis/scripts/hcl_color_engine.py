@@ -10,7 +10,7 @@ Implements:
 4. lab_interpolate(hex_list, t) for sequential and diverging scales in CIELAB space.
 5. AreaScaledHCL: Size-dependent Tri-tier scaling (Accent L=38, Badge L=46, Surface Tint L=96.5).
 6. SessionColorContract: Cross-format semantic color lock (primary, warn, success, danger, synth).
-7. Gephi · pastel Locked Chart & Data Dashboard Palette (Format D <-> Format E SSOT):
+13. Public Fallback Chart & Data Dashboard Palette (Format D <-> Format E SSOT; overridden by active config/user_preferences.json):
    Fixed 4-color qualitative binding, four 5-node CIELAB sequential scales, and 9-node symmetric diverging scale.
 """
 
@@ -367,49 +367,46 @@ GLOBAL_COLOR_CONTRACT = SessionColorContract()
 
 
 # -------------------------------------------------------------------------
-# Locked Chart & Data Dashboard Color Specification (Format D <-> Format E SSOT)
-# Source: https://docs.google.com/document/d/1puNpLGR7hYcyvZL1DZMdUpmP9fXM-TQcxu1N6QyGb1E/edit?usp=sharing
-# Derived from ggsci Gephi · pastel (CIELAB / HCL L*≈72 balanced)
+# Chart & Data Dashboard Color Specification (Format D <-> Format E SSOT)
+# Public Neutral Fallback Palette (automatically overridden by active user_preferences.json)
 # -------------------------------------------------------------------------
 
-LOCKED_CHART_PALETTE_URL = (
-    "https://docs.google.com/document/d/1puNpLGR7hYcyvZL1DZMdUpmP9fXM-TQcxu1N6QyGb1E/edit?usp=sharing"
-)
+LOCKED_CHART_PALETTE_URL = ""
 
 # 2. Fixed Qualitative Palette (4 base categories in strict binding order)
 GEPHI_QUALITATIVE_HEX: List[str] = [
-    "#ECA072",  # 1. 主色：暖杏蜜橘 (Warm Apricot Orange)
-    "#5DBACD",  # 2. 次色：霧靄青藍 (Misty Cyan-Blue)
-    "#E89BB6",  # 3. 第三色：落櫻粉黛 (Sakura Rose Pink)
-    "#8FBA88",  # 4. 第四色：鼠尾草綠 (Sage Green)
+    "#3B82F6",  # 1. Primary: Royal Blue
+    "#0D9488",  # 2. Secondary: Teal
+    "#F59E0B",  # 3. Tertiary: Warm Amber
+    "#6366F1",  # 4. Quaternary: Indigo
 ]
 
 GEPHI_QUALITATIVE_NAMED: Dict[str, str] = {
-    "primary_orange": "#ECA072",
-    "secondary_blue": "#5DBACD",
-    "tertiary_pink": "#E89BB6",
-    "quaternary_green": "#8FBA88",
+    "primary_orange": "#3B82F6",
+    "secondary_blue": "#0D9488",
+    "tertiary_pink": "#F59E0B",
+    "quaternary_green": "#6366F1",
 }
 
 # 3. Four 5-Node Sequential Scales (0.00, 0.25, 0.50, 0.75, 1.00; low=light -> high=dark)
 GEPHI_SEQUENTIAL_SCALES: Dict[str, List[str]] = {
-    "orange": ["#FFF3EA", "#FBD8C0", "#ECA072", "#CA6F35", "#97481B"],  # (1) 主色循序（暖杏橘系，預設數值尺度）
-    "blue":   ["#EBF7F9", "#BCE2EB", "#5DBACD", "#2C8B9F", "#0E5B6B"],  # (2) 次色循序（霧靄藍系，對比雙指標／深鑽尺度）
-    "pink":   ["#FFF0F5", "#F9CEE0", "#E89BB6", "#C46487", "#8D3658"],  # (3) 第三色循序（落櫻粉系）
-    "green":  ["#F1F7EE", "#D0E5CC", "#8FBA88", "#5E8F56", "#396032"],  # (4) 第四色循序（鼠尾草綠系）
+    "orange": ["#F1F5FE", "#A4C2FB", "#3B82F6", "#234F97", "#0D244C"],  # (1) Primary sequential scale
+    "blue":   ["#ECF6F5", "#94CBC5", "#0D9488", "#075951", "#022D28"],  # (2) Secondary sequential scale
+    "pink":   ["#FEF6E9", "#FAD08C", "#F59E0B", "#9A6105", "#4D2E00"],  # (3) Tertiary sequential scale
+    "green":  ["#F3F2FE", "#B3B2FA", "#6366F1", "#3B3D96", "#1B1C4E"],  # (4) Quaternary sequential scale
 }
 
 # 5. 9-Node Symmetric Diverging Scale (0.000 to 1.000, center=0.500 -> #F5F6F7)
 GEPHI_DIVERGING_SCALE: List[str] = [
-    "#0E5B6B",  # 0.000 (-100% 偏差極端：負向極值深墨青)
-    "#257F92",  # 0.125 (-75% 偏差：負向中深)
-    "#5DBACD",  # 0.250 (-50% 偏差：負向中度)
-    "#B2DFE9",  # 0.375 (-25% 偏差：負向輕度)
-    "#F5F6F7",  # 0.500 (0% 偏差：中立基準中心)
-    "#FBD9C2",  # 0.625 (+25% 偏差：正向輕度)
-    "#ECA072",  # 0.750 (+50% 偏差：正向中度)
-    "#B4693A",  # 0.875 (+75% 偏差：正向中深)
-    "#884725",  # 1.000 (+100% 偏差極端：正向極值深栗橘)
+    "#022D28",  # 0.000 (-100% negative extreme)
+    "#075951",  # 0.125 (-75%)
+    "#0D9488",  # 0.250 (-50%)
+    "#94CBC5",  # 0.375 (-25%)
+    "#F5F6F7",  # 0.500 (0% neutral center)
+    "#A4C2FB",  # 0.625 (+25%)
+    "#3B82F6",  # 0.750 (+50%)
+    "#234F97",  # 0.875 (+75%)
+    "#0D244C",  # 1.000 (+100% positive extreme)
 ]
 
 # 6. Neutral & Special Semantic Colors
@@ -544,7 +541,7 @@ def bind_qualitative_colors(
     other_label: str = "其他項目合計",
 ) -> Dict[str, str]:
     """
-    Bind unordered categories to fixed qualitative colors in strict order (#ECA072, #5DBACD, #E89BB6, #8FBA88).
+    Bind unordered categories to fixed qualitative colors in strict order (`GEPHI_QUALITATIVE_HEX`).
     - Deduplicates categories in order of first appearance so repeated occurrences in data rows
       never overwrite an already-bound category or inflate the unique category count.
     - Maps missing/NA category markers ('NA', 'Null', None, '', '-', '...', '＊', etc.) to #D9D9D9 without consuming a slot.
@@ -594,33 +591,33 @@ def bind_qualitative_colors(
 
 # 7. Zero-Alpha Light Badge Tints (0.00 nodes of the 4 sequential scales)
 GEPHI_LIGHT_BADGE_TINTS: List[str] = [
-    "#FFF3EA",  # 1. 主色暖杏橘系 0.00 極淺底色
-    "#EBF7F9",  # 2. 次色霧靄藍系 0.00 極淺底色
-    "#FFF0F5",  # 3. 第三色落櫻粉系 0.00 極淺底色
-    "#F1F7EE",  # 4. 第四色鼠尾草綠系 0.00 極淺底色
+    "#F1F5FE",  # 1. Primary 0.00 light tint
+    "#ECF6F5",  # 2. Secondary 0.00 light tint
+    "#FEF6E9",  # 3. Tertiary 0.00 light tint
+    "#F3F2FE",  # 4. Quaternary 0.00 light tint
 ]
 
 GEPHI_LIGHT_BADGE_TINTS_MAP: Dict[str, str] = {
-    "0": "#FFF3EA",
-    "1": "#EBF7F9",
-    "2": "#FFF0F5",
-    "3": "#F1F7EE",
-    "orange": "#FFF3EA",
-    "primary": "#FFF3EA",
-    "primary_orange": "#FFF3EA",
-    "#ECA072": "#FFF3EA",
-    "blue": "#EBF7F9",
-    "secondary": "#EBF7F9",
-    "secondary_blue": "#EBF7F9",
-    "#5DBACD": "#EBF7F9",
-    "pink": "#FFF0F5",
-    "tertiary": "#FFF0F5",
-    "tertiary_pink": "#FFF0F5",
-    "#E89BB6": "#FFF0F5",
-    "green": "#F1F7EE",
-    "quaternary": "#F1F7EE",
-    "quaternary_green": "#F1F7EE",
-    "#8FBA88": "#F1F7EE",
+    "0": "#F1F5FE",
+    "1": "#ECF6F5",
+    "2": "#FEF6E9",
+    "3": "#F3F2FE",
+    "orange": "#F1F5FE",
+    "primary": "#F1F5FE",
+    "primary_orange": "#F1F5FE",
+    "#3B82F6": "#F1F5FE",
+    "blue": "#ECF6F5",
+    "secondary": "#ECF6F5",
+    "secondary_blue": "#ECF6F5",
+    "#0D9488": "#ECF6F5",
+    "pink": "#FEF6E9",
+    "tertiary": "#FEF6E9",
+    "tertiary_pink": "#FEF6E9",
+    "#F59E0B": "#FEF6E9",
+    "green": "#F3F2FE",
+    "quaternary": "#F3F2FE",
+    "quaternary_green": "#F3F2FE",
+    "#6366F1": "#F3F2FE",
 }
 
 
@@ -629,9 +626,8 @@ def get_category_badge_tint(
     category_color_map: Optional[Dict[str, str]] = None,
 ) -> str:
     """
-    Return the zero-alpha light badge surface tint (#FFF3EA, #EBF7F9, #FFF0F5, #F1F7EE)
-    corresponding to the 0.00 node of the 4 locked sequential scales.
-    Falls back to #F1F5F9 for aggregated 'other' or neutral items.
+    Return the zero-alpha light badge surface tint corresponding to the 0.00 node
+    of the 4 active sequential scales. Falls back to #F1F5F9 for aggregated 'other' or neutral items.
     """
     if isinstance(cat_or_key, int):
         if 0 <= cat_or_key < 4:
@@ -700,39 +696,45 @@ def export_gephi_palette_js(output_path: str, palette_dict: Optional[Dict[str, o
     if not src_js.exists():
         raise FileNotFoundError(f"Master gephi_palette.js not found at {src_js}")
     content = src_js.read_text(encoding="utf-8")
-    if palette_dict is not None:
-        cats = list(palette_dict.get("qualitative_4") or palette_dict.get("categories") or GEPHI_QUALITATIVE_HEX)
-        tints = list(palette_dict.get("light_badge_tints_4") or palette_dict.get("badgeTints") or GEPHI_LIGHT_BADGE_TINTS)
-        seqs = dict(palette_dict.get("sequential_scales") or {})
-        seq_orange = list(seqs.get("orange") or palette_dict.get("seqOrange") or GEPHI_SEQUENTIAL_SCALES["orange"])
-        seq_blue = list(seqs.get("blue") or palette_dict.get("seqBlue") or GEPHI_SEQUENTIAL_SCALES["blue"])
-        seq_pink = list(seqs.get("pink") or palette_dict.get("seqPink") or GEPHI_SEQUENTIAL_SCALES["pink"])
-        seq_green = list(seqs.get("green") or palette_dict.get("seqGreen") or GEPHI_SEQUENTIAL_SCALES["green"])
-        div9 = list(palette_dict.get("diverging_9") or palette_dict.get("divergingHex") or GEPHI_DIVERGING_SCALE)
-        neutrals = dict(palette_dict.get("discrete_neutrals") or {})
-        other_hex = neutrals.get("other_aggregated") or palette_dict.get("other") or "#CBD5E1"
-        na_hex = neutrals.get("na_missing") or palette_dict.get("na") or "#D9D9D9"
-        div_center = neutrals.get("diverging_center") or palette_dict.get("divergingCenter") or "#F5F6F7"
-        replacement_block = (
-            "  const PALETTE = {\n"
-            f"    categories: {json.dumps(cats)},\n"
-            f"    badgeTints: {json.dumps(tints)},\n"
-            f"    other: {json.dumps(other_hex)},\n"
-            f"    na: {json.dumps(na_hex)},\n"
-            f"    divergingCenter: {json.dumps(div_center)},\n"
-            f"    seqOrange: {json.dumps(seq_orange)},\n"
-            f"    seqBlue:   {json.dumps(seq_blue)},\n"
-            f"    seqPink:   {json.dumps(seq_pink)},\n"
-            f"    seqGreen:  {json.dumps(seq_green)},\n"
-            f"    divergingHex: {json.dumps(div9)}\n"
-            "  };"
-        )
-        content = re.sub(
-            r"  const PALETTE = \{[\s\S]*?\n  \};",
-            replacement_block,
-            content,
-            count=1,
-        )
+    p_dict = palette_dict if palette_dict is not None else {
+        "qualitative_4": list(GEPHI_QUALITATIVE_HEX),
+        "light_badge_tints_4": list(GEPHI_LIGHT_BADGE_TINTS),
+        "sequential_scales": dict(GEPHI_SEQUENTIAL_SCALES),
+        "diverging_9": list(GEPHI_DIVERGING_SCALE),
+        "discrete_neutrals": dict(GEPHI_DISCRETE_NEUTRALS),
+    }
+    cats = list(p_dict.get("qualitative_4") or p_dict.get("categories") or GEPHI_QUALITATIVE_HEX)
+    tints = list(p_dict.get("light_badge_tints_4") or p_dict.get("badgeTints") or GEPHI_LIGHT_BADGE_TINTS)
+    seqs = dict(p_dict.get("sequential_scales") or {})
+    seq_orange = list(seqs.get("orange") or p_dict.get("seqOrange") or GEPHI_SEQUENTIAL_SCALES["orange"])
+    seq_blue = list(seqs.get("blue") or p_dict.get("seqBlue") or GEPHI_SEQUENTIAL_SCALES["blue"])
+    seq_pink = list(seqs.get("pink") or p_dict.get("seqPink") or GEPHI_SEQUENTIAL_SCALES["pink"])
+    seq_green = list(seqs.get("green") or p_dict.get("seqGreen") or GEPHI_SEQUENTIAL_SCALES["green"])
+    div9 = list(p_dict.get("diverging_9") or p_dict.get("divergingHex") or GEPHI_DIVERGING_SCALE)
+    neutrals = dict(p_dict.get("discrete_neutrals") or {})
+    other_hex = neutrals.get("other_aggregated") or p_dict.get("other") or "#CBD5E1"
+    na_hex = neutrals.get("na_missing") or p_dict.get("na") or "#D9D9D9"
+    div_center = neutrals.get("diverging_center") or p_dict.get("divergingCenter") or "#F5F6F7"
+    replacement_block = (
+        "  const PALETTE = {\n"
+        f"    categories: {json.dumps(cats)},\n"
+        f"    badgeTints: {json.dumps(tints)},\n"
+        f"    other: {json.dumps(other_hex)},\n"
+        f"    na: {json.dumps(na_hex)},\n"
+        f"    divergingCenter: {json.dumps(div_center)},\n"
+        f"    seqOrange: {json.dumps(seq_orange)},\n"
+        f"    seqBlue:   {json.dumps(seq_blue)},\n"
+        f"    seqPink:   {json.dumps(seq_pink)},\n"
+        f"    seqGreen:  {json.dumps(seq_green)},\n"
+        f"    divergingHex: {json.dumps(div9)}\n"
+        "  };"
+    )
+    content = re.sub(
+        r"  const PALETTE = \{[\s\S]*?\n  \};",
+        replacement_block,
+        content,
+        count=1,
+    )
     out_file.write_text(content, encoding="utf-8")
     return str(out_file)
 
@@ -742,6 +744,130 @@ def export_gephi_palette_js(output_path: str, palette_dict: Optional[Dict[str, o
 # -------------------------------------------------------------------------
 
 OWNER_GITHUB_ID = "markyang20040112-source"
+OWNER_PRIVATE_REPO_URL = "https://github.com/markyang20040112-source/deep-reading-and-visual-synthesis-Private-.git"
+
+
+def ensure_owner_private_assets(
+    pull_remote: bool = False,
+    push_remote: bool = False,
+    commit_msg: str = "chore(sync): sync owner sessions and private config",
+) -> Dict[str, object]:
+    """
+    Sync owner private vault (`reading_sessions/` + `_owner_private_config/`) with the
+    private GitHub repository and mirror `user_preferences.json` / `owner_styles/*.md`
+    to `.agents/skills/deep-reading-and-visual-synthesis/config/` (ignored by the Public repo).
+    """
+    import shutil
+    import subprocess
+    from pathlib import Path
+
+    skill_root = Path(__file__).resolve().parents[1]
+    workspace_root = skill_root.parents[2] if len(skill_root.parents) >= 3 else skill_root.parent
+    sessions_dir = workspace_root / "reading_sessions"
+    private_cfg_dir = sessions_dir / "_owner_private_config"
+    cfg_dir = skill_root / "config"
+
+    actions: List[str] = []
+    errors: List[str] = []
+
+    def _run_git(args: List[str], cwd: Path) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            ["git"] + args,
+            cwd=str(cwd),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=30,
+            check=False,
+        )
+
+    need_remote_bootstrap = not (cfg_dir / "user_preferences.json").exists() and not (
+        private_cfg_dir / "user_preferences.json"
+    ).exists()
+
+    if pull_remote or need_remote_bootstrap:
+        if not (sessions_dir / ".git").exists():
+            if not sessions_dir.exists() or not any(sessions_dir.iterdir()):
+                sessions_dir.parent.mkdir(parents=True, exist_ok=True)
+                if sessions_dir.exists():
+                    sessions_dir.rmdir()
+                res = _run_git(["clone", OWNER_PRIVATE_REPO_URL, str(sessions_dir)], workspace_root)
+                if res.returncode == 0:
+                    actions.append("cloned_private_repo")
+                else:
+                    errors.append(f"clone failed: {(res.stderr or res.stdout).strip()}")
+            else:
+                _run_git(["init"], sessions_dir)
+                _run_git(["branch", "-M", "main"], sessions_dir)
+                _run_git(["remote", "add", "origin", OWNER_PRIVATE_REPO_URL], sessions_dir)
+                res_fetch = _run_git(["fetch", "origin", "main"], sessions_dir)
+                if res_fetch.returncode == 0:
+                    _run_git(["reset", "--mixed", "origin/main"], sessions_dir)
+                    _run_git(["checkout", "--", "."], sessions_dir)
+                    actions.append("initialized_and_pulled_private_repo")
+                else:
+                    errors.append(f"fetch failed: {(res_fetch.stderr or res_fetch.stdout).strip()}")
+        else:
+            res_pull = _run_git(["pull", "--rebase", "origin", "main"], sessions_dir)
+            if res_pull.returncode == 0:
+                actions.append("pulled_private_repo")
+            else:
+                errors.append(f"pull failed: {(res_pull.stderr or res_pull.stdout).strip()}")
+
+    # Bidirectional sync between reading_sessions/_owner_private_config and skill config/
+    cfg_dir.mkdir(parents=True, exist_ok=True)
+    priv_prefs = private_cfg_dir / "user_preferences.json"
+    cfg_prefs = cfg_dir / "user_preferences.json"
+
+    if priv_prefs.exists() and (not cfg_prefs.exists() or pull_remote):
+        shutil.copy2(priv_prefs, cfg_prefs)
+        actions.append("restored_user_preferences")
+    elif cfg_prefs.exists():
+        private_cfg_dir.mkdir(parents=True, exist_ok=True)
+        if not priv_prefs.exists() or cfg_prefs.read_bytes() != priv_prefs.read_bytes():
+            shutil.copy2(cfg_prefs, priv_prefs)
+            actions.append("backed_up_user_preferences_to_vault")
+
+    priv_styles = private_cfg_dir / "owner_styles"
+    cfg_styles = cfg_dir / "owner_styles"
+    cfg_styles.mkdir(parents=True, exist_ok=True)
+    if priv_styles.exists():
+        for src_md in priv_styles.glob("*.md"):
+            dst_md = cfg_styles / src_md.name
+            if not dst_md.exists() or pull_remote:
+                shutil.copy2(src_md, dst_md)
+                actions.append(f"restored_style:{src_md.name}")
+    if cfg_styles.exists():
+        priv_styles.mkdir(parents=True, exist_ok=True)
+        for src_md in cfg_styles.glob("*.md"):
+            dst_md = priv_styles / src_md.name
+            if not dst_md.exists() or src_md.read_bytes() != dst_md.read_bytes():
+                shutil.copy2(src_md, dst_md)
+                actions.append(f"backed_up_style:{src_md.name}")
+
+    if push_remote and (sessions_dir / ".git").exists():
+        _run_git(["add", "-A"], sessions_dir)
+        st = _run_git(["status", "--porcelain"], sessions_dir)
+        if (st.stdout or "").strip():
+            c_res = _run_git(["commit", "-m", commit_msg], sessions_dir)
+            if c_res.returncode == 0:
+                actions.append("committed_private_vault")
+            else:
+                errors.append(f"commit failed: {(c_res.stderr or c_res.stdout).strip()}")
+        p_res = _run_git(["push", "-u", "origin", "main"], sessions_dir)
+        if p_res.returncode == 0:
+            actions.append("pushed_private_repo")
+        else:
+            errors.append(f"push failed: {(p_res.stderr or p_res.stdout).strip()}")
+
+    return {
+        "ok": len(errors) == 0,
+        "sessions_dir": str(sessions_dir),
+        "private_cfg_dir": str(private_cfg_dir),
+        "actions": actions,
+        "errors": errors,
+    }
 
 
 def _detect_local_git_user(repo_dir: Optional[str] = None) -> str:
@@ -866,6 +992,10 @@ def check_user_identity_and_load_prefs(
             is_owner = True
 
     if is_owner:
+        if prefs_path is None and (not target_prefs.exists() or not (cfg_dir / "owner_styles").exists()):
+            ensure_owner_private_assets(pull_remote=True)
+            if target_prefs.exists():
+                raw_prefs = json.loads(target_prefs.read_text(encoding="utf-8"))
         effective = copy.deepcopy(raw_prefs)
         effective["is_owner"] = True
         effective["isolated_external_user"] = False
@@ -1086,6 +1216,50 @@ def activate_chart_palette(palette_dict_or_id: object, prefs_path: Optional[str]
     return p_dict
 
 
+def _auto_init_active_palette() -> None:
+    """
+    On module import, automatically restore local private config from `reading_sessions/_owner_private_config`
+    if present and activate `active_chart_palette_id` from `config/user_preferences.json` so
+    `GEPHI_QUALITATIVE_HEX` and related globals immediately reflect the user's or owner's active palette.
+    """
+    import json
+    import shutil
+    from pathlib import Path
+
+    try:
+        skill_root = Path(__file__).resolve().parents[1]
+        workspace_root = skill_root.parents[2] if len(skill_root.parents) >= 3 else skill_root.parent
+        cfg_dir = skill_root / "config"
+        cfg_prefs = cfg_dir / "user_preferences.json"
+        priv_cfg_dir = workspace_root / "reading_sessions" / "_owner_private_config"
+        priv_prefs = priv_cfg_dir / "user_preferences.json"
+
+        if not cfg_prefs.exists() and priv_prefs.exists():
+            cfg_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(priv_prefs, cfg_prefs)
+            priv_styles = priv_cfg_dir / "owner_styles"
+            cfg_styles = cfg_dir / "owner_styles"
+            if priv_styles.exists():
+                cfg_styles.mkdir(parents=True, exist_ok=True)
+                for src_md in priv_styles.glob("*.md"):
+                    dst_md = cfg_styles / src_md.name
+                    if not dst_md.exists():
+                        shutil.copy2(src_md, dst_md)
+
+        if cfg_prefs.exists():
+            prefs = json.loads(cfg_prefs.read_text(encoding="utf-8"))
+            color_sets = prefs.get("color_sets", {})
+            active_pid = color_sets.get("active_chart_palette_id")
+            palettes = color_sets.get("chart_palettes", {})
+            if active_pid and isinstance(palettes, dict) and active_pid in palettes:
+                activate_chart_palette(palettes[active_pid])
+    except Exception:
+        pass
+
+
+_auto_init_active_palette()
+
+
 # -------------------------------------------------------------------------
 # Distribution & Density Chart Guardrail Helpers (Step 4 Spec Integration)
 # -------------------------------------------------------------------------
@@ -1093,7 +1267,7 @@ def activate_chart_palette(palette_dict_or_id: object, prefs_path: Optional[str]
 def add_halo_vline(
     ax: object,
     x: float,
-    color: str = "#ECA072",
+    color: Optional[str] = None,
     linestyle: str = "--",
     linewidth: float = 2.2,
     halo_color: str = "#FFFFFF",
@@ -1107,9 +1281,10 @@ def add_halo_vline(
     """
     import matplotlib.patheffects as patheffects
 
+    resolved_color = color if color is not None else GEPHI_QUALITATIVE_HEX[0]
     line = ax.axvline(
         x=float(x),
-        color=color,
+        color=resolved_color,
         linestyle=linestyle,
         linewidth=linewidth,
         label=label,
@@ -1127,7 +1302,7 @@ def annotate_floor_extreme(
     x: float,
     y_floor: float = 0.0,
     label_text: str = "",
-    dot_color: str = "#97481B",
+    dot_color: Optional[str] = None,
     dot_size: float = 46.0,
     arrow_height_ratio: float = 0.14,
     text_offset_x: float = 0.0,
@@ -1147,6 +1322,7 @@ def annotate_floor_extreme(
         label_text = label
     if color is not None:
         dot_color = color
+    resolved_dot_color = dot_color if dot_color is not None else GEPHI_SEQUENTIAL_SCALES["orange"][4]
     y_min, y_max = ax.get_ylim()
     y_span = max(1e-6, y_max - y_min)
     text_y = float(y_floor) + y_span * float(arrow_height_ratio)
@@ -1155,7 +1331,7 @@ def annotate_floor_extreme(
         [float(x)],
         [float(y_floor)],
         s=dot_size,
-        color=dot_color,
+        color=resolved_dot_color,
         edgecolors="#FFFFFF",
         linewidths=1.5,
         zorder=zorder + 1,
@@ -1170,8 +1346,8 @@ def annotate_floor_extreme(
         fontsize=fontsize,
         fontweight="bold",
         color="#0F172A",
-        bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFF3EA", edgecolor=dot_color, linewidth=1.1),
-        arrowprops=dict(arrowstyle="-|>", color=dot_color, lw=1.6, shrinkA=2, shrinkB=4),
+        bbox=dict(boxstyle="round,pad=0.3", facecolor=GEPHI_LIGHT_BADGE_TINTS[0], edgecolor=resolved_dot_color, linewidth=1.1),
+        arrowprops=dict(arrowstyle="-|>", color=resolved_dot_color, lw=1.6, shrinkA=2, shrinkB=4),
         zorder=zorder + 2,
     )
     return ann
@@ -1235,7 +1411,7 @@ def plot_clipped_kde(
     x_max: Optional[float] = None,
     bw_method: object = "scott",
     grid_size: int = 512,
-    color: str = "#ECA072",
+    color: Optional[str] = None,
     fill_color: Optional[str] = None,
     fill_alpha: float = 0.28,
     linewidth: float = 2.2,
@@ -1246,12 +1422,13 @@ def plot_clipped_kde(
     Plot a boundary-clipped, unit-area-renormalized (`Area = 1.0`) KDE curve on `ax`.
     Prevents Gaussian kernel spillover into impossible negative regions (`x < 0`).
     """
+    resolved_color = color if color is not None else GEPHI_QUALITATIVE_HEX[0]
     x_grid, density_norm, h = compute_clipped_kde(
         data, x_min=x_min, x_max=x_max, bw_method=bw_method, grid_size=grid_size
     )
-    ax.plot(x_grid, density_norm, color=color, linewidth=linewidth, label=label, zorder=zorder)
+    ax.plot(x_grid, density_norm, color=resolved_color, linewidth=linewidth, label=label, zorder=zorder)
     if fill_color is not None or fill_alpha > 0:
-        fc = fill_color if fill_color is not None else color
+        fc = fill_color if fill_color is not None else resolved_color
         ax.fill_between(x_grid, 0.0, density_norm, color=fc, alpha=fill_alpha, zorder=max(1, zorder - 1))
     return x_grid, density_norm, h
 
@@ -1739,6 +1916,57 @@ def load_and_split_csv(
         "numeric_stats": col_stats,
     }
     return df_raw, df_detail, df_other, df_subtotal, stats_report
+
+
+if __name__ == "__main__":
+    import argparse
+    import json
+    import sys
+
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+    parser = argparse.ArgumentParser(
+        description="HCL Color Science Engine & Owner Private Vault Sync CLI."
+    )
+    parser.add_argument(
+        "--restore-private",
+        action="store_true",
+        help="Pull owner Private repo into reading_sessions/ and restore user_preferences.json & owner_styles/.",
+    )
+    parser.add_argument(
+        "--sync-private",
+        action="store_true",
+        help="Pull latest Private repo, sync local owner configs into _owner_private_config/, commit and push to Private repo.",
+    )
+    parser.add_argument(
+        "--message",
+        "-m",
+        type=str,
+        default="chore(sync): sync owner sessions and private config",
+        help="Commit message used with --sync-private.",
+    )
+    args = parser.parse_args()
+
+    if args.sync_private:
+        res = ensure_owner_private_assets(pull_remote=True, push_remote=True, commit_msg=args.message)
+        print(json.dumps(res, ensure_ascii=False, indent=2))
+        sys.exit(0 if res.get("ok") else 1)
+    elif args.restore_private:
+        res = ensure_owner_private_assets(pull_remote=True, push_remote=False)
+        print(json.dumps(res, ensure_ascii=False, indent=2))
+        sys.exit(0 if res.get("ok") else 1)
+    else:
+        prefs = check_user_identity_and_load_prefs()
+        print(json.dumps({
+            "is_owner": prefs.get("is_owner"),
+            "detected_git_user": prefs.get("detected_git_user"),
+            "active_qualitative_hex": GEPHI_QUALITATIVE_HEX,
+        }, ensure_ascii=False, indent=2))
+
 
 
 

@@ -62,7 +62,7 @@
 
 ### 1. 八大設計與解讀鐵律（8 Iron Laws of Context Overlay Faceting）
 1. **【鐵律 1：背景層（Context）完整性】**：在每個子面板底部使用淡灰色（如 `gray80`／`#CBD5E1`）重複繪製同一組全市村里或指定基準年的完整分布曲線與填充。**全市背景是一整條分布曲線，絕不是一條「全市平均數直線」**；若要比較平均數或中位數，須另外加上清楚標示的垂直參考線。
-2. **【鐵律 2：前景層（Focus）單一聚焦與單色原則】**：每個子面板只突出一個行政區、一個代表年份或一種所得類別，以半透明主題色（如主色 `#ECA072` 或次色 `#5DBACD`）呈現。**不同面板可使用完全相同的主題色，透過面板標題辨識組別，不必為每個面板配置不同顏色（避免彩虹色干擾）**。
+2. **【鐵律 2：前景層（Focus）單一聚焦與單色原則】**：每個子面板只突出一個行政區、一個代表年份或一種所得類別，以半透明主題色（如色序 1 主色 `GEPHI_QUALITATIVE_HEX[0]` 或色序 2 次色 `GEPHI_QUALITATIVE_HEX[1]`）呈現。**不同面板可使用完全相同的主題色，透過面板標題辨識組別，不必為每個面板配置不同顏色（避免彩虹色干擾）**。
 3. **【鐵律 3：全面板固定座標（Strict Locked Axes）】**：所有子面板**強制共用完全相同的橫軸範圍（`xlim`）、縱軸範圍（`ylim`）、單位與轉換方式**（直接透過 `setup_context_overlay_grid(..., xlim=..., ylim=...)` 鎖死）。**絕對禁止為了讓個別面板曲線更飽滿而各自自動縮放座標軸**！
 4. **【鐵律 4：共同分布尺度（Unit-Area Normalization & Sample Size $n$）】**：比較樣本數不同的組別（如全市 $n=1,031$ vs. 板橋區 $n=126$ vs. 林口區 $n=17$）時，**強制採各組曲線下面積正規化為 $1.0$ 的機率密度尺度**（若用等寬直方圖，亦須採相同密度／比例尺度、相同分箱起點與寬度），並在每個面板標題或圖內**明確標示該組筆數 $n$**。嚴禁將原始次數高度直接當成分布形狀差異。
 5. **【鐵律 5：核密度參數一致與非負截斷（Unified Bandwidth & Boundary Clipping）】**：同一組分面比較必須採用一致且明示的核函數（如高斯核）、帶寬設定與邊界處理。針對非負所得變數，須明確執行 **`x >= 0` 非負邊界截斷並重新正規化面積為 $1.0$**；對小樣本組別與疑似雙峰須檢查帶寬敏感度，不將平滑產生的微小起伏直接誇大為真實雙峰群聚。
@@ -106,10 +106,10 @@
 ```python
 # === scripts/hcl_color_engine.py Distribution & Context Overlay Black-Box API ===
 from hcl_color_engine import (
-    add_halo_vline,             # (ax, x, color="#ECA072", linestyle="--", linewidth=2.2, halo_color="#FFFFFF", halo_width=4.8, label=None, zorder=5) -> Line2D
-    annotate_floor_extreme,     # (ax, x, y_floor=0.0, label_text="", dot_color="#97481B", dot_size=46.0, arrow_height_ratio=0.14, text_offset_x=0.0, fontsize=9.5, zorder=6) -> Annotation
+    add_halo_vline,             # (ax, x, color=None, linestyle="--", linewidth=2.2, halo_color="#FFFFFF", halo_width=4.8, label=None, zorder=5) -> Line2D (defaults to GEPHI_QUALITATIVE_HEX[0])
+    annotate_floor_extreme,     # (ax, x, y_floor=0.0, label_text="", dot_color=None, dot_size=46.0, arrow_height_ratio=0.14, text_offset_x=0.0, fontsize=9.5, zorder=6) -> Annotation (defaults to sequential_scales["orange"][4])
     compute_clipped_kde,        # (data, x_min=0.0, x_max=None, bw_method="scott", grid_size=512) -> (x_grid, density_normalized_area_1, bandwidth_h)
-    plot_clipped_kde,           # (ax, data, x_min=0.0, x_max=None, bw_method="scott", grid_size=512, color="#ECA072", fill_color=None, fill_alpha=0.28, linewidth=2.2, label=None, zorder=3) -> (x_grid, density_norm, h)
+    plot_clipped_kde,           # (ax, data, x_min=0.0, x_max=None, bw_method="scott", grid_size=512, color=None, fill_color=None, fill_alpha=0.28, linewidth=2.2, label=None, zorder=3) -> (x_grid, density_norm, h) (defaults to GEPHI_QUALITATIVE_HEX[0])
     setup_context_overlay_grid, # (n_panels, ncols=4, figsize_per_panel=(4.2, 3.2), dpi=300, xlim=None, ylim=None, baseline_data=None, baseline_x_min=0.0, baseline_bw="scott", baseline_color="#CBD5E1") -> (fig, active_axes, baseline_info)
 )
 ```
