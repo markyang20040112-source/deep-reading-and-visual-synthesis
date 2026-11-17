@@ -782,84 +782,117 @@ def ensure_owner_private_assets(
             check=False,
         )
 
-    need_remote_bootstrap = not (cfg_dir / "user_preferences.json").exists() and not (
-        private_cfg_dir / "user_preferences.json"
-    ).exists()
-
-    if pull_remote or need_remote_bootstrap:
-        if not (sessions_dir / ".git").exists():
-            if not sessions_dir.exists() or not any(sessions_dir.iterdir()):
-                sessions_dir.parent.mkdir(parents=True, exist_ok=True)
-                if sessions_dir.exists():
-                    sessions_dir.rmdir()
-                res = _run_git(["clone", OWNER_PRIVATE_REPO_URL, str(sessions_dir)], workspace_root)
-                if res.returncode == 0:
-                    actions.append("cloned_private_repo")
-                else:
-                    errors.append(f"clone failed: {(res.stderr or res.stdout).strip()}")
-            else:
-                _run_git(["init"], sessions_dir)
-                _run_git(["branch", "-M", "main"], sessions_dir)
-                _run_git(["remote", "add", "origin", OWNER_PRIVATE_REPO_URL], sessions_dir)
-                res_fetch = _run_git(["fetch", "origin", "main"], sessions_dir)
-                if res_fetch.returncode == 0:
-                    _run_git(["reset", "--mixed", "origin/main"], sessions_dir)
-                    _run_git(["checkout", "--", "."], sessions_dir)
-                    actions.append("initialized_and_pulled_private_repo")
-                else:
-                    errors.append(f"fetch failed: {(res_fetch.stderr or res_fetch.stdout).strip()}")
-        else:
-            res_pull = _run_git(["pull", "--rebase", "origin", "main"], sessions_dir)
-            if res_pull.returncode == 0:
-                actions.append("pulled_private_repo")
-            else:
-                errors.append(f"pull failed: {(res_pull.stderr or res_pull.stdout).strip()}")
-
-    # Bidirectional sync between reading_sessions/_owner_private_config and skill config/
     cfg_dir.mkdir(parents=True, exist_ok=True)
     priv_prefs = private_cfg_dir / "user_preferences.json"
     cfg_prefs = cfg_dir / "user_preferences.json"
-
-    if priv_prefs.exists() and (not cfg_prefs.exists() or pull_remote):
-        shutil.copy2(priv_prefs, cfg_prefs)
-        actions.append("restored_user_preferences")
-    elif cfg_prefs.exists():
-        private_cfg_dir.mkdir(parents=True, exist_ok=True)
-        if not priv_prefs.exists() or cfg_prefs.read_bytes() != priv_prefs.read_bytes():
-            shutil.copy2(cfg_prefs, priv_prefs)
-            actions.append("backed_up_user_preferences_to_vault")
-
     priv_styles = private_cfg_dir / "owner_styles"
     cfg_styles = cfg_dir / "owner_styles"
     cfg_styles.mkdir(parents=True, exist_ok=True)
-    if priv_styles.exists():
-        for src_md in priv_styles.glob("*.md"):
-            dst_md = cfg_styles / src_md.name
-            if not dst_md.exists() or pull_remote:
-                shutil.copy2(src_md, dst_md)
-                actions.append(f"restored_style:{src_md.name}")
-    if cfg_styles.exists():
-        priv_styles.mkdir(parents=True, exist_ok=True)
-        for src_md in cfg_styles.glob("*.md"):
-            dst_md = priv_styles / src_md.name
-            if not dst_md.exists() or src_md.read_bytes() != dst_md.read_bytes():
-                shutil.copy2(src_md, dst_md)
-                actions.append(f"backed_up_style:{src_md.name}")
 
-    if push_remote and (sessions_dir / ".git").exists():
-        _run_git(["add", "-A"], sessions_dir)
-        st = _run_git(["status", "--porcelain"], sessions_dir)
-        if (st.stdout or "").strip():
-            c_res = _run_git(["commit", "-m", commit_msg], sessions_dir)
-            if c_res.returncode == 0:
-                actions.append("committed_private_vault")
+    def _restore_priv_to_cfg(overwrite: bool = False) -> None:
+        if priv_prefs.exists() and (not cfg_prefs.exists() or (overwrite and cfg_prefs.read_bytes() != priv_prefs.read_bytes())):
+            shutil.copy2(priv_prefs, cfg_prefs)
+            actions.append("restored_user_preferences")
+        if priv_styles.exists():
+            for src_md in priv_styles.glob("*.md"):
+                dst_md = cfg_styles / src_md.name
+                if not dst_md.exists() or (overwrite and dst_md.read_bytes() != src_md.read_bytes()):
+                    shutil.copy2(src_md, dst_md)
+                    actions.append(f"restored_style:{src_md.name}")
+
+    def _backup_cfg_to_priv(only_missing: bool = False) -> None:
+        if cfg_prefs.exists():
+            private_cfg_dir.mkdir(parents=True, exist_ok=True)
+            if not priv_prefs.exists() or (not only_missing and cfg_prefs.read_bytes() != priv_prefs.read_bytes()):
+                shutil.copy2(cfg_prefs, priv_prefs)
+                actions.append("backed_up_user_preferences_to_vault")
+        if cfg_styles.exists():
+            priv_styles.mkdir(parents=True, exist_ok=True)
+            for src_md in cfg_styles.glob("*.md"):
+                dst_md = priv_styles / src_md.name
+                if not dst_md.exists() or (not only_missing and src_md.read_bytes() != dst_md.read_bytes()):
+                    shutil.copy2(src_md, dst_md)
+                    actions.append(f"backed_up_style:{src_md.name}")
+
+    def _init_or_clone_sessions_git(allow_checkout: bool = True) -> None:
+        if (sessions_dir / ".git").exists():
+            return
+        if not sessions_dir.exists() or not any(sessions_dir.iterdir()):
+            sessions_dir.parent.mkdir(parents=True, exist_ok=True)
+            if sessions_dir.exists():
+                sessions_dir.rmdir()
+            res = _run_git(["clone", OWNER_PRIVATE_REPO_URL, str(sessions_dir)], workspace_root)
+            if res.returncode == 0:
+                actions.append("cloned_private_repo")
             else:
-                errors.append(f"commit failed: {(c_res.stderr or c_res.stdout).strip()}")
-        p_res = _run_git(["push", "-u", "origin", "main"], sessions_dir)
-        if p_res.returncode == 0:
-            actions.append("pushed_private_repo")
+                errors.append(f"clone failed: {(res.stderr or res.stdout).strip()}")
         else:
-            errors.append(f"push failed: {(p_res.stderr or p_res.stdout).strip()}")
+            _run_git(["init"], sessions_dir)
+            _run_git(["branch", "-M", "main"], sessions_dir)
+            _run_git(["remote", "add", "origin", OWNER_PRIVATE_REPO_URL], sessions_dir)
+            res_fetch = _run_git(["fetch", "origin", "main"], sessions_dir)
+            if res_fetch.returncode == 0:
+                _run_git(["reset", "--mixed", "origin/main"], sessions_dir)
+                if allow_checkout:
+                    _run_git(["checkout", "--", "."], sessions_dir)
+                actions.append("initialized_and_pulled_private_repo")
+            else:
+                errors.append(f"fetch failed: {(res_fetch.stderr or res_fetch.stdout).strip()}")
+
+    need_remote_bootstrap = not cfg_prefs.exists() and not priv_prefs.exists()
+
+    if push_remote:
+        # Sync/push workflow: backup local config/ -> vault FIRST, commit, then pull --rebase, then push.
+        if pull_remote or need_remote_bootstrap:
+            _init_or_clone_sessions_git(allow_checkout=False)
+        _restore_priv_to_cfg(overwrite=False)
+        _backup_cfg_to_priv(only_missing=False)
+
+        if (sessions_dir / ".git").exists():
+            _run_git(["add", "-A"], sessions_dir)
+            st = _run_git(["status", "--porcelain"], sessions_dir)
+            if (st.stdout or "").strip():
+                c_res = _run_git(["commit", "-m", commit_msg], sessions_dir)
+                if c_res.returncode == 0:
+                    actions.append("committed_private_vault")
+                else:
+                    errors.append(f"commit failed: {(c_res.stderr or c_res.stdout).strip()}")
+
+            if pull_remote:
+                res_ls = _run_git(["ls-remote", "--heads", "origin", "main"], sessions_dir)
+                if res_ls.returncode != 0:
+                    errors.append(f"pull failed: {(res_ls.stderr or res_ls.stdout).strip()}")
+                elif (res_ls.stdout or "").strip():
+                    res_pull = _run_git(["pull", "--rebase", "--autostash", "origin", "main"], sessions_dir)
+                    if res_pull.returncode == 0:
+                        actions.append("pulled_private_repo")
+                        _restore_priv_to_cfg(overwrite=True)
+                    else:
+                        errors.append(f"pull failed: {(res_pull.stderr or res_pull.stdout).strip()}")
+
+            if not errors:
+                p_res = _run_git(["push", "-u", "origin", "main"], sessions_dir)
+                if p_res.returncode == 0:
+                    actions.append("pushed_private_repo")
+                else:
+                    errors.append(f"push failed: {(p_res.stderr or p_res.stdout).strip()}")
+    else:
+        if pull_remote or need_remote_bootstrap:
+            if not (sessions_dir / ".git").exists():
+                _init_or_clone_sessions_git(allow_checkout=True)
+            else:
+                res_pull = _run_git(["pull", "--rebase", "--autostash", "origin", "main"], sessions_dir)
+                if res_pull.returncode == 0:
+                    actions.append("pulled_private_repo")
+                else:
+                    errors.append(f"pull failed: {(res_pull.stderr or res_pull.stdout).strip()}")
+
+        if pull_remote:
+            _restore_priv_to_cfg(overwrite=True)
+            _backup_cfg_to_priv(only_missing=True)
+        else:
+            _restore_priv_to_cfg(overwrite=False)
+            _backup_cfg_to_priv(only_missing=False)
 
     return {
         "ok": len(errors) == 0,
