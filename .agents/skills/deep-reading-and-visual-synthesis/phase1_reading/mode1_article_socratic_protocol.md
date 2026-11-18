@@ -58,11 +58,11 @@
 
 ---
 
-### Step 5：情境模型「零刪減」收斂、五維度確認與階段過關交接 `[依據：Kintsch 1998 & Chi 2014 ICAP]`
+### Step 5：情境模型「零刪減」收斂與 Phase 2 三層決策交接 `[依據：Kintsch 1998 & Chi 2014 ICAP]`
 * **過關三檢核（Exit Criteria）**：確認對話已涵蓋：(1) 核心因果機制、(2) 成立邊界與反面警示、(3) 跨領域抽象基模與落地處方。
 * **零刪減收斂與分組交接鐵律（Zero-Truncation Convergence — 不設分支數上限）**：
   1. **嚴禁人為壓縮或刪減延伸議題**：Phase 1 Step 5 **不設任何分支數量上限**！絕不可為了塞進 3～4 個分類而刪除文章細節、反例邊界或使用者在 Step 3/4 激盪出的延伸批判議題。
   2. **雙群組結構化收斂**：將全篇收斂出的 $N$ 個高密度知識分支，依性質整理為 `01_phase1_socratic_log.md` 第 5 節的兩大區塊並展示給使用者：
      - **(a) 核心論證主幹分支（Core Argument Spine Branches，通常 3～4 個主幹）**：涵蓋原文核心痛點、機制診斷、系統架構與基礎處方。
      - **(b) 批判延伸與跨域遷移分支（Critical & Extended Synthesis Branches，1～4+ 個延伸分支）**：完整保留 Step 3 的假設失效邊界、反面警示案例、組織政治阻力，以及 Step 4 的跨領域同構基模與深度追問結論。
-  3. **啟動 Phase 2「生成前五維度動態確認關卡」並無損擴展交接**：讀取 [`../phase2_output/phase2_output_router.md`](../phase2_output/phase2_output_router.md)，向使用者確認 **1. 產出格式與檔案清單、2. 筆風設定檔、3. 顏色設定集、4. 圖表模式與故事結構選型、5. 版面與輸出細節**（除非該維度已設為 `auto_apply_default: true`），確認後以**「拆圖（`01` 主幹圖、`02` 機制圖、`03+` 批判延伸與跨域遷移圖）、擴章、加頁」**方式 100% 無損輸出所有分支！
+  3. **啟動 Phase 2「三層漸進式決策漏斗」並無損擴展交接**：定稿 `01_phase1_socratic_log.md` 第 5 節（不附掛 Phase 2 藍圖連結）後，讀取 [`../phase2_output/phase2_output_router.md`](../phase2_output/phase2_output_router.md)，依 **Layer 1（A～E 產出範圍）$\rightarrow$ Layer 2（各格式結構骨架與圖表選型）$\rightarrow$ Layer 3（設計武器庫 × 筆風 × 配色與客製細節定裝）** 逐層確認並按時機 A 同步寫入 `02_phase2_generation_blueprint.md`，確認後以**「拆圖（`01` 主幹圖、`02` 機制圖、`03+` 批判延伸與跨域遷移圖）、擴章、加頁」**方式 100% 無損輸出所有分支！

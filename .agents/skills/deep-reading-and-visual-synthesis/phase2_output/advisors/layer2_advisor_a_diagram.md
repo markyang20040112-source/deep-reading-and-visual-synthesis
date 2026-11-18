@@ -38,4 +38,4 @@
 > - **圖 2+（`02_...png`）**：承載分支 `[...]` $\rightarrow$ **首選推薦拓撲 `[T?]`**（理由：...）／**備選：`[T?]`**
 > - *(註：第三層定裝時可決定是否進一步套用「模式 2 編輯室聚光燈」或「模式 3 冰山／漏斗／天平空間隱喻」)*
 
-**⏸️ 暫停關卡**：等待使用者確認 Format A（及同期選定的其他格式）第二層結構方案後，立即讀取 **[`layer3_advisor_design_style_color.md`](layer3_advisor_design_style_color.md)** 進行第三層定裝。Format A 終端實作規格檔為 **[`../visual_diagram_matplotlib_spec.md`](../visual_diagram_matplotlib_spec.md)**。
+**⏸️ 暫停關卡**：等待使用者確認 Format A（及同期選定的其他格式）第二層結構方案後，立即將分圖與拓撲選型及討論取捨理由寫入 `02_phase2_generation_blueprint.md` 第 2 節，隨即讀取 **[`layer3_advisor_design_style_color.md`](layer3_advisor_design_style_color.md)** 進行第三層定裝。Format A 終端實作規格檔為 **[`../visual_diagram_matplotlib_spec.md`](../visual_diagram_matplotlib_spec.md)**。

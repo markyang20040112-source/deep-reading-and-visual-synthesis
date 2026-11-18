@@ -34,7 +34,7 @@ deep-reading-and-visual-synthesis/
     │   ├── mode1_article_socratic_protocol.md                # 模式 1/3/4：Step 0～5 蘇格拉底鷹架、圖爾敏論證與跨域類比
     │   └── mode2_dataset_codebook_protocol.md                # 模式 2：CSV＋《資料說明書》「讀取—分析—討論」三迴路與 Track A/B/C 導學
     ├── phase2_output/                                        # [階段二：三層漸進決策漏斗 ＋ 最小葉節點規格庫]
-    │   ├── phase2_output_router.md                           # [Layer 1 總路由] 決定 Format A~E 產出範圍、A2 無損擴展 vs. Medium 輕量分流
+    │   ├── phase2_output_router.md                           # [Layer 1 總路由] 決定 Format A~E 範圍、02_phase2_generation_blueprint.md 範本與時機 A 持久化
     │   ├── advisors/                                         # [Layer 2 & Layer 3 顧問大腦 — 未選格式零讀取]
     │   │   ├── layer2_advisor_a_diagram.md                   # Format A 顧問：無損分圖 (01/02/03+) 與 T1~T5 拓撲推薦
     │   │   ├── layer2_advisor_b_report.md                    # Format B 顧問：文體 1~4 (A4 PDF) vs. 文體 5 (Medium 專欄)
@@ -73,6 +73,6 @@ deep-reading-and-visual-synthesis/
 | :--- | :--- | :--- | :--- |
 | **0. Gate 0 啟動門神** | `SKILL.md` | 身分驗證與公私雙倉庫隔離（作者還原私人設定／新用戶導向 `onboarding_wizard.md`）、30 天更新節流與靈感暫存規則。 | 不存放具體提問話術或視覺排版參數；私人設定與 `reading_sessions/` 嚴格受 `.gitignore` 隔離。 |
 | **1. 第一階段 (Phase 1)**<br>*(深度閱讀／數據探索)* | `phase1_socratic_reading_guide.md`<br>$\rightarrow$ `mode1_*` 或 `mode2_*` | 依四大輸入模式二擇一載入子協定：執行 5 步蘇格拉底思辨或「CSV＋資料說明書」三迴路分析，即時寫入 `01_phase1_socratic_log.md`。 | **嚴禁提前讀取 `phase2_output/` 任何檔案**；嚴禁將大型 CSV 直接讀入 LLM 上下文消耗 Token。 |
-| **2. 第二階段 (Phase 2)**<br>*(三層漸進決策漏斗)* | **L1**: `phase2_output_router.md`<br>**L2**: `advisors/layer2_*.md`<br>**L3**: `advisors/layer3_*.md` | 逐層討論拍板：**L1** 決定 Format A~E 範圍 $\rightarrow$ **L2** 僅開選定格式顧問定骨架 $\rightarrow$ **L3** 統一或混搭定裝「設計武器庫 × 筆風 × 配色」。 | 未選中之格式與顧問檔 **100% 零讀取**；預設分步停下來確認，不擅自代選。 |
+| **2. 第二階段 (Phase 2)**<br>*(三層漸進決策漏斗)* | **L1**: `phase2_output_router.md`<br>**L2**: `advisors/layer2_*.md`<br>**L3**: `advisors/layer3_*.md` | 逐層討論拍板：**L1** 決定 Format A~E 範圍 $\rightarrow$ **L2** 僅開選定格式顧問定骨架 $\rightarrow$ **L3** 統一或混搭定裝「設計武器庫 × 筆風 × 配色」，並依時機 A 逐層寫入 `02_phase2_generation_blueprint.md`（含取捨理由與客製細節）。 | 未選中之格式與顧問檔 **100% 零讀取**；預設分步停下來確認，不擅自代選；`01` 與 `02` 紀錄檔互不跨鏈附掛。 |
 | **3. 終端執行與驗收**<br>*(Terminal Execution & QA)* | `visual_cognition_principles.md`<br>+ 選定之單一筆風檔<br>+ 按需之最小葉節點 `*_spec.md` | 僅載入拍板之最小葉節點規格檔，直接 `import` `scripts/` 八大黑盒引擎渲染，並強制呼叫 `verify_visual_outputs.py` 與 `read_file` 實地檢查。 | **日常執行嚴禁讀取 `scripts/*.py` 原始碼**；驗收後立即 `--cleanup` 清除暫存檔；格式 D/E 配色或編碼規則變動須同步更新對應 SSOT。 |
 | **4. 結案進化閉環**<br>*(Step E1～E3 & Sync)* | `git_sync_and_evolution_protocol.md`<br>+ `THEORY_ARCHIVE.md` | 查證實證文獻（T01~T24）、一鍵透過 `report_skill_feedback.py` 回報 GitHub Issues、完成更新後刪除 `_pending_skill_inspirations.md` 歸零。 | **日常閱讀與製圖階段不開啟**，僅於 Git 同步、開站或 Step E1~E3 結案進化時按需載入。 |

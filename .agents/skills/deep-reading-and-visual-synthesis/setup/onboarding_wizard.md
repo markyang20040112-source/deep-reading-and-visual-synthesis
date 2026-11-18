@@ -70,8 +70,8 @@
 
 ---
 
-### Step 3：設定「生成前五維度動態確認關卡」之詢問偏好（`confirmation_gate`）
-詢問使用者在每次生成成果前，針對 **5 大生成維度（1. 產出格式、2. 筆風檔、3. 顏色集、4. 圖表模式與逐步導學互動／批次生成、5. 版面細節）**：
+### Step 3：設定「Phase 2 三層決策確認關卡」之詢問偏好（`confirmation_gate`）
+詢問使用者在每次進入 Phase 2 生成成果前，針對 **確認關卡各設定維度（1. 產出格式範圍、2. 筆風檔、3. 顏色集、4. 圖表設計光譜／逐步導學互動節奏、5. 版面細節）**：
 - **預設推薦（`"ask_every_time"`）**：每次生成前由 AI 列出建議清單向您確認後再動工（最靈活、零誤判）。
 - **鎖定預設免問（`"auto_apply_default": true`）**：若某幾個維度（例如顏色集或筆風檔）固定不變，可設為自動套用免問以加快速度。
 
@@ -89,5 +89,5 @@
 ## ✅ 二、 完成寫入與無縫接回主任務
 
 完成上述設定後：
-1. 將新使用者的專屬色票、筆風路徑、五維度確認偏好、本機識別（有 Git 者寫入 `"bound_git_user"`；無 Git 者寫入 `"bound_local_user"` 與 `"bound_git_user": null`）與 **`"onboarding_completed": true`** 完整寫入 [`../config/user_preferences.json`](../config/user_preferences.json)（並確保移除任何 `owner_only: true` 條目）。
+1. 將新使用者的專屬色票、筆風路徑、Phase 2 決策確認偏好、本機識別（有 Git 者寫入 `"bound_git_user"`；無 Git 者寫入 `"bound_local_user"` 與 `"bound_git_user": null`）與 **`"onboarding_completed": true`** 完整寫入 [`../config/user_preferences.json`](../config/user_preferences.json)（並確保移除任何 `owner_only: true` 條目）。
 2. 立即關閉本精靈，無縫接回使用者原本上傳的文章或資料集任務（依 [`../SKILL.md`](../SKILL.md) 進入 Phase 1 或 Phase 2）！

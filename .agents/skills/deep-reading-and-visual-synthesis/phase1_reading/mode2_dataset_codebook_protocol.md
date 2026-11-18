@@ -61,4 +61,4 @@
    - **防超譯與三層指標護欄**：在討論過程中，自動拿《資料說明書》第 6 章列出的**「生態謬誤（Ecological Fallacy，嚴格區分村里總額 $\neq$ 每納稅單位平均所得 $\neq$ 個人所得分布）」、「抽樣／申報母體涵蓋偏差」、「跨年名目金額 vs. 實質購買力」**幫使用者的論點把關。
    - **單一故事線漏斗收斂（針對 Medium 每週一圖／輕量數據敘事專欄任務）**：**豁免**模式 1 的 Step 4 跨域類比與 Step 5 多分支零刪減擴張，最終收斂定案為：
      - **「1 個核心數據故事主軸 ＋ 1～2 張圖表的敘事分工（主色破題 $\rightarrow$ 次色深挖）＋ `<= 1,600` 字報導大綱（含說明書第 6 章的 1 項核心外推邊界反思）」**。
-   - 使用者確認收斂大綱並通過「五維度動態確認關卡」後，完整寫入 `01_phase1_socratic_log.md`，立即讀取 [`../phase2_output/phase2_output_router.md`](../phase2_output/phase2_output_router.md) 進入第二階段生成迴路！
+   - 使用者確認收斂大綱後，完整定稿 `01_phase1_socratic_log.md`（保持為獨立自洽之 Phase 1 思辨與數據探索紀錄，不附掛 Phase 2 藍圖連結），隨即讀取 [`../phase2_output/phase2_output_router.md`](../phase2_output/phase2_output_router.md) 進入第二階段「三層漸進式決策漏斗（Layer 1 $\rightarrow$ Layer 2 $\rightarrow$ Layer 3）」，並按時機 A 逐層寫入 `02_phase2_generation_blueprint.md`！

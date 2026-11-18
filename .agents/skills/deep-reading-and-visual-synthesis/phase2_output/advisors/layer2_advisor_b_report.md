@@ -34,4 +34,4 @@
 向使用者提出 **Format B 第二層體裁與章節大綱提案**（列明：**首選文體＋推薦理由＋備選文體＋擬定章節大綱與配圖位置**）：
 - 註：是否開啟經濟學人式「巨型數字衝擊盒／迷思與真相對撞台／方法論紅黃綠燈警示卡」、筆風設定檔（`Slot 1, 3, 4`）與 PDF 字體（現代黑體 `modern_sans` vs. 標楷體首行縮排 `clreq_kaiti`），將於**第三層**統一確認定裝。
 
-**⏸️ 暫停關卡**：等待使用者確認 Format B（及同期選定的其他格式）第二層結構方案後，立即讀取 **[`layer3_advisor_design_style_color.md`](layer3_advisor_design_style_color.md)** 進入第三層定裝。
+**⏸️ 暫停關卡**：等待使用者確認 Format B（及同期選定的其他格式）第二層結構方案後，立即將文體、章節重點與討論取捨理由寫入 `02_phase2_generation_blueprint.md` 第 2 節，隨即讀取 **[`layer3_advisor_design_style_color.md`](layer3_advisor_design_style_color.md)** 進入第三層定裝。

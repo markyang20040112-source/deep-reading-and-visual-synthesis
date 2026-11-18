@@ -48,7 +48,7 @@
 ## 三、 跨格式字級、行寬與漢字換行規範（Typography, Line Measure & CJK Wrapping）
 
 - **理論依據**：**大字級與長行寬閱讀效率研究（Dyson 2004; Tinker 1963）** 與 **前注意特徵處理（Preattentive Processing, Ware 2020）**。過小的字級或過度壓縮的短行寬會強迫眼球頻繁折返（Saccadic Eye Movements），大幅拉高閱讀疲勞。
-- **字體優先序**：統一使用無襯線正黑體（`Microsoft JhengHei`、`PingFang TC`、`Noto Sans CJK TC`；Format B 另支援大專院校傳統中文標楷體 `DFKai-SB` 模式，可由筆風檔 `linked_defaults.pdf_theme` 或生成前五維度確認指定），嚴格建立 **3 階字重對比**（標題 Bold $\ge 1.35\times$ 內文 Regular）。
+- **字體優先序**：統一使用無襯線正黑體（`Microsoft JhengHei`、`PingFang TC`、`Noto Sans CJK TC`；Format B 另支援大專院校傳統中文標楷體 `DFKai-SB` 模式，可由筆風檔 `linked_defaults.pdf_theme` 或 Phase 2 第三層定裝指定），嚴格建立 **3 階字重對比**（標題 Bold $\ge 1.35\times$ 內文 Regular）。
 - **五大產出格式字級與行寬權威基準表（與各 `*_spec.md` 100% 同步）**：
 
 | 產出格式 | 畫布 / 頁面基準 | 主標題 / 斷言字級 | 區塊 / 卡片標題 | 內文 / 條目字級 | 膠囊標籤 / 橫幅 / 註腳 | 單行最佳漢字寬度 / 幾何配置 |

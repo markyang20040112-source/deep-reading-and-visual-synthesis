@@ -43,4 +43,4 @@
 
 *(註：第三層定裝時可進一步決定是否開啟「編輯室單一巨幅數據衝擊頁」或「主題場景化容器/天平/階梯視覺隱喻」、筆風與配色。)*
 
-**⏸️ 暫停關卡**：等待使用者確認 Format C（及同期選定的其他格式）第二層分鏡結構後，立即讀取 **[`layer3_advisor_design_style_color.md`](layer3_advisor_design_style_color.md)** 進入第三層定裝。Format C 終端實作規格檔為 **[`../presentation_slide_spec.md`](../presentation_slide_spec.md)**。
+**⏸️ 暫停關卡**：等待使用者確認 Format C（及同期選定的其他格式）第二層分鏡結構後，立即將分鏡規劃與討論取捨理由寫入 `02_phase2_generation_blueprint.md` 第 2 節，隨即讀取 **[`layer3_advisor_design_style_color.md`](layer3_advisor_design_style_color.md)** 進入第三層定裝。Format C 終端實作規格檔為 **[`../presentation_slide_spec.md`](../presentation_slide_spec.md)**。

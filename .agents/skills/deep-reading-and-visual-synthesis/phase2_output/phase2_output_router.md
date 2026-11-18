@@ -24,8 +24,8 @@
 | **F. 分配與密度圖形逐步導學**<br>*(Step-by-Step Distribution Tutor)* | CSV＋《資料說明書》，逐步學習 10 大分配圖形讀法與限制 | **Format D（逐步導學模式：一次只畫 1 張圖＋五步解說）** |
 
 - **分步緩衝與智慧直通規則（Pause Rule & Smart Fast-Forward）**：
-  1. **預設分步確認（方案甲）**：向使用者簡明列出本次建議生成的格式組合（Format A～E）與推薦理由，**立即停下來等待使用者確認第一層範圍**（此時嚴禁提前開啟第二層顧問檔或任何終端 `*_spec.md`）。
-  2. **智慧直通特例（Smart Fast-Forward）**：若使用者於提示詞中已明確指明產出格式（例如：「幫我畫圖並寫 Medium 專欄」即已鎖定 `Format D + B`；或「只做統計圖表」即鎖定 `Format D`），則自動完成第一層判定，**直接跳轉第二層**，不再重複詢問第一層！
+  1. **預設分步確認（方案甲）**：向使用者簡明列出本次建議生成的格式組合（Format A～E）與推薦理由，**立即停下來等待使用者確認第一層範圍**（此時嚴禁提前開啟第二層顧問檔或任何終端 `*_spec.md`）。使用者確認後，立即建立 `reading_sessions/<YYYYMMDD_主題簡稱>/02_phase2_generation_blueprint.md` 並寫入 **第 1 節（Layer 1 產出範圍與路由決策）**。
+  2. **智慧直通特例（Smart Fast-Forward）**：若使用者於提示詞中已明確指明產出格式（例如：「幫我畫圖並寫 Medium 專欄」即已鎖定 `Format D + B`；或「只做統計圖表」即鎖定 `Format D`），則自動完成第一層判定，**直接建立 `02_phase2_generation_blueprint.md` 寫入第 1 節並跳轉第二層**，不再重複詢問第一層！
 
 ---
 
@@ -37,7 +37,7 @@
 - 若選 **Format C（高階簡報 `.pptx`）** $\rightarrow$ 讀取 [`advisors/layer2_advisor_c_slide.md`](advisors/layer2_advisor_c_slide.md)（診斷四幕劇配頁與 S0～S7 版型防撞車分鏡表）
 - 若選 **Format D（統計圖表）或 Format E（數據儀表板）** $\rightarrow$ 讀取 [`advisors/layer2_advisor_de_chart.md`](advisors/layer2_advisor_de_chart.md)（執行資料結構四維快篩與「8 大溝通意圖 × 30+ 圖表決策樹」，推薦首選／備選圖型、對應圖表家族與批次/導學節奏）
 
-向使用者提出第二層具體結構與圖表選型建議，**停下來等待使用者確認第二層骨架**。
+向使用者提出第二層具體結構與圖表選型建議，**停下來等待使用者確認第二層骨架**；拍板後立即將選型結果、討論取捨理由與資料消歧決策寫入 `02_phase2_generation_blueprint.md` **第 2 節**。
 
 ---
 
@@ -51,7 +51,50 @@
 2. **筆風設定檔（Writing Style Profile）**：`Slot 1～8` 100% 全域穿透控制（支援跨檔混搭）。
 3. **分層顏色設定集與版面細節（Layered Color Sets & Layout Details）**：鎖定色票 vs. CIELAB 主題語義微調色階（`derive_thematic_palette`）、PDF 字體（`modern_sans` vs. `clreq_kaiti`）。
 
-**停下來等待使用者拍板第三層定裝**，隨即寫入 `01_phase1_socratic_log.md` 並進入終端執行層。
+**停下來等待使用者拍板第三層定裝**，隨即於 `02_phase2_generation_blueprint.md` 補齊 **第 3～5 節（表達三支柱定裝、使用者客製細節覆寫、終端最小葉節點與交付清單）** 後再進入終端執行層（**嚴禁將 Phase 2 生成細節回寫塞入 `01_phase1_socratic_log.md`，亦不在 `01` 或 Medium 繳交區塊附掛 `02` 連結**）。
+
+---
+
+### 【時機 A 漸進持久化：`02_phase2_generation_blueprint.md` 標準範本（約 40～80 行精簡工作錨點）】
+
+> [!IMPORTANT]
+> **實時漸進寫入與零漂移鐵律（Timing A Progressive Persistence）**：
+> - **分段落盤**：**Layer 1 拍板 $\rightarrow$ 寫第 1 節**；**Layer 2 拍板 $\rightarrow$ 寫第 2 節**；**Layer 3 拍板 $\rightarrow$ 補齊第 3～5 節**，隨後始得進入終端生成；過程中若有熱修改或例外調整，同步更新第 4 節或對應決策項。
+> - **精簡分工與跨檔不互連**：本檔篇幅控制在 **~40～80 行** 精簡決策錨點，**嚴禁複製 Phase 1 思辨內容或貼入冗長 `*_spec.md` 條文**；同時維持 `01_phase1_socratic_log.md` 獨立自洽，**不在 `01` 或 Medium 課堂繳交區塊加入本檔網址或交叉連結**。
+
+```markdown
+# 【第二階段生成藍圖與決策紀錄】<文章或數據專案主題名稱>
+- **建立時間**：YYYY-MM-DD | **Phase 1 依據**：`./01_phase1_socratic_log.md`（若 Fast-Track 則為 `./00_source_article.md`） | **狀態**：Layer 1 確認 / Layer 2 確認 / Layer 3 定裝完成 / 已交付
+
+## 1. Layer 1：產出格式範圍與路由決策（Layer 1 拍板後寫入）
+- **任務體裁與路由模式**：<實證數據 / 策略商業 / 系統架構 / 跨領域評論 / Medium 每週一圖 / 10 大分配導學>（預設分步 / 智慧直通 / Fast-Track）
+- **選定產出大類**：`[ ] Format A` / `[ ] Format B` / `[ ] Format C` / `[ ] Format D` / `[ ] Format E`
+- **範圍取捨與排除理由**：<簡述為何選定此組合、為何排除其他格式，或 A2 無損擴展 vs. Medium 輕量路由判定>
+
+## 2. Layer 2：各格式結構骨架、圖表選型與討論取捨（Layer 2 拍板後寫入）
+- **Format A（知識圖譜）**：<分圖數 `01/02/03+`、各圖承載分支與 T1～T5 拓撲選擇及取捨理由；未選填「無」>
+- **Format B（報告／專欄）**：<文體 1～4 PDF 或文體 5 Medium、章節／七步大綱重點與配圖分工；未選填「無」>
+- **Format C（簡報）**：<總頁數配當、四幕劇焦點與 `S0～S7` 分鏡關鍵決策；未選填「無」>
+- **Format D / E（圖表／儀表板）**：
+  - **推進節奏與架構**：`batch_generation` / `step_by_step_tutor`（若含 E：呈現模式 A / B / C）
+  - **圖表選型與討論取捨**：<逐圖列出 `檔名 -> 選定圖型` ＋ **為何選此圖／為何捨棄備選圖的討論理由**>
+  - **資料口徑與消歧拍板**：<`df_detail` 口徑、原表 `df_other` 消歧選項 1/2、缺失值與前處理血統提醒（若適用）>
+
+## 3. Layer 3：表達三支柱全域定裝（Layer 3 拍板後寫入）
+- **支柱 1（設計光譜武器庫）**：`standard_rigorous` (模式 1) / `editorial_narrative` (模式 2) / `bespoke_metaphor` (模式 3)（若混搭請註明各檔對應模式）
+- **支柱 2（筆風設定檔 `Slot 1～8`）**：`<style_id>.md`（若有跨檔混搭或臨時熱修改請註明）
+- **支柱 3（分層配色與版面主題）**：`chart_palette`（鎖定色票 vs. `derive_thematic_palette` 主題色階）＋ `document_theme` ＋ PDF 字體（`modern_sans` / `clreq_kaiti`）＋ Git 同步偏好
+
+## 4. 使用者客製細節與例外覆寫（User Special Overrides）
+- **內容／敘事特別要求**：<例如：必須點名某案例、特定比較對象、禁用某類用語或保留特定專有名詞；無則填「無」>
+- **視覺／排版細節微調**：<例如：指定聚光燈強調對象、基準線標籤、頁數／字數限制、特定配色微調；無則填「依標準規格執行」>
+
+## 5. 終端最小葉節點規格與交付清單（Terminal Spec & Output Manifest）
+- **按需載入規格檔**：<僅列出本次實際開啟之 `*_spec.md` 與 `chart_family*.md` 清單，確保零多餘載入>
+- **預計交付檔案（`./02_outputs/`）**：
+  - [ ] `<01_xxx.png>` — <一句話用途定位>
+  - [ ] `<02_xxx.md / .pdf / .pptx>` — <一句話用途定位>
+```
 
 ---
 

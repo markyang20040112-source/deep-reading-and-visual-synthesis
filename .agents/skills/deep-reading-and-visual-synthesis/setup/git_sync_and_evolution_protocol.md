@@ -15,7 +15,7 @@
      python .agents/skills/deep-reading-and-visual-synthesis/scripts/hcl_color_engine.py --restore-private
      ```
    - **階段完成／隨時跨裝置檢查點同步（Checkpoint Sync）**：
-     當 `git_sync_mode == "auto_push_main"` 且完成第二階段產出，或作者要求「先同步到 Git／我要換裝置」時，先將最新進度寫入 `01_phase1_socratic_log.md`，再執行：
+     當 `git_sync_mode == "auto_push_main"` 且完成第二階段產出，或作者要求「先同步到 Git／我要換裝置」時，先將最新進度寫入 `01_phase1_socratic_log.md`（Phase 1）或 `02_phase2_generation_blueprint.md`（Phase 2），再執行：
      ```bash
      python .agents/skills/deep-reading-and-visual-synthesis/scripts/hcl_color_engine.py --sync-private -m "wip(session): checkpoint sync for device handoff"
      ```
@@ -35,7 +35,7 @@
 ## 三、 Medium 每週一圖專欄之 GitHub 單一檔案推送與課堂繳交區塊
 
 執行 **[`../phase2_output/medium_column_spec.md`](../phase2_output/medium_column_spec.md)** 工作流時：
-1. 將 Phase 1 完整討論與 Phase 2 三層拍板軌跡詳實寫入 `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`。
+1. 將 Phase 1 完整討論與收斂軌跡詳實寫入 `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`；Phase 2 三層決策與取捨理由則依時機 A 記錄於同目錄 `02_phase2_generation_blueprint.md`（無需於 `01_phase1_socratic_log.md` 或下方課堂繳交區塊額外附掛 `02` 連結）。
 2. 依使用者倉庫設定同步（注意：作者私人倉庫預設不對外公開；若課堂繳交需公開檢視連結，請另以 Secret Gist 或獨立公開倉庫頁分享該單一檔案）。
 3. 在回覆結尾輸出符合課堂 Google Doc（[每週一圖：作業範例](https://docs.google.com/document/d/1ZQUB9kwHqW162xjAFyPbVNEs-kJQteMvxohhGVhCad0/edit?usp=sharing)）格式的一鍵複製繳交區塊：
    ```text

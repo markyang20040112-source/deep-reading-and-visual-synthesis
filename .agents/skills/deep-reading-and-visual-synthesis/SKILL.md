@@ -39,7 +39,7 @@ description: >-
 | **[`setup/onboarding_wizard.md`](./setup/onboarding_wizard.md)** | 外部新使用者首次啟動強制初始化精靈（自建 CIELAB 色票與筆風）。 | **僅限外部未初始化新使用者首次啟動**（作者 100% 不讀）。 |
 | **[`setup/git_sync_and_evolution_protocol.md`](./setup/git_sync_and_evolution_protocol.md)** | 公私雙倉庫 Git 同步、跨裝置還原、Format E 防嵌套 `.git` 獨立開站、Medium 課堂繳交區塊與 Step E1～E3 靈感進化回報細節。 | **僅於結案準備同步 Git / 發布網站 / 執行 Step E1～E3 時開啟**。 |
 | **[`phase1_reading/phase1_socratic_reading_guide.md`](./phase1_reading/phase1_socratic_reading_guide.md)**<br>[`mode1_article_socratic_protocol.md`](./phase1_reading/mode1_article_socratic_protocol.md)<br>[`mode2_dataset_codebook_protocol.md`](./phase1_reading/mode2_dataset_codebook_protocol.md) | **Phase 1 輕量總路由與雙子協定**：四大輸入分流、`01_phase1_socratic_log.md` 即時持久化、文獻 5 步蘇格拉底（Mode 1），以及 CSV＋《資料說明書》「讀取—分析—討論」三迴路（Mode 2）。 | **Phase 1**：先讀導覽頁，再依模式**二擇一**開啟子協定。 |
-| **[`phase2_output/phase2_output_router.md`](./phase2_output/phase2_output_router.md)** | **Phase 2 Layer 1 總路由**：決定本次生成格式範圍（A / B / C / D / E）與 A2 無損擴展 vs. Medium 輕量分流。 | 進入 Phase 2 時首先開啟。 |
+| **[`phase2_output/phase2_output_router.md`](./phase2_output/phase2_output_router.md)** | **Phase 2 Layer 1 總路由**：決定本次生成格式範圍（A / B / C / D / E）、A2 無損擴展 vs. Medium 輕量分流，並規範 `02_phase2_generation_blueprint.md` 時機 A 漸進持久化與標準範本。 | 進入 Phase 2 時首先開啟。 |
 | **[`phase2_output/advisors/layer2_advisor_a_diagram.md`](./phase2_output/advisors/layer2_advisor_a_diagram.md)**<br>[`layer2_advisor_b_report.md`](./phase2_output/advisors/layer2_advisor_b_report.md)<br>[`layer2_advisor_c_slide.md`](./phase2_output/advisors/layer2_advisor_c_slide.md)<br>[`layer2_advisor_de_chart.md`](./phase2_output/advisors/layer2_advisor_de_chart.md) | **Phase 2 Layer 2 分類結構顧問大腦**：依第一層選定格式按需開啟——診斷 A（分圖與 T1～T5 拓撲）、B（文體 1～4 PDF vs. 文體 5 Medium）、C（四幕劇 S0～S7 分鏡）、**D/E（4D 資料快篩 × 8 大溝通意圖 30+ 圖表決策樹與推進節奏）**。 | **Layer 2**：僅開第一層有勾選的格式顧問檔（未選者 0 讀取）。 |
 | **[`phase2_output/advisors/layer3_advisor_design_style_color.md`](./phase2_output/advisors/layer3_advisor_design_style_color.md)** | **Phase 2 Layer 3（最後決策層）定裝顧問**：在第二層結構拍板後，為所有選定檔案決定「表達三支柱」（設計武器庫模式 1/2/3 開關 × 筆風 × 配色／主題色階）。 | **Layer 3**：第二層骨架拍板後開啟。 |
 | **[`phase2_output/visual_cognition_principles.md`](./phase2_output/visual_cognition_principles.md)** | **五格式共通底層定律**：$4 \to 2 \to 3$ 組塊與無損擴展、表達三支柱穿透法則、字級階梯總表與 75-20-5 色彩分配。 | 終端執行層必讀共通底盤。 |
@@ -57,7 +57,8 @@ description: >-
 1. **專案歸檔結構（嚴禁存入 `.agents/skills/` 內）**：
    - `reading_sessions/<YYYYMMDD_主題簡稱>/data/<原檔名>.csv`：**【原始 CSV 零改動鐵律】** 原始檔原封不動存入，嚴禁覆寫。
    - `reading_sessions/<YYYYMMDD_主題簡稱>/00_source_article.md`（或多檔目錄 `00_drive_source_files/`）：一收到原文或《資料說明書》立即原封不動存檔。
-   - `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`：即時記錄 Phase 1 思辨與 Phase 2 三層拍板決策軌跡。
+   - `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`：即時記錄 Phase 1 深度閱讀思辨或數據探索軌跡（維持獨立自洽，不回寫 Phase 2 規格，亦不附掛 `02` 連結）。
+   - `reading_sessions/<YYYYMMDD_主題簡稱>/02_phase2_generation_blueprint.md`：進入 Phase 2 後依**時機 A（Layer 1 $\rightarrow$ Layer 2 $\rightarrow$ Layer 3）**漸進持久化生成選項、討論取捨理由、使用者客製細節覆寫與終端最小葉節點／交付清單。
    - `reading_sessions/<YYYYMMDD_主題簡稱>/02_outputs/`：僅存放正式交付成果（`.png`、`.pdf`、`.md`、`.pptx`、正式生成腳本 `.py` 或獨立網站結構）；驗收完畢立即調用 `verify_visual_outputs.py --cleanup` 清除臨時預覽檔。
    - `reading_sessions/_pending_skill_inspirations.md`：過程中若產生任何技能優化靈感（功能、視覺、筆風、文件去重或腳本改良），按格式 `[編號] | [來源] | [類別] | [目標檔案] | [觀察痛點與具體改良構想]` 暫存於此，絕不中斷主流程。
 2. **Git 同步、網站發布與 Step E1～E3 技能升級閉環**：

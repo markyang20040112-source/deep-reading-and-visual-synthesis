@@ -48,4 +48,4 @@
    - 清楚寫出：**「圖 X（檔名）：首選推薦圖型 ＋ 基於本次資料特徵（$N, T, G$）的診斷理由 ＋ 備選方案 ＋ 可搭配之第三層設計方向預告（如適合開啟資料八雙基準膠囊點陣，或適合開啟 RE:LAB 高光液面容器等）」**。
 3. **【推進節奏確認】**：**一次批次生成（`batch_generation`）** vs. **逐步導學互動模式（`step_by_step_tutor`：一次一張圖＋五步解說）**。
 
-**⏸️ 暫停關卡**：等待使用者確認第二層圖表組合、製圖條件與推進節奏後，立即讀取 **[`layer3_advisor_design_style_color.md`](layer3_advisor_design_style_color.md)** 進入最後一層（第三層）全域定裝！
+**⏸️ 暫停關卡**：等待使用者確認第二層圖表組合、製圖條件與推進節奏後，立即將圖表選型、討論取捨理由與 `df_other` 消歧決策寫入 `02_phase2_generation_blueprint.md` 第 2 節，隨即讀取 **[`layer3_advisor_design_style_color.md`](layer3_advisor_design_style_color.md)** 進入最後一層（第三層）全域定裝！
