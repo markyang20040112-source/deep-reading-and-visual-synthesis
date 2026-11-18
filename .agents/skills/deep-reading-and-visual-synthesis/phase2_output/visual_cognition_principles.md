@@ -23,8 +23,11 @@
   - 底層視覺規範僅定義「空間幾何、字級、留白與色彩對比」，**絕對不寫死任何單一行文語氣或錨點格式**（原寫死之「白話直覺先行、由淺入深」已抽離為擁有者專屬筆風檔 [`../config/owner_styles/plain_first_progressive.md`](../config/owner_styles/plain_first_progressive.md)）。
   - 所有生成內容的語氣、資訊展開順序、標題句型、卡片錨點、圖譜箭頭謂詞、統計圖表微文案、簡報講稿與禁用詞，**100% 由當前啟用之「筆風設定檔（Writing Style Profile）」動態控制**（支援不同輸出格式交叉指定不同筆風檔）。
 - **作者私人筆風庫 vs. 外部使用者隔離（Owner-Only Style Isolation）**：
-  - 當本機 Git 身分驗證為擁有者 `markyang20040112-source` 時，直接讀取 [`../config/owner_styles/`](../config/owner_styles/) 下之專屬筆風庫（`plain_first_progressive.md`、`rigorous_empirical_stat.md`、`editorial_data_journalism.md`）。
+  - 當本機 Git 身分驗證為擁有者 `markyang20040112-source` 時，直接讀取 [`../config/owner_styles/`](../config/owner_styles/) 下之專屬筆風庫（`plain_first_progressive.md`、`rigorous_empirical_stat.md`、`editorial_data_journalism.md`、`personalized_essay_style.md`）。
   - 當外部新使用者執行時，系統嚴格隱藏並隔離 `config/owner_styles/`，僅依空白結構模板 [`../config/styles/_style_schema_template.md`](../config/styles/_style_schema_template.md) 讀取或生成存放於 `config/user_styles/` 的使用者自訂筆風檔。
+- **跨格式寫作共通鐵律（適用所有筆風檔與 Format A～E 對外交付物）**：
+  - **零工作流元語言洩漏（Zero Meta-Workflow Leakage）**：讀者並不知道作者背後如何與 AI 進行閱讀理解與多輪對話；所有對外輸出之正文、標題、圖說與圖譜副標**嚴禁出現任何閱讀系統內部流程詞彙**（如 `第一階段`、`Phase 1/2`、`蘇格拉底思辨／詰問／收斂`、`直覺探針`、`Step 1～5`、`零刪減分流`、`系統基模 A/B` 等未面向讀者定義的內部代號）。
+  - **高張力修辭同篇去重複（Anti-Repetition Guardrail）**：任何鮮明比喻、口語形容詞或標誌性轉折片語，在同一篇成品中至多出現 `1` 次，避免複製貼上造成閱讀疲勞。
 - **8 大全生成場景控制插槽（Slots 1～8）跨格式強制映射表**：
   1. **`Slot 1: Core_Persona_And_Progression`**：控制全格式共通之寫作者人設、語氣冷熱度與三階資訊展開順序。
   2. **`Slot 2: Interactive_Guidance_Tone`**：控制 Phase 1 蘇格拉底提問口吻與 Phase 2「一次一張圖逐步導學互動模式」之五步解說骨架。
