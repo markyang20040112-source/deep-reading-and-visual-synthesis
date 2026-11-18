@@ -1,45 +1,33 @@
 # 數據儀表板設計與互動／靜態雙模態實作規範（Format E: Data Dashboard Spec）
 
-> **單一職責定位（Single Responsibility）**：本檔專責 **Format E（數據儀表板：互動式 Web 數據儀表板 `.html`/`.css`/`.js` ＋ 出版級靜態全景儀表板圖 `.png`）** 的**動態圖表選型與雙軌模式配適（支援 `editorial_storytelling` 敘事圖解與 `pure_dataviz` 純資料視覺化／10 大分配圖形，嚴禁寫死圖表類型與呈現格式）**、**圖表配色設定集前端實作（支援擁有者鎖定版 `Gephi · pastel` 與外部使用者 CIELAB 衍生色票）**、跨視角固定色序綁定，以及**零後端自包含（Self-Contained）前端工程、獨立 Git 儲存庫綁定與靜態網站發布（GitHub Pages 等）驗收守則**。
-> - **筆風設定檔 100% 穿透綁定**：儀表板頂部標題、KPI 摘要卡、頁籤命名、座標軸籤、圖內標註與互動 Tooltip 解說微文案，100% 受當前啟用筆風設定檔之 **`Slot 6`（`Chart_And_Dashboard_MicroCopy`）** 與 **`Slot 8`（`Notation_Terminology_And_Guardrails`）** 控制（詳見 [`visual_cognition_principles.md`](visual_cognition_principles.md)）。
-> - **10 大分配與密度圖形連動**：當儀表板包含連續變數分布、核密度、箱形／小提琴／山脊圖或背景基準疊加分面比較（Context Overlay / Shadow Distribution）視角時，請連動遵守 **[`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)**。
->
-> 🔗 **【Format E（數據儀表板）⇄ Format D（量化圖表）⇄ 分配圖形指南 雙向連動與同步更新鐵律】**：
-> 本檔（[`data_dashboard_spec.md`](data_dashboard_spec.md)）與 **[`quantitative_chart_spec.md`](quantitative_chart_spec.md)（Format D）**、**[`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)**、**[`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)** 及 **[`../scripts/gephi_palette.js`](../scripts/gephi_palette.js)** 屬於**雙向連動共生規範**，共用完全相同的「配色設定集」與「圖表視覺設計規則」。**往後凡涉及圖表配色或共通設計規則之任何新增、修改或技能進化（Step E3），必須強制同步更新上述檔案，嚴禁單邊改動導致規則脫節！**
+> **單一職責定位（Single Responsibility）**：本檔專責 **Format E（數據儀表板：互動式 Web 數據儀表板 `.html`/`.css`/`.js` ＋ 出版級靜態全景儀表板圖 `.png`）** 的**動態呈現架構選型（工作台 / Bento 網格 / 雙模態交付，嚴禁寫死圖表類型與呈現格式）**、**前端 CSS `:root` 變數與 `scripts/gephi_palette.js` 色彩工程實作**、第三層設計武器庫前端延伸，以及**零後端自包含前端工程、獨立 Git 儲存庫綁定與網站發布驗收守則**。
+> - **圖表選型、色彩 SSOT 與家族規格連動**：本檔已去除與 Format D 重複之選型長表與靜態圖細則！內部圖表動態選型請見 **[`advisors/layer2_advisor_de_chart.md`](advisors/layer2_advisor_de_chart.md)**；配色設定集與編碼誠實三鐵律請見 **[`quantitative_chart_spec.md`](quantitative_chart_spec.md)**；各家族繪圖細則依需求按需開啟 **[`chart_family1_ranking_and_deviation.md`](chart_family1_ranking_and_deviation.md)**、**[`chart_family2_trend_and_comparison.md`](chart_family2_trend_and_comparison.md)**、**[`chart_family3_composition_and_flow.md`](chart_family3_composition_and_flow.md)**、**[`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)** 或 **[`chart_family5_multivariate_and_spatial.md`](chart_family5_multivariate_and_spatial.md)**；若第三層開啟模式 2 或 3 則加讀 **[`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)**。
+> - **筆風設定檔 100% 穿透綁定**：儀表板標題、KPI 卡、頁籤、座標軸籤與 Tooltip 解說微文案受 **`Slot 6`** 與 **`Slot 8`** 控制（[`visual_cognition_principles.md`](visual_cognition_principles.md)）。
 
 ---
 
-## 一、 動態數據維度與任務驅動架構：嚴禁寫死圖表類型與呈現方式（Zero Hardcoded Chart Types or Layouts）
+## 一、 動態數據維度與呈現拓撲：嚴禁寫死圖表類型與呈現方式（Zero Hardcoded Layouts）
 
 > [!IMPORTANT]
-> **動態生成核心鐵律**：
-> **絕對禁止寫死數據儀表板的圖表類型、頁籤數量或呈現方式**（例如：嚴禁不論遇到何種資料都機械式套用固定的「結構堆疊＋排行榜＋增減發散＋單項深鑽」四種圖表或固定版型）！
-> 儀表板內部要生成哪幾種圖表、採用何種互動控制項與空間佈局，必須完全根據**「輸入數據的真實維度結構（Data Dimensionality & Schema）」**與**「核心分析決策任務（Analytical Tasks）」**動態推導組合。
+> **動態生成核心鐵律**：**絕對禁止寫死數據儀表板的圖表類型、頁籤數量或呈現方式**（嚴禁不論遇到何種資料都機械套用固定四圖或固定版型）！
+> 內部要生成哪些圖表，必須完全依據 **[`advisors/layer2_advisor_de_chart.md`](advisors/layer2_advisor_de_chart.md)** 之「資料結構四維快篩 × 8 大溝通意圖決策樹」動態選配；其單圖繪製與編碼防詐欺守則完全遵循 [`quantitative_chart_spec.md`](quantitative_chart_spec.md) 及對應之 `chart_family1~5` 規格檔。
 
-### 1. 任務導向之動態圖表選型引擎（Task-Driven Dynamic Chart Selection — 與 [`quantitative_chart_spec.md`](quantitative_chart_spec.md) 連動）
-在規劃儀表板前，先盤點數據包含哪些維度（時間序列、無序類別、有序成熟度、地理/組織實體、正負增減偏差、雙指標落差或多變數關聯），依下列任務動態選配最合適的圖表型態：
-
-| 核心數據特徵與分析任務 | 動態選配之最佳圖表類型（依資料特性自由組合，不限單一形式） | 連動設計與配色規則（詳見第二、三節及 [`quantitative_chart_spec.md`](quantitative_chart_spec.md)） |
-| :--- | :--- | :--- |
-| **1. 跨階段留存遞減／漏斗流失／時序軌跡演進**<br>*(Stage Progression / Funnel / Time-Series Trajectory)* | • **XY 軸空間重力折線＋直柱複合圖（Combo Column + Drop Line Trajectory）**<br>• **多序列趨勢折線圖／面積軌跡圖（Multi-Series Line / Area Chart）** | • **強制空間重力映射**：X 軸為由左至右階段／時間推進，Y 軸為垂直高度（嚴禁將遞減階段塞入水平長條圖 Y 軸）。<br>• 單一指標採用**主色循序（暖杏橘系）**；多類別軌跡依**固定四色序**綁定，並標註關鍵斷崖落差 $\Delta$。 |
-| **2. 同實體內部雙指標反差／預期 vs. 實際落差**<br>*(Paired Dual-Metric Contrast / Target vs. Actual)* | • **共同基準線並排配對雙柱＋剪刀差標註圖（Paired Dual-Bar + Explicit Gap Callout）**<br>• **啞鈴跨距圖（Dumbbell Plot）或子彈圖（Bullet Chart）** | • 嚴禁使用單一折線表達同案雙維落差。<br>• 第一指標（基準／預期）綁定**主色（色序 1：`PALETTE.categories[0]`）**，第二指標（對比／實際）綁定**次色（色序 2：`PALETTE.categories[1]`）**，並直接標註差值膠囊（`Δ = ±XX%`）。 |
-| **3. 多維度結構組成與核心支柱拆解**<br>*(Part-to-Whole / Structural Composition)* | • **堆疊長條／直柱圖（Stacked Bar / Column，支援總額與 `100%` 佔比切換）**<br>• **群組並排比較圖（Grouped Bar）、矩形樹圖（Treemap）或旭日圖（Sunburst）** | • 類別數 $\le 4$ 時依序綁定**固定類別四色**。<br>• 若原始細項超過 4 個（如數十個細目），向使用者確認擴充方式，或啟用**「智慧 4+1 聚焦視角」**：自動萃取前四大核心支柱綁定四色，長尾細項聚合為第五項**典雅灰 `#CBD5E1`**（並可提供切換開關）。 |
-| **4. 多實體規模排行／常態化強度對比**<br>*(Entity Ranking / Normalized Per-Capita Magnitude)* | • **橫向排行長條圖（Horizontal Ranking Leaderboard）**<br>• **棒棒糖排行圖（Lollipop Chart）或點陣分佈圖（Dot Plot）** | • 依數值正規化位置 $p \in [0, 1]$ 映射至 **5 階循序色階**（主視角預設用**暖杏橘系循序**；若為單一類別深鑽或次面板對照則用**霧靄藍系循序**），低值淺、高值深。 |
-| **5. 基準正負偏差／期比增減／達標率檢視**<br>*(Deviation from Reference / YoY Growth / Variance)* | • **雙向發散長條圖（Diverging Bar / Butterfly Chart）**<br>• **正負偏差熱力矩陣（Diverging Heatmap）或瀑布圖（Waterfall Chart）** | • 嚴格鎖定 **9 階對稱發散色階（`PALETTE.divergingHex`）**：以指定業務基準（如偏差 `0%` 或達標率 `100%`）為中心 `#F5F6F7`，負向／未達標往**次色系負向極值（`divergingHex[0]`）**延伸，正向／超標往**主色系正向極值（`divergingHex[8]`）**延伸。 |
-| **6. 多變數關聯、10 大分配與密度圖形與背景基準分面深鑽**<br>*(Multi-Variate Correlation / 10 Distribution Plots / Context Overlay)* | • **10 大分配與密度圖形**（直方圖、非負截斷 KDE、ECDF、常態 Q-Q 圖、箱形圖、小提琴圖、山脊圖、2D 直方圖、2D 密度等高線圖、**背景基準疊加分面圖 Context Overlay / Shadow Distribution** — 詳見 [`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)）<br>• **雙軸散佈／氣泡圖（含固定比值斜率參考線）或交叉熱力圖** | • 嚴格遵守 [`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md) 之非負邊界截斷、面積正規化為 $1$、固定座標軸與背景淡灰基準（`#CBD5E1`）8 大鐵律；嚴禁使用 Alpha 透明度冒充明度深淺。 |
-
-### 2. 動態呈現方式與版面拓撲（Adaptive Presentation & Layout Topologies）
-遵循 **Shneiderman (1996) 視覺資訊尋求箴言（*"Overview first, zoom and filter, then details-on-demand"*）** 與 [`visual_cognition_principles.md`](visual_cognition_principles.md) 之 **$4 \to 2 \to 3$ 階層組塊原則**，依資料規模與使用者需求動態選擇呈現架構（不寫死單一面板結構）：
+### 1. 動態呈現方式與版面拓撲（Adaptive Presentation & Layout Topologies）
+遵循 **Shneiderman (1996) 視覺資訊尋求箴言（*"Overview first, zoom and filter, then details-on-demand"*）** 與 [`visual_cognition_principles.md`](visual_cognition_principles.md) 之 **$4 \to 2 \to 3$ 階層組塊原則**，依資料規模與使用者需求動態選擇呈現架構：
 
 1. **【呈現模式 A：多視角切換互動工作台（Multi-Perspective Interactive Workbench）】**
-   - **適用情境**：資料具備多個觀察切面（如同時含結構組成、跨實體排行、期比增減、細項深鑽或多指標切換）。
-   - **動態組件**：頂部全局維度控制列（時間／分群／口徑切換／排序）$\rightarrow$ 頂層 3～4 張關鍵 KPI 摘要卡（含基準比較或極值亮點）$\rightarrow$ 依資料特性動態生成的 $N$ 個互動視角頁籤（Tabs）或視圖切換器 $\rightarrow$ 底部支援即時搜尋、排序與一鍵匯出 CSV 之明細資料表。
+   - **適用情境**：資料具備多個觀察切面（如同時含結構組成、跨實體排行、期比增減、分配密度或多指標切換）。
+   - **動態組件**：頂部全局維度控制列（時間／分群／口徑切換／排序）$\rightarrow$ 頂層 3～4 張關鍵 KPI 摘要卡 $\rightarrow$ 動態生成之 $N$ 個互動視角頁籤（Tabs）$\rightarrow$ 底部支援即時搜尋、排序與一鍵匯出 CSV（含 `\uFEFF` UTF-8 BOM）之明細資料表。
 2. **【呈現模式 B：多面板全景聯動網格（Synchronized Multi-Panel Bento Grid）】**
    - **適用情境**：需要在單一畫面同時比對「全局結構 × 關鍵排行 × 變化趨勢／落差診斷」以進行高階主管決策。
    - **動態組件**：採用不對稱 Bento 網格（如左側主視覺面板佔 `55%~60%` 寬度呈現核心結構或跨階段軌跡，右側上下堆疊 2 個互補副面板呈現常態化排行與正負偏差），各面板間遵守**跨面板色相區隔與固定類別色碼綁定**。
 3. **【呈現模式 C：雙模態協同交付（Self-Contained Web Dashboard + High-Res Static Overview PNG）】**
    - **互動網頁端**：產出零後端依賴、雙擊 `index.html` 即可離線秒開、且可直接綁定獨立 Git 儲存庫發布為線上網站的互動式 Web 專案（使用 `ECharts` / `Chart.js` / `Plotly` / 原生 Canvas 等）。
-   - **靜態出版端**：當需要將儀表板精華嵌入報告（Format B）、簡報（Format C）或提供靜態高畫質預覽時，同步以 Python `matplotlib` (`GridSpec`) 渲染一張遵循完全相同配色、黃金比例畫布與垂直空間規範（`dpi=300`，詳見第三節第 6 點與 [`quantitative_chart_spec.md`](quantitative_chart_spec.md) 第四節）的出版級靜態全景儀表板圖（`.png`）。
+   - **靜態出版端**：同步以 Python `matplotlib` (`GridSpec`) 渲染一張遵循完全相同配色與黃金比例垂直空間規範（`24" × 14"`, `dpi=300`）的出版級靜態全景儀表板圖（`.png`）。
+
+### 2. 第三層設計武器庫連動（模式 2 編輯室工作台 & 模式 3 主題沉浸式策展網頁）
+- 若第三層開啟 **模式 2 (`editorial_narrative`)**：頂部 KPI 卡增設「與基準線正負差距膠囊」，圖表區提供「統計基準線切換開關（未加權平均／官方加權／中位數）」與「首尾極值聚光燈高亮」控制項。
+- 若第三層開啟 **模式 3 (`bespoke_metaphor`)**：直接調用 `window.GephiPalette.deriveThematicPalette(presetOrHex, { activate: true })` 將主題語義色階動態注入 CSS `:root`，並可於卡片中嵌入容器式液面進度條或 $10 \times 10$ 象形陣列佔比卡（詳見 [`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)）。
 
 ---
 
@@ -55,12 +43,14 @@
 // === scripts/gephi_palette.js (window.GephiPalette) Black-Box API Signatures ===
 const {
   PALETTE,                        // { categories, badgeTints, other: '#CBD5E1', na: '#D9D9D9', divergingCenter: '#F5F6F7', seqOrange, seqBlue, seqPink, seqGreen, divergingHex }
+  THEMATIC_PRESETS,               // Built-in CIELAB thematic presets (milk_tea, forest_eco, ocean_blue, coffee_roast, pineapple_tropical, ...)
   labInterpolate,                 // (hexList, t) -> '#RRGGBB' (True CIELAB piecewise linear interpolation)
   getSequentialColor,             // (val, min, max, scale='orange', discreteSteps=false) -> '#RRGGBB' (Enforces (val - min)/(max - min) normalization)
   getDivergingColor,              // (val, center=0, maxSpan=1, discreteSteps=false) -> '#RRGGBB' (Symmetric 9-node mapping around #F5F6F7)
   bindQualitativeColors,          // (categories, allowTop4Aggregation=true, otherLabel='其他項目合計') -> { colorMap, badgeTintMap, top4Categories, otherCategories }
   getCategoryBadgeTint,           // (catOrKey, badgeTintMap) -> active PALETTE.badgeTints[0..3] | '#F1F5F9'
   buildPaletteFromPrimaryHexes,   // (hexList) -> customPaletteObj (CIELAB auto-derivation from 2~4 primary hex colors)
+  deriveThematicPalette,          // (themePresetOrHex, options={ activate: false }) -> customPaletteObj (CIELAB thematic derivation)
   setActivePalette,               // (customPaletteObj) -> PALETTE (Switches active frontend palette in-place)
 } = window.GephiPalette;
 ```
@@ -86,25 +76,12 @@ const {
 
 ---
 
-## 三、 與 Format D（[`quantitative_chart_spec.md`](quantitative_chart_spec.md)）共通連動之圖表視覺設計守則
+## 三、 Format E 專屬互動回饋、75-20-5 與全景靜態圖佈局守則（Format E Interactive Polish & Static Overview）
 
-凡於數據儀表板內繪製任何統計圖表（無論是前端互動 Canvas/SVG 或 Python 靜態全景圖），皆須與 [`quantitative_chart_spec.md`](quantitative_chart_spec.md) 保持 100% 規則同步：
-
-1. **三層互斥分流（`df_detail` / `df_other` / `df_subtotal`）與兩段式安全轉型防呆**：
-   - 資料前處理腳本必須先將已知合法缺漏符號（如 `''`, `'-'`, `'...'`, `'N/A'`, `'＊'`）顯式映射為 `null` / `np.nan`（統一標記為 `#D9D9D9`），並將資料強制分流為 `df_detail`（純一般明細列）、`df_other`（原表其他列）與 `df_subtotal`（合計／總計／小計列），執行 `assert len(df_detail) + len(df_other) + len(df_subtotal) == len(df_raw)`，100% 杜絕合計列混入排行榜或 KPI 重複加總（Double Counting）。
-2. **指標極性同質化轉化（Homogeneous Metric Polarity）**：
-   - 當同一個視覺序列或排行榜同時包含正向指標（如「完成率」）與反向阻礙指標（如「卡關率」）時，必須先依 `正向率 = 100% - 反向率` 轉化為同質極性，並在 Tooltip 或標註膠囊中補充原始反向原因，避免高低方向語義錯亂。
-3. **零旋轉清晰標籤與雙層/左對齊結構（Zero-Tilt Readable Labels）**：
-   - 座標軸之中文類別或階段標籤**嚴禁傾斜 45° 或 90°**。若 X 軸項目較多或名稱較長，應採用雙層水平對齊短籤（`【四字定位】` + 短句說明），或自動轉為橫向排行圖（`yAxis: { type: 'category', inverse: true }`）讓中文標籤水平左對齊/右對齊清晰呈現。
-4. **去邊框極簡座標軸與直接數據回饋（Despined Axes & Direct Data Feedback）**：
-   - 隱藏不必要的外框線（Python 端直接調用 `hcl_color_engine.despine_axes(ax)` 移除頂部與右側軸線，並以 `dpi=300` 輸出），背景網格線設為極淡虛線或細線（`#F1F5F9` 或 `#CBD5E1`）。
-   - 互動式圖表必須配置高可讀性之自訂 `tooltip`（色塊圖示、等寬字體對齊之精確數值與單位、自動加總或佔比提示）；單序列排行或發散圖應直接於長條末端顯示數值標籤。
-5. **75-20-5 畫布呼吸、微軟正黑體零 Emoji 防護與精簡官方資料來源聲明**：
-   - 儀表板整體背景採 75% 中性結構底色（畫布 `#F8FAFC`、卡片純白 `#FFFFFF`、邊框 `#E2E8F0`、主文字 `#0F172A` / `#1E293B`、次要文字 `#475569` / `#64748B`），將色彩聚光燈留給數據圖形本身；頁首／頁尾標註原始官方發布機關與資料集名稱，並附加說明 **1. 官方資料集網址、2. 資料涵蓋期間**（嚴禁將《資料說明書》寫成資料來源）。
-   - 若同步生成 `matplotlib` 靜態儀表板圖（`.png`），嚴格執行**零 Emoji 鐵律**（僅用 `▲`、`●`、`■`、`★`），杜絕缺字方框（Tofu Box `□`）。
-6. **靜態 `300 DPI` 圖表與全景儀表板匯出之黃金比例畫布與垂直空間預算（Golden Ratio Canvas & Vertical Spacing for Static `300 DPI` Exports）**：
-   - **單面板靜態匯出圖**：當自儀表板匯出單一視角 `.png` 圖表嵌入報告、簡報或專欄時，**100% 遵守 [`quantitative_chart_spec.md`](quantitative_chart_spec.md) 第四節規範**：標準垂直圖採 `figsize=(12.0, 6.4)`、橫向排行／分位數圖採 `figsize=(12.8, 6.7)`（`dpi=300`）；主繪圖區占畫布總高 `~62%–65%`（`top ≈ 0.800–0.812`, `bottom ≈ 0.155–0.190`；無雙層標籤之橫向圖可取 `0.155–0.170`），主標題 `y ≈ 0.958–0.962`、副標題 `y ≈ 0.908–0.912`、頂部圖例 `loc="lower left", bbox_to_anchor=(-0.01, 1.012–1.025)`（維持副標題–圖例與圖例–座標軸約 `~30–50 px` 均衡間距）、雙行官方來源圖註（`va="top"`）`y ≈ 0.055–0.058` / `0.028–0.031`。
-   - **多面板靜態全景儀表板匯出圖（`GridSpec` Overview PNG，預設 `24" × 14"`, `dpi=300`）**：延續相同「反過高空白帶」與「垂直黃金比例分層」原則——維持寬景比例（`1.71:1`），明確切分頂部主副標題、共用圖例／KPI 摘要條、主多面板視覺化區（占總高約 `62%–72%`，`GridSpec` 邊界建議 `top ≈ 0.80–0.84`、`bottom ≈ 0.08–0.12`）與底部雙行官方來源圖註，各層間維持均衡垂直呼吸間距，嚴禁無故拉高畫布產生上下空白帶或造成標題、圖例與子圖邊界互相貼壓。
+所有共通之三層互斥分流（`df_detail`/`df_other`/`df_subtotal` `assert`）、極性同質化、零旋轉中文標籤、編碼誠實三鐵律與單面板黃金比例畫布，**一律直接引用 [`quantitative_chart_spec.md`](quantitative_chart_spec.md) 及對應之 `chart_family1~5` 規格檔（免跨檔重複抄寫）**；Format E 額外執行以下互動與全景圖專屬守則：
+1. **高可讀性自訂 Tooltip 與直接數據回饋**：互動式圖表必須配置含色塊圖示、等寬對齊精確數值、單位與佔比提示之自訂 `tooltip`；單序列排行／發散圖於末端直接顯示數值標籤；隱藏不必要的外框線（靜態端調用 `despine_axes(ax)`），僅留極淡 `#F1F5F9` / `#CBD5E1` 輔助網格線。
+2. **75-20-5 畫布呼吸與微軟正黑體零 Emoji 防護**：整體頁面採 75% 中性結構底色（畫布 `#F8FAFC`、卡片 `#FFFFFF`、邊框 `#E2E8F0`、主字 `#0F172A` / `#1E293B`、次字 `#475569` / `#64748B`），頁尾標註原始官方發布機關與資料集（1. 官方資料集網址、2. 資料涵蓋期間）；靜態輸出圖嚴禁 Emoji（僅用 `▲`、`●`、`■`、`★`）。
+3. **多面板靜態全景儀表板匯出圖（`GridSpec` Overview PNG，預設 `24" × 14"`, `dpi=300`）**：維持寬景比例（`1.71:1`），明確切分頂部主副標題、共用圖例／KPI 摘要條、主多面板視覺化區（占總高約 `62%–72%`，`GridSpec` 邊界建議 `top ≈ 0.80–0.84`、`bottom ≈ 0.08–0.12`）與底部官方來源圖註，各層間維持均衡垂直間距（單面板靜態匯出直接套用 [`quantitative_chart_spec.md`](quantitative_chart_spec.md) `12.0" × 6.4"` / `12.8" × 6.7"` 黃金比例標準）。
 
 ---
 

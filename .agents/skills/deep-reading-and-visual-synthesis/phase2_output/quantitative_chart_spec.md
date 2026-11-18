@@ -1,209 +1,170 @@
-# 量化實證圖表設計與出版級繪製規範（Format D: Quantitative Chart Spec）
+# 量化實證圖表共通核心契約（Format D ⇄ E Common Chart Core Spec — SSOT）
 
-> **單一職責定位（Single Responsibility）**：本檔專責 **Format D（量化實證數據圖表 `.png`）** 的**雙軌結構選型（`editorial_storytelling` 編輯室敘事圖解模式 vs. `pure_dataviz` 純資料視覺化／統計實證模式）**、空間座標映射、折線／柱線複合差距表現、**圖表配色設定集唯一權威定義（SSOT：支援擁有者鎖定版 `Gephi · pastel` 與外部使用者 CIELAB 衍生色票）**、同質單色相漸層與跨面板色相區隔、指標語意同質化轉化，以及 `matplotlib` 出版級精準繪製規範。
-> - **10 大分配與密度圖形完整指南**：凡涉及單變數／雙變數分布、密度估計與背景基準疊加分面比較（Context Overlay / Shadow Distribution），請連動讀取 **[`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)**。
-> - **筆風設定檔 100% 穿透綁定**：圖表主副標題、X/Y 軸籤、圖內標註氣泡（`Callouts`）與數值單位格式，100% 受當前啟用筆風設定檔之 **`Slot 6`（`Chart_And_Dashboard_MicroCopy`）** 與 **`Slot 8`（`Notation_Terminology_And_Guardrails`）** 控制（詳見 [`visual_cognition_principles.md`](visual_cognition_principles.md)）。
->
-> 🔗 **【Format D（量化圖表）⇄ Format E（數據儀表板）⇄ 分配圖形指南 雙向連動與同步更新鐵律】**：
-> 本檔（[`quantitative_chart_spec.md`](quantitative_chart_spec.md)）與 **[`data_dashboard_spec.md`](data_dashboard_spec.md)（Format E）**、**[`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)**、**[`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)** 及 **[`../scripts/gephi_palette.js`](../scripts/gephi_palette.js)** 共用完全相同的「配色設定集」與「圖表視覺設計規則」。**往後凡涉及圖表配色或共通設計規則之任何新增、修改或技能進化（Step E3），必須強制同步更新上述檔案，嚴禁單邊改動導致規則脫節！**
+> **單一職責定位（Single Responsibility）**：本檔為 **Format D（量化與敘事圖表 `.png`）⇄ Format E（數據儀表板 Web + `.png`）** 在終端執行層的**共通核心契約（SSOT）**，僅負責跨所有圖表家族通用的：**① 按需圖表家族路由索引**、**② 視覺編碼誠實三鐵律與圖表 8 大元件解剖檢核表**、**③ 圖表配色設定集唯一權威定義（`qualitative_4`、`sequential_scales`、`diverging_9`、`THEMATIC_PALETTE_PRESETS` 與 `df_other` 雙重消歧）**、**④ 三層互斥分流 `assert` 防呆、單面板 `300 DPI` 黃金比例畫布與全套黑盒 API 索引**。
+> - **筆風 `Slot 6` & `Slot 8` 100% 穿透**：圖表主副標題、X/Y 軸籤、氣泡標註與數值單位，受當前啟用筆風檔控制（詳見 [`visual_cognition_principles.md`](visual_cognition_principles.md)）。
+> - 🔗 **雙向同步義務**：與 [`data_dashboard_spec.md`](data_dashboard_spec.md)、[`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py) 及 [`../scripts/gephi_palette.js`](../scripts/gephi_palette.js) 強制同步，嚴禁單邊改動。
 
 ---
 
-## 零、 結構級雙軌制：「編輯室敘事圖解 (`editorial_storytelling`)」vs.「純資料視覺化 (`pure_dataviz`)」與互動模式
+## 零、 按需載入圖表家族微規格檔 ＆ 設計武器庫索引表（On-Demand Family Loading）
 
-> [!IMPORTANT]
-> **核心決策原則（故事張力驅動 ＋ 使用者拍板確認）**：
-> 取消死板的「最小必要視覺化強制簡單優先」教條！圖表選型一律以**「最能深刻呈現數據背後的真實分布、結構異質性與故事張力」**為最高準則，並在生成前五維度確認關卡（Pre-Generation Confirmation Gate）向使用者確認採用哪一種圖表模式與互動節奏：
+由 [`advisors/layer2_advisor_de_chart.md`](advisors/layer2_advisor_de_chart.md) 完成選型診斷與 [`advisors/layer3_advisor_design_style_color.md`](advisors/layer3_advisor_design_style_color.md) 完成第三層定裝後，**除本核心契約外，僅按需開啟本次明確選定之 1～2 個家族子檔**（未選中之家族 0 讀取）：
 
-| 比較維度 | 軌道 1：`editorial_storytelling`（編輯室敘事圖解模式） | 軌道 2：`pure_dataviz`（純資料視覺化／統計實證模式） |
+| 圖表家族／武器庫專檔 | 涵蓋圖型與專屬規範 | 開啟時機 |
 | :--- | :--- | :--- |
-| **核心目標與適用場景** | 針對高階簡報、策略報告、Medium 數據新聞專欄，一針見血傳遞**單一核心反差結論（Single Hook / Cliff Drop / Gap）** | 針對實證統計研究、開放資料集探索（EDA）、分配圖形導學，**忠實還原原始數據分布、多峰分化、尾部偏離與不確定性** |
-| **底層圖表結構差異** | 生成**高度合成與強視覺隱喻之結構**：<br>• 指標極性同質化拼接之物理斷崖折線＋直柱複合圖<br>• 共同基準線並排配對雙柱＋顯式剪刀差雙向箭頭圖<br>• 前 4 大彩色＋第 5 根長尾灰柱（`#CBD5E1`）之 `4+1` 聚焦聚合圖 | **嚴格保持原始變數維度獨立，不人為合成異質指標**：<br>• **10 大分配與密度圖形**（直方圖、非負截斷 KDE、ECDF、常態 Q-Q 圖、箱形圖、小提琴圖、山脊圖、2D 直方圖、2D KDE 等高線、背景基準疊加分面圖 Context Overlay — 詳見 [`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)）<br>• 散佈迴歸＋95% CI 信賴區間帶、點估計＋誤差線（Error Bars）、完整明細排行圖 |
-| **圖內標註與微文案（受筆風 `Slot 6` 控制）** | 搭配結論斷言式大標題、圖內醒目 `Δ` 差值膠囊、轉折流失原因氣泡與底部雙層 `【四字定位】` 說明籤 | 以**統計基準線（Mean / Median 強制白框描邊 `add_halo_vline`、IQR、固定比值斜率線）**與**極端觀測值定位圓點（`annotate_floor_extreme`，附註戶數規模脈絡）**取代大型口號氣泡；座標軸嚴格標明物理／機率密度單位與樣本數 $n$ |
-| **自由混搭與互動推進模式** | 支援 **`hybrid_custom`（混搭模式）**，並支援使用者於生成前選擇 **「一次批次生成（`batch_generation`）」** 或 **「逐步導學互動模式（`step_by_step_tutor`：一次呈現一張圖＋五步完整解說 $\rightarrow$ 停下等待使用者回應後再推進下一張）」**。 |
+| **[`chart_family1_ranking_and_deviation.md`](chart_family1_ranking_and_deviation.md)** | **家族 1（比較、排名、跨距與偏差）**：**資料八編輯室克里夫蘭點陣圖**、棒棒糖、排行長條、**啞鈴圖**、**斜坡圖**、**子彈圖**、**蝴蝶金字塔圖**、**柏拉圖（80/20）** | 第二層選定此家族圖型時 |
+| **[`chart_family2_trend_and_comparison.md`](chart_family2_trend_and_comparison.md)** | **家族 2（時序趨勢、斷崖與同案反差）**：**空間重力斷崖折線＋直柱複合圖**、**指標極性 100% 同質化**、底部雙層 `【四字定位】`、**時期色帶＋事件折線（數據百閱）**、**配對雙柱＋剪刀差**、面積圖、範圍／甘特圖 | 第二層選定此家族圖型時 |
+| **[`chart_family3_composition_and_flow.md`](chart_family3_composition_and_flow.md)** | **家族 3（結構佔比、雙維馬賽克、瀑布與流向）**：`4+1` 堆疊與環形圖、**馬賽克雙維佔比圖（Marimekko）**、**增減瀑布圖（Waterfall）**、矩形樹圖、**巢狀環／旭日／圓堆圖**、**桑基流向與弦圖** | 第二層選定此家族圖型時 |
+| **[`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)** | **家族 4（10 大分配與密度圖形 ＋ 背景基準疊加分面）**：直方圖（`add_halo_vline`＋`annotate_floor_extreme`）、非負截斷 KDE、ECDF、Q-Q、箱形、小提琴、山脊、2D 直方、2D 等高線、**Context Overlay 8 大鐵律**與三層指標消歧 | 第二層選定分配圖形或逐步導學時 |
+| **[`chart_family5_multivariate_and_spatial.md`](chart_family5_multivariate_and_spatial.md)** | **家族 5（多維關聯、矩陣與空間複合）**：**波士頓四象限散點／氣泡矩陣**、**突出顯示熱力表**、雷達圖（$\le 3$ 組）、**主圖＋角落微型排行副卡複合構圖** | 第二層選定此家族圖型時 |
+| **[`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)** | **跨格式設計武器庫專檔**：模式 2（資料八／數據百閱編輯室 5 大技法與報告 CSS）＆ 模式 3（RE:LAB 六大編碼具象材質與 IDE 跨工具合成管線） | **僅當第三層開啟模式 2 或模式 3 時加載** |
 
 ---
 
-## 一、 空間重力座標映射與折線差距表現法則（Spatial Gravity XY-Mapping & Trajectory Line Chart）
+## 一、 視覺編碼誠實三鐵律與圖表 8 大元件解剖檢核表（Encoding Integrity & Chart Anatomy）
 
-### 1. XY 軸空間重力對調法則（Horizontal Progression on X-Axis + Vertical Magnitude on Y-Axis）
-- **理論依據**：**空間重力與閱讀動線隱喻（Spatial Gravity & Reading Trajectory Metaphor, Tversky 2011）** 與 **圖形感知精準度階層（Cleveland & McGill 1984）**。人類大腦天生將「高低起伏（強／弱、高昂／崩跌）」映射於**垂直高度（Y 軸）**，並將「階段推進、漏斗篩選或成熟度演進」映射於**由左至右的水平動線（X 軸）**。
-- **強制對調規範**：
-  - 當數據旨在展現**「跨階段留存率遞減、預期與現實的斷崖崩跌（Cliff Drop）、或由淺入深的成熟度結構分佈」**時，**嚴禁使用水平長條圖（`barh`）將階段上下堆疊於 Y 軸**！
-  - 必須將 **X 軸設為由左至右的推進階段**，並將 **Y 軸設為 `0% ~ 100%` 的垂直高度**，使左上角的高預期（如 `80%`）一路向右下角的低投產（如 `6%`）俯衝，創造直覺且震撼的**物理斷崖崩跌感（Physical Cliff Drop）**。
+### 1. 視覺編碼防誤導三鐵律（Zero-Deception Encoding Laws — 資料一、五、七、八）
+1. **【鐵律 1：實心長條／面積圖零點鐵律 vs. 非零狹窄區間點陣轉換】**：
+   - 凡依賴「長度或面積比例感知」之實心長條／柱狀圖與面積圖，**數值軸強制從 `0` 開始**，嚴禁截斷非零起點誇大倍數差距。
+   - **唯一合法解套**：當所有實體數值遠離 `0` 且集中於高檔狹窄區間（例如資料八臺灣 20 縣市消費支出 `59.2～117.0 萬元`），欲放大細微差距時，**強制改用依賴「位置感知」之克里夫蘭點陣圖（`plot_cleveland_dot`）或啞鈴圖（`plot_dumbbell`）**！
+2. **【鐵律 2：面積編碼平方根鐵律（Area $\propto$ Value, Radius $\propto \sqrt{\text{Value}}$）】**：
+   - 面積是長度的平方。繪製氣泡圖、圓堆圖或方塊面積圖時，**數值必須線性映射至「面積 Area」**（即圓半徑或正方形邊長必須與 $\sqrt{\text{Value}}$ 成正比；在 Matplotlib `ax.scatter(..., s=area)` 中，`s` 單位已是面積 $\text{pt}^2$，故直接將數值線性映射至 `s` 即可，嚴禁再平方或以半徑直接對齊數值導致 4 倍視覺膨脹詐欺）。
+3. **【鐵律 3：角度與圓餅／環形圖切片上限鐵律（Max 5 Slices & Center KPI）】**：
+   - 圓餅圖與單層環形圖類別**嚴格限制 $\le 5$ 項**（環形圖中心留白區須置入總數或核心關鍵指標）；類別超過 5 項時，強制啟動 `4+1` 長尾聚合或轉用橫向排行長條圖、矩形樹狀圖或馬賽克圖。
 
-### 2. 跨階段遞減 vs. 同案雙維反差之圖表選型分流（Trajectory Line vs. Paired Dual-Bar with Gap Callout）
-依數據的核心比較任務（Cleveland & McGill 1984），嚴格區分以下兩種差距表現型態：
-
-- **【型態 A：跨階段單序列遞減】折線軌跡為主、直柱與落差帶為輔之複合圖（Combo Column + Drop Line Trajectory）**：
-  - **適用場景**：衡量單一指標跨多個階段的留存遞減或漏斗流失（如 `80% → 62% → 54% → ... → 6%`）。
-  - **核心結構**：
-    1. **主視覺折線（Primary Drop Trajectory Line）**：以粗實線（`linewidth=3.2`）搭配醒目實心圓點（`marker='o'`, `markersize=9~11`, 白邊環繞）串聯各階段數據頂點，直接刻劃出陡峭的滑落斜率。
-    2. **輔助漸層直柱（Supporting Vertical Bars）**：於折線下方繪製寬度適中（`width=0.52`）的垂直長條，填滿由頂點至 `Y=0` 的基準高度，強化實體量感。
-    3. **斷崖落差標註帶（Explicit Cliff / Gap Callout Zone）**：在起點高峰與終點低谷之間，繪製水平基準虛線與垂直雙向箭頭／陰影區間，直接標註總落差（如 `Δ = -74% 預期與投產巨大斷崖`）及關鍵轉折流失率。
-
-- **【型態 B：同案例雙維反差】配對雙柱＋剪刀差落差標註圖（Paired Dual-Bar & Explicit Gap Callout Chart）**：
-  - **適用場景**：當數據旨在對比**每一個獨立案例內部的兩個對立指標**（例如同一組織之「表象預測信心 88%～95% vs. 實際模型效用 12%～32%」或「事前預期 vs. 事後真實表現」）時，**嚴禁使用單一序列折線圖**（單一折線無法呈現同案內的高低雙維落差）。
-  - **核心結構**：
-    1. **共同基準線並排雙柱（Common-Baseline Paired Bars）**：於每個 X 軸案例位置並排繪製左柱（`x - width/2`，代表第一指標／基準預期，採鎖定色序 1 **主色 `GEPHI_QUALITATIVE_HEX[0]`** 或其深階 `GEPHI_SEQUENTIAL_SCALES["orange"][3]`）與右柱（`x + width/2`，代表第二對比指標／實際結果，採鎖定色序 2 **次色 `GEPHI_QUALITATIVE_HEX[1]`** 或其深階 `GEPHI_SEQUENTIAL_SCALES["blue"][3]`），讓同一案例的高低反差同屏立見。
-    2. **顯式剪刀差垂直雙向箭頭與落差膠囊（Explicit Delta Callout）**：於左柱頂端延伸水平虛線至右柱上方，並在右柱頂端與左柱頂端高度之間繪製**垂直雙向箭頭（`<->`）與醒目差值膠囊（`Δ = -XX%`）**，將讀者的「視覺心算減法負荷」轉化為零阻力的直接讀取。
+### 2. 出版級圖表 8 大元件完整度檢核表（Chart Anatomy Checklist — 資料四、八）
+每次生成圖表後、驗收前，依序核對以下 8 項幾何與元件完備性：
+1. **圖表外框與留白呼吸區**：整體留白 $\ge 25\%$，嚴禁過高畫布上下空洞。
+2. **頂部斷言主副標題區**：主標題（`16~17.5pt Bold`）為完整數據結論句；副標題（`11.2~12.5pt`）交代樣本、單位、口徑與排序邏輯。
+3. **頂部圖例或基準線膠囊區**：無框單列圖例（`frameon=False`）或資料八 `add_badge_vline` 頂部帶框圓角膠囊（確保不撞及副標題）。
+4. **主繪圖核心區**：單面板佔畫布總高約 **`62%–65%`**。
+5. **極簡去邊框座標軸與零旋轉標籤**：隱藏頂部與右側軸線（`despine_axes`），**中文標籤 100% 水平零旋轉（禁止斜放 45°/90°）**。
+6. **背景極淡輔助基準格線**：`#CBD5E1` 細虛線（`alpha=0.45~0.65`），絕不搶奪主視覺。
+7. **資料數列與直接數據標註**：主角極值聚光燈高亮，節點或長條末端直接標註數值並採白色外框避讓。
+8. **底部官方來源與方法論圖註**：預設採雙行精簡官方來源（1. 官方資料集網址、2. 資料涵蓋期間）；若開啟編輯室模式則呼叫 `add_editorial_footer` 繪製四層結構化底註（`資料補充 / 註 / 來源 / 提醒`）。
 
 ---
 
-## 二、 指標語意同質化轉化與底部雙層零旋轉標籤（Homogeneous Polarity & Two-Tier 0° X-Axis Labels）
+## 二、 圖表配色設定集架構與跨圖色階連動規範（Color Specification — SSOT）
 
-### 1. 指標極性 100% 同質化轉化（Homogeneous Metric Polarity Conversion）
-- **核心痛點防範**：調查報告常同時混雜「正向準備度指標（如 `80% 看好`、`62% 增資`、`37% 具基礎`、`6% 投產`）」與「反向阻礙指標（如 `46% 視數據品質不良為死穴`、`57% 至今未修改數據策略`）」。若未經轉化直接畫在同一張圖上，會導致「高數值有時代表好、有時代表壞」的嚴重認知錯亂！
-- **強制同質化轉換公式**：
-  - 繪製同一條折線或同一組 X 軸序列前，必須將所有數據點統一轉化為 **100% 同質的正向留存／過關率**（或全部統一為反向障礙率）：
-    $$\text{正向過關／行動率} = 100\% - \text{反向卡關／未行動率}$$
-  - **實務範例**：將「`46%` 視數據品質不良為死穴」轉化為 **`54%`【品質過關】（未受困於基礎品質死穴）**；將「`57%` 未修改數據策略」轉化為 **`43%`【策略行動】（已實質翻修數據策略）**。如此一來，X 軸由左至右形成 **`80% → 62% → 54% → 43% → 37% → 11% → 6%`** 邏輯完全同質、單調遞減的留存斷崖！同時於折線轉折處以醒目膠囊標註反向流失原因（如 `▲ 46% 卡於品質不良`、`▲ 57% 策略原地踏步`），兼顧原意與同質性。
+> **設定集動態載入來源**：由本機 `config/user_preferences.json` 之 `color_sets.chart_palettes` 動態載入（外部新使用者透過 `build_palette_from_primary_hexes()` 由 2～4 個主色於 CIELAB 空間推導均衡色階；若第三層開啟主題語義微調，則呼叫 `derive_thematic_palette()` / `deriveThematicPalette()` 衍生主題色票）。
+> **單一事實來源（SSOT）**：Python 實作強制匯入 [`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)，Web 前端強制載入 [`../scripts/gephi_palette.js`](../scripts/gephi_palette.js)。
 
-### 2. 底部 X 軸雙層水平對齊標籤（Two-Tier Zero-Tilt Aligned Label Blocks）
-- **零旋轉鐵律**：X 軸中文標籤**絕對禁止傾斜 45° 或 90°**，亦禁止長短不一的散亂句子。
-- **雙層對齊結構（Two-Tier Centered Structure）**：
-  - **第一層（Tier 1 — 四字粗體定位籤）**：統一採用 `【四字定位】` 格式（如 `【商業預期】`、`【預算投入】`、`【品質過關】`、`【策略行動】`、`【基礎信心】`、`【高度完備】`、`【核心投產】`），字級 `10.5~11pt Bold`，**所有定位籤必須 100% 水平對齊於同一 Y 座標基準線**。
-  - **第二層（Tier 2 — 雙行平行短句說明）**：緊接於定位籤正下方，以兩行工整對稱的短句（每行嚴控 `6～7 個漢字`，字級 `9~9.5pt`）說明該指標之具體同質定義，讓讀者在極低眼動負擔下瞬間掃視比較。
+### 1. 無序類別固定色序與零 Alpha 徽章淺底色（Qualitative Fixed Order & Zero-Alpha Tints）
+同名類別在跨圖表、跨面板或互動篩選切換時必須維持完全相同的色碼，絕不因資料順序變動而換色：
 
----
-
-## 三、 圖表配色設定集架構與跨圖色階連動規範（Color Specification — Format D & Format E 唯一權威 SSOT）
-
-> **設定集動態載入來源**：由本機 `config/user_preferences.json` 之 `color_sets.chart_palettes` 動態載入（外部新使用者透過 `build_palette_from_primary_hexes()` 由任意 2～4 個主色在 CIELAB 感知空間自動推導均衡色階；公開倉庫僅提供中性預設基底）。
-> **理論與衍生說明**：在色彩感知空間（CIELAB / HCL）中進行明度（Lightness）與彩度（Chroma）均衡校正，提升白底圖表清晰度；循序色階採物理感知等差階梯計算生成，發散色階保持雙向視覺重量對稱。
-> **單一事實來源（SSOT）**：本節為 Format D 與 Format E **唯一完整色階結構與規則定義處**；Python 實作強制匯入 [`scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)，Web 前端 JS 強制載入 [`scripts/gephi_palette.js`](../scripts/gephi_palette.js)。
-
-### 1. 無序類別固定色序與零 Alpha 徽章淺底色（Qualitative Fixed Color Order & Zero-Alpha Badge Tints）
-當資料為無序類別（Qualitative）時，依下列固定順序綁定類別（對應 `GEPHI_QUALITATIVE_HEX`、`GEPHI_LIGHT_BADGE_TINTS` 與 `bind_qualitative_colors()`），**同名類別在跨圖表、跨面板或互動篩選／排序切換時必須保持完全相同的色碼，絕不得隨機指派或因資料順序變動而換色**：
-
-| 色序順位 | 角色定位 | 程式變數鍵值 | 零 Alpha 徽章/表格淺底色 (`0.00` 節點) | 跨圖表／跨視角綁定規範 |
+| 色序順位 | 角色定位 | 程式變數鍵值 | 零 Alpha 徽章淺底 (`0.00`) | 跨圖表／跨視角綁定規範 |
 | :---: | :---: | :---: | :---: | :--- |
 | **1** | **主色 (Primary)** | `GEPHI_QUALITATIVE_HEX[0]` | `GEPHI_LIGHT_BADGE_TINTS[0]` | 第一主類別、預設單指標主視覺 |
-| **2** | **次色 (Secondary)** | `GEPHI_QUALITATIVE_HEX[1]` | `GEPHI_LIGHT_BADGE_TINTS[1]` | 第二類別、雙指標對比之第二維度 |
+| **2** | **次色 (Secondary)** | `GEPHI_QUALITATIVE_HEX[1]` | `GEPHI_LIGHT_BADGE_TINTS[1]` | 第二類別、雙指標對比第二維度 |
 | **3** | **第三色 (Tertiary)** | `GEPHI_QUALITATIVE_HEX[2]` | `GEPHI_LIGHT_BADGE_TINTS[2]` | 第三類別 |
 | **4** | **第四色 (Quaternary)** | `GEPHI_QUALITATIVE_HEX[3]` | `GEPHI_LIGHT_BADGE_TINTS[3]` | 第四類別 |
-| *(擴充/收斂)* | **長尾聚合 / 缺失值** | **`#CBD5E1`** / **`#D9D9D9`** | **`#F1F5F9`** | 絕不自行發明新色或隨機補色；若類別數 $> 4$，必先向使用者確認擴充方式（如切換為單一循序色階之橫向排行圖），或採「**智慧 4+1 聚焦聚合**」將前四大綁定四色、長尾歸入 `#CBD5E1`（**嚴禁將 5 階循序色階拿去模除循環 `idx % 5` 塗抹 30 個無序類別**！）；缺失值（NA/Null）統一標記為 `#D9D9D9`。 |
+| *(收斂/缺漏)* | **長尾聚合 / 缺失值** | **`#CBD5E1`** / **`#D9D9D9`** | **`#F1F5F9`** | 類別數 $>4$ 時採「**智慧 4+1 聚焦聚合**」將第 5 名後歸入 `#CBD5E1`（**嚴禁將 5 階循序色階拿去模除循環 `idx % 5` 塗抹 30 個無序類別**！）；缺失值統一為 `#D9D9D9`。 |
 
 - **【原表 `df_other`（「其他」列）vs. `4+1` 長尾灰柱（`#CBD5E1`）之雙重語義消歧鐵律】**：
-  - **嚴禁讓原表自帶的 `其他`／`未分類` 列（`df_other`）混入前四大彩色主色柱（`GEPHI_QUALITATIVE_HEX[0..3]`），也嚴禁在同一張圖上產生兩個都叫「其他」的柱子！**
-  - 當純明細 `df_detail` 類別數 $>4$ 且原表存在 `df_other` 時，必須依第一階段與使用者拍板之選項執行二擇一：
-    1. **選項 1（純明細聚焦 ＋ 圖註揭露原表其他項）**：圖表僅繪製 `df_detail` 的 Top 4（彩色）＋ 第五類「其餘明細項目合計（`#CBD5E1`）」，並於圖表底註載明*「註：不含原表未細分之『其他』項（計 XX 筆 / 占 X%）」*。
-    2. **選項 2（長尾透明整併）**：將「第 5 名後之長尾明細」與「原表 `其他` 列」整併為單一 `#CBD5E1` 灰柱，並透過 `bind_qualitative_colors(..., other_label="其餘明細與原表其他項合計")` 將標籤明確命名為 **`「其餘明細與原表其他項合計」`**。
+  - **嚴禁讓原表自帶的 `其他`／`未分類` 列（`df_other`）混入前四大彩色主色柱（`GEPHI_QUALITATIVE_HEX[0..3]`），也嚴禁同屏出現兩個都叫「其他」的柱子！**
+  - 當純明細 `df_detail` 類別數 $>4$ 且原表存在 `df_other` 時，依第一、二階段拍板執行二擇一：
+    1. **選項 1（純明細聚焦 ＋ 圖註揭露原表其他項）**：圖表僅繪製 `df_detail` Top 4（彩色）＋ 第五類「其餘明細項目合計（`#CBD5E1`）」，底註載明*「註：不含原表未細分之『其他』項（計 XX 筆 / 占 X%）」*。
+    2. **選項 2（長尾透明整併）**：將「第 5 名後長尾明細」與「原表 `其他` 列」整併為單一 `#CBD5E1` 灰柱，並透過 `bind_qualitative_colors(..., other_label="其餘明細與原表其他項合計")` 明確命名。
 
 ### 2. 四組五階循序色階（Sequential 5-Node Scales：低值淺 `0.00` $\rightarrow$ 高值深 `1.00`）
-用於有序等級（如五級量表、成熟度階段）或同質連續數值圖表（對應 `GEPHI_SEQUENTIAL_SCALES` 與 `get_sequential_color()`，實際 HEX 節點由啟用色票決定）：
 
-| 循序色階系列 | 適用場景 | `0.00` (極淺) | `0.25` (淺) | `0.50` (中/基準) | `0.75` (深) | `1.00` (極深) |
+| 循序色階系列 | 適用場景 | `0.00` | `0.25` | `0.50` | `0.75` | `1.00` |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **(1) 主色循序（`orange` / `primary`）** | **預設數值尺度**、主面板／圖 1 同質連續漸層 | `[0]` | `[1]` | `[2]` | `[3]` | `[4]` |
-| **(2) 次色循序（`blue` / `secondary`）** | **對比雙指標**、雙圖右面板／圖 2 深鑽區隔 | `[0]` | `[1]` | `[2]` | `[3]` | `[4]` |
+| **(1) 主色循序（`orange` / `primary`）** | **預設數值尺度**、主面板／圖 1 同質漸層 | `[0]` | `[1]` | `[2]` | `[3]` | `[4]` |
+| **(2) 次色循序（`blue` / `secondary`）** | **對比雙指標**、雙圖右面板／圖 2 深鑽 | `[0]` | `[1]` | `[2]` | `[3]` | `[4]` |
 | **(3) 第三色循序（`pink` / `tertiary`）** | 第三維度數值分布或專題序列 | `[0]` | `[1]` | `[2]` | `[3]` | `[4]` |
 | **(4) 第四色循序（`green` / `quaternary`）** | 第四維度數值分布或專題序列 | `[0]` | `[1]` | `[2]` | `[3]` | `[4]` |
 
-- **連續數值平滑插值規則與正規化公式**：
-  - 連續變數**必須嚴格依**純明細 `df_detail`** 之正規化位置 $p = (v - v_{\min}) / (v_{\max} - v_{\min})$ 計算**（嚴禁混入合計列 `df_subtotal` 之極值，亦嚴禁直接用 $v / v_{\max}$ 導致最低值無法對應淺端點），並依據上述 5 個等距節點在 **CIELAB / HCL 感知空間中進行分段線性插值（調用 `get_sequential_color()` 或 `lab_interpolate()`）**。
-  - **嚴格禁止使用透明度（Alpha channel，如 `rgba(...)` 或 `#RRGGBB20`）冒充深淺明度或表格膠囊底色**！
-- **單圖同質漸層 vs. 雙圖色相區隔與「Medium 模式獨立單面板鐵律」（$1 + 1 > 2$ 敘事接力）**：
-  - **單一圖表內部**：衡量同質連續維度時，嚴禁混用多色相彩虹色，預設採用 **(1) 主色循序（`scale="orange"` / `primary`）** 隨數值高低調整明度與彩度。
-  - **一般報告／簡報之雙圖橫向並排（`ncols=2`）**：左圖使用 **(1) 主色循序（`scale="orange"`）** 呈現宏觀留存斷崖，右圖換用 **(2) 次色循序（`scale="blue"`）** 拆解子階段分佈，共用相同 Y 軸比例尺並以跨面板引導標註連通。
-  - **【Medium 每週一圖模式專屬：禁止 `ncols=2`，強制拆為 1～2 張獨立單面板（Single-Panel）`.png` 跨檔色彩接力】**：
-    - **張數與單面板護欄**：嚴格限制產出 **1 或 2 張** `300 DPI` `.png` 統計圖（如 `01_chart_hook.png`、`02_chart_drilldown.png`）。為適配 Medium 窄欄與手機直向閱讀、並嚴守作業「至少 1 個圖、至多 2 個圖」規定，**在 Medium 模式下禁止使用 `ncols=2` 橫向並排雙子圖**，強制拆為 **1～2 張各自獨立的單面板（Single-Panel）`.png` 圖檔**。
-    - **雙圖跨檔色彩敘事接力**：若產出 2 張獨立圖檔，**圖 1（`01_chart_hook.png` 全局現象破題）** 主色調採用 **色序 1 主色系（`GEPHI_QUALITATIVE_HEX[0]` / `orange` 色階）**；**圖 2（`02_chart_drilldown.png` 結構拆解或交叉深挖）** 主色調切換為 **色序 2 次色系（`GEPHI_QUALITATIVE_HEX[1]` / `blue` 色階，或主次色配對雙柱）**；缺失值統一標記為 **`#D9D9D9`（`NA / 無資料`）**。
+- **連續數值平滑插值與正規化公式**：嚴格依 **純明細 `df_detail` 之 $p = (v - v_{\min}) / (v_{\max} - v_{\min})$ 計算**（嚴禁混入 `df_subtotal` 極值，亦嚴禁簡化為 $v / v_{\max}$），並呼叫 `get_sequential_color()` 於 CIELAB 感知空間分段線性插值。**嚴禁使用 Alpha 透明度（如 `rgba(...)` 或 `#RRGGBB20`）冒充深淺明度或徽章底色**！
+- **一般雙圖並排 vs.「Medium 模式獨立單面板鐵律」（$1 + 1 > 2$ 跨檔色彩接力）**：
+  - 一般報告／簡報雙面板並排（`ncols=2`）：左圖採 `(1) 主色循序 (orange)`，右圖採 `(2) 次色循序 (blue)`。
+  - **Medium 每週一圖模式**：禁止 `ncols=2` 橫向雙子圖！強制產出 **1～2 張各自獨立之單面板 `300 DPI` `.png` 圖檔**——圖 1（`01_chart_hook.png`）採主色系（`GEPHI_QUALITATIVE_HEX[0]` / `orange`）、圖 2（`02_chart_drilldown.png`）切換次色系（`GEPHI_QUALITATIVE_HEX[1]` / `blue` 或雙色配對），缺失值統一 `#D9D9D9`。
 
-### 3. 九階對稱發散色階（9-Node Symmetric Diverging Scale：中心位置 `0.500`）
-適用於具備明確中心基準（如目標達標率 `100%`、年度預算增減偏差 `0%`、全國純明細中位數或滿意度中立點）之資料（對應 `GEPHI_DIVERGING_SCALE` 與 `get_diverging_color()`）。負向端（低於基準／未達標）往次色系極深階延伸，正向端（高於基準／超標）往主色系極深階延伸：
+### 3. 九階對稱發散色階（9-Node Symmetric Diverging Scale：中心 `#F5F6F7`）
 
 | 尺度位置 | `0.000` | `0.125` | `0.250` | `0.375` | **`0.500`** | `0.625` | `0.750` | `0.875` | `1.000` |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **偏離程度** | `-100%` 極端 | `-75%` 中深 | `-50%` 中度 | `-25%` 輕度 | **`0%` 基準中心** | `+25%` 輕度 | `+50%` 中度 | `+75%` 中深 | `+100%` 極端 |
-| **語意說明** | 負向極值(次色極深) | 負向中深 | 負向中度 | 負向輕度 | **中立冷灰** | 正向輕度 | 正向中度 | 正向中深 | 正向極值(主色極深) |
+| **語意映射** | 負向極值(次色極深) | 負向中深 | 負向中度 | 負向輕度 | **`#F5F6F7` 中立冷灰** | 正向輕度 | 正向中度 | 正向中深 | 正向極值(主色極深) |
 | **陣列索引** | `diverging[0]` | `diverging[1]` | `diverging[2]` | `diverging[3]` | **`#F5F6F7`** | `diverging[5]` | `diverging[6]` | `diverging[7]` | `diverging[8]` |
 
-### 4. 製圖前強制確認之 6 大條件（含《資料說明書》全預填直通車）與 5 大套用鐵律
-- **製圖時自動從《資料說明書》與 `df_detail` 預填並向使用者確認之 6 項條件**：
-  1. **實際變數與類別欄位名稱**（含官方枚舉值對照映射，如 `0=凍結, 1=正常`，禁止重複詢問說明書已載明之定義）。
-  2. **數值單位**（如 `mm`, `%`, `億元`, `元/人`, `人` 等）。
-  3. **數值尺度之上下限範圍（`Min / Max`）**：**強制使用剔除 `df_subtotal` 後之純明細 `df_detail` 重算真實 `Min / Max`**（並與說明書第 4 章全檔 `Min / Max` 對照展示）。
-  4. **發散色階之中心數值**（對應 `#F5F6F7`，預設尋求業務基準值，如 `0`、`100%` 或 `df_detail` 中位數）。
-  5. **缺失值（`NA / Null`）**：經兩段式安全轉型識別之合法缺漏筆數，預設統一以中性淺灰 **`#D9D9D9`** 標記。
-  6. **超界值與前處理血統狀態**：Clamp 至端點色（`GEPHI_DIVERGING_SCALE[0]` / `GEPHI_DIVERGING_SCALE[8]` 或循序端點）或保留警示標註（若《資料說明書》第 3 章記載該欄位經過離群值截斷 Winsorization、粗粒度分箱 Binning 或遺漏值插補 Imputation，必須於圖註或旁白顯式標明）。
-- **五大套用執行鐵律**：
-  1. 無論使用 `matplotlib`、`ggplot2`、`ECharts` 或其他繪圖套件，本規範色碼一律同時適用於 `colour`（線條/邊框）與 `fill`（填充）。
-  2. 類別資料嚴格按照「固定色序」依序分配，同名類別跨圖表保持完全相同色碼，絕不隨機指派或因排序變動而換色。
-  3. 數值圖表預設採用主色循序尺度（暖杏橘系，低值淺、高值深）；若為對比雙指標、次面板或 Medium 圖 2，則使用次色循序（霧靄藍系）。
-  4. 發散圖表嚴格以指定中立基準為中心（對應 `#F5F6F7`），兩側採對稱數值跨度映射至藍端與橘端（嚴禁簡化為非黑即白的雙色二元判斷）。
-  5. 絕不自行發明新色或隨機補色；若類別數超過 4 個，必須先向使用者確認擴充方式（或啟用 4+1 聚焦聚合與 `df_other` 雙重消歧）。
+### 4. 製圖前 6 大條件與 5 大執行鐵律
+- **6 項自動從《資料說明書》與 `df_detail` 預填條件**：1. 實際變數與枚舉對照；2. 數值單位；3. **剔除 `df_subtotal` 後之純明細 `df_detail` `Min / Max`**；4. 發散色階中心基準；5. 缺失值 `NA`（`#D9D9D9`）筆數；6. 超界值與 Winsorization／Binning／Imputation 血統標明。
+- **5 大執行鐵律**：1. 色碼同時套用於 `colour` 與 `fill`；2. 類別嚴格按固定色序跨圖鎖定；3. 數值預設主色循序、對比／圖 2 用次色循序；4. 發散以指定中心為軸對稱映射（嚴禁二元黑白化）；5. 絕不隨機補色。
 
 ---
 
-## 四、 黑盒引擎 API 簽名、三層分流防呆內嵌與出版級排版細節（Black-Box Engine API, 3-Way Split Guardrails & Publication Polish）
+## 三、 黑盒引擎 API 簽名、三層分流 `assert` 防呆與黃金比例畫布標準
 
 > [!IMPORTANT]
-> **【底層引擎黑盒呼叫鐵律（Black-Box API Rule）】**：所有 Format D 與 Format E 的 Python 繪圖腳本**必須直接 `import hcl_color_engine`** 調用鎖定色票、CIELAB 插值與座標軸去框函數，**嚴禁在腳本中手動硬編碼簡化版二元色或呼叫 `view_file` / `read_file` 讀取 `scripts/hcl_color_engine.py` 原始碼**（除非除錯需要）！
+> **【底層引擎黑盒呼叫鐵律（Black-Box API Rule）】**：所有 Python 繪圖腳本**必須直接 `import hcl_color_engine`**，**嚴禁對 `scripts/hcl_color_engine.py` 呼叫 `read_file`（除非執行報錯需除錯）**！
 
 ```python
-# === scripts/hcl_color_engine.py Black-Box API Signatures ===
+# === scripts/hcl_color_engine.py Complete Black-Box API Signatures ===
 from hcl_color_engine import (
+    # --- Core Palettes, Identity & Data Hygiene ---
     GEPHI_QUALITATIVE_HEX,              # Active 4 qualitative hex colors
     GEPHI_LIGHT_BADGE_TINTS,            # Active 4 zero-alpha 0.00 badge tints
     GEPHI_SEQUENTIAL_SCALES,            # Dict["orange"|"blue"|"pink"|"green", List[5 hex nodes]]
     GEPHI_DIVERGING_SCALE,              # List[9 hex nodes: neg extreme .. #F5F6F7 .. pos extreme]
     GEPHI_DISCRETE_NEUTRALS,            # {"diverging_center": "#F5F6F7", "na_missing": "#D9D9D9", "other_aggregated": "#CBD5E1"}
-    check_user_identity_and_load_prefs, # (prefs_path=None, override_git_user=None) -> Dict (Enforces owner sync vs. external isolation)
-    build_palette_from_primary_hexes,   # (hex_list, palette_id="...", sync_js_path=None) -> Dict (CIELAB auto-derivation from 2~4 hexes)
-    activate_chart_palette,             # (palette_dict_or_id, prefs_path=None) -> Dict (Switches active runtime palette in-place)
-    get_sequential_color,               # (value, v_min, v_max, scale="orange", discrete_steps=False) -> str (True CIELAB interpolation)
-    get_diverging_color,                # (value, center=0.0, max_span=None, discrete_steps=False) -> str (Symmetric 9-node mapping)
+    THEMATIC_PALETTE_PRESETS,           # Dict of built-in thematic presets ("milk_tea", "forest_eco", "ocean_blue", "coffee_roast", "pineapple_tropical", ...)
+    check_user_identity_and_load_prefs, # (prefs_path=None, override_git_user=None, allow_workspace_fallback=True, override_local_user=None) -> Dict
+    build_palette_from_primary_hexes,   # (hex_list, palette_id="custom_cielab_palette", palette_name="Custom CIELAB Palette", sync_js_path=None) -> Dict
+    derive_thematic_palette,            # (theme_preset_or_hex, sync_js_path=None, activate=False, **kwargs) -> Dict
+    activate_chart_palette,             # (palette_dict_or_id, prefs_path=None) -> Dict
+    export_gephi_palette_js,            # (output_path, palette_dict=None) -> str
+    load_and_split_csv,                 # (csv_path, numeric_cols=None, label_cols=None, subtotal_keywords=None, other_keywords=None, known_na_tokens=None) -> (df_raw, df_detail, df_other, df_subtotal, stats_report)
+    ink,                                # (bg_hex, dark_ink="#0F172A", light_ink="#FFFFFF") -> str (WCAG AA ink contrast)
+    get_sequential_color,               # (value, v_min, v_max, scale="orange", discrete_steps=False, scale_key=None) -> str
+    get_diverging_color,                # (value, center=0.0, max_span=None, discrete_steps=False) -> str
     bind_qualitative_colors,            # (categories, allow_top4_aggregation=False, other_label="其他項目合計") -> Dict[str, str]
     get_category_badge_tint,            # (cat_or_key, category_color_map=None) -> str
-    despine_axes,                       # (ax, grid_axis="y", grid_color="#CBD5E1", grid_linestyle="--", grid_alpha=0.65) -> None
-    add_halo_vline,                     # (ax, x, color=None, linestyle="--", linewidth=2.2, halo_color="#FFFFFF", halo_width=4.8, label=None) -> Line2D
-    annotate_floor_extreme,             # (ax, x, y_floor=0.0, label_text="", dot_color=None, arrow_height_ratio=0.14) -> Annotation
+    despine_axes,                       # (ax, grid_axis="y", grid_color="#CBD5E1", grid_linestyle="--", grid_alpha=0.65, spine_color="#CBD5E1") -> None
+    # --- Chart Families & Distribution Helpers ---
+    plot_cleveland_dot,                 # (ax, labels, values, top_n=1, bottom_n=1, highlight_indices=None, highlight_color=None, context_color="#94A3B8", stem_color="#CBD5E1", stem_linestyle="--", stem_linewidth=1.0, value_fmt="{:.1f}", value_offset_pts=7.0, sort_values=True, ascending=True, x_padding_ratio=0.14, **kwargs) -> Dict
+    plot_dumbbell,                      # (ax, labels, val_start, val_end, label_start="期初 / 基準", label_end="期末 / 現況", color_start=None, color_end=None, bar_color="#CBD5E1", bar_linewidth=3.2, dot_size=90.0, show_delta=True, delta_fmt="{:+.1f}", sort_by="end", **kwargs) -> Dict
+    plot_slope_chart,                   # (ax, labels, val_t1, val_t2, t1_label="期初 (T1)", t2_label="期末 (T2)", up_color=None, down_color=None, neutral_color="#94A3B8", value_fmt="{:.1f}", linewidth=2.4, dot_size=75.0, **kwargs) -> Dict
+    plot_bullet,                        # (ax, labels, actuals, targets, bands=None, band_colors=None, actual_color=None, target_color="#0F172A", bar_height=0.6, actual_height=0.28, value_fmt="{:.1f}", **kwargs) -> Dict
+    plot_marimekko,                     # (ax, categories, weights, sub_matrix_pct, sub_labels, colors=None, edgecolor="#FFFFFF", linewidth=1.6, show_cell_labels=True, min_pct_for_label=7.5, show_weight_header=True, weight_fmt="{:.0f}", **kwargs) -> Dict
+    plot_waterfall,                     # (ax, step_labels, deltas, is_total_flags=None, pos_color=None, neg_color=None, total_color="#334155", connector_color="#94A3B8", connector_linestyle="--", bar_width=0.56, value_fmt="{:+.1f}", total_fmt="{:.1f}", **kwargs) -> Dict
+    add_halo_vline,                     # (ax, x, color=None, linestyle="--", linewidth=2.2, halo_color="#FFFFFF", halo_width=4.8, label=None, zorder=5) -> Line2D
+    annotate_floor_extreme,             # (ax, x, y_floor=0.0, label_text="", dot_color=None, dot_size=46.0, arrow_height_ratio=0.14, text_offset_x=0.0, fontsize=9.5, zorder=6, label=None, color=None) -> Annotation
     compute_clipped_kde,                # (data, x_min=0.0, x_max=None, bw_method="scott", grid_size=512) -> (x_grid, density_norm, h)
-    plot_clipped_kde,                   # (ax, data, x_min=0.0, x_max=None, bw_method="scott", color=None, fill_alpha=0.28) -> (x_grid, density_norm, h)
-    setup_context_overlay_grid,         # (n_panels, ncols=4, xlim=None, ylim=None, baseline_data=None, baseline_color="#CBD5E1") -> (fig, axes, bg_info)
-    export_gephi_palette_js,            # (output_path, palette_dict=None) -> str (Exports/syncs standalone gephi_palette.js)
-    load_and_split_csv,                 # (csv_path, numeric_cols=None, label_cols=None, ...) -> (df_raw, df_detail, df_other, df_subtotal, stats_report)
+    plot_clipped_kde,                   # (ax, data, x_min=0.0, x_max=None, bw_method="scott", grid_size=512, color=None, fill_color=None, fill_alpha=0.28, linewidth=2.2, label=None, zorder=3) -> (x_grid, density_norm, h)
+    setup_context_overlay_grid,         # (n_panels, ncols=4, figsize_per_panel=(4.2, 3.2), dpi=300, xlim=None, ylim=None, baseline_data=None, baseline_x_min=0.0, baseline_bw="scott", baseline_color="#CBD5E1", baseline_fill_alpha=0.35, baseline_label="全體基準分布 (Context)") -> (fig, axes, bg_info)
+    # --- Layer 3 Armory (Editorial Narrative & RE:LAB Bespoke Metaphor) ---
+    apply_spotlight_colors,             # (values_or_labels, top_n=1, bottom_n=1, highlight_indices=None, highlight_color=None, context_color="#94A3B8", **kwargs) -> _SpotlightStyleResult
+    add_badge_vline,                    # (ax, x, badge_text, color=None, linestyle="--", linewidth=2.0, badge_y_axes=1.03, x_offset_pts=0.0, zorder=6, **kwargs) -> _BadgeVLineResult
+    add_editorial_footer,               # (fig, footer_lines, y_top=0.088, line_spacing=0.022, rule_color="#CBD5E1", fontsize=9.0, **kwargs) -> List[Text]
+    add_regime_shading_and_events,      # (ax, regimes=None, events=None, **kwargs) -> Dict[str, List[Any]]
+    add_inset_leaderboard,              # (ax, labels, values, bbox=(0.62, 0.08, 0.34, 0.32), title="", color=None, **kwargs) -> Axes
+    plot_liquid_container_bars,         # (ax, labels, values, max_capacity=None, container_style="glass_cup", liquid_color="#FFFFFF", canvas_bg="#5BC0EB", glass_edge_color="#E2F1F8", value_fmt="{:.0f} ml", subtitle_values=None, **kwargs) -> Dict
+    plot_masked_texture_wedge,          # (ax, pct_value, texture_img_path=None, title="", subtitle="", base_disc_color="#E2E8F0", wedge_edge_color="#FFFFFF", start_angle=90.0, clockwise=True, value_fmt=None, **kwargs) -> Dict
+    plot_sprite_scatter,                # (ax, x_vals, y_vals, sprite_img_path=None, labels=None, zoom=0.18, auto_remove_white_bg=True, white_threshold=242, **kwargs) -> Dict
 )
 ```
 
-1. **繪圖腳本防呆前處理、兩段式安全轉型與「標準化三層互斥分流」內嵌 `assert` 鐵律（Mandatory 3-Way Split & Safe Casting in Chart Scripts）**：
-   - 凡讀取 CSV 繪圖之 Python 腳本，開頭強制實作以下防呆工序（可直接調用黑盒函數 `load_and_split_csv()` 或顯式內嵌）：
-     1. **編碼與字串保護載入**：依序探測 `utf-8-sig` $\rightarrow$ `utf-8` $\rightarrow$ `cp950` $\rightarrow$ `big5`，初始以 `dtype=str` 讀取（保護行政區／機構代碼前置零），並清理欄名首尾空白與內嵌 `\ufeff` BOM。
-     2. **兩段式安全轉型（Two-Stage Safe Casting）**：第一段先將《資料說明書》第 4 章記載之已知合法缺漏符號（如 `''`, `'-'`, `'—'`, `'...'`, `'N/A'`, `'NA'`, `'＊'`, `'*'`）顯式映射為 `np.nan`（統計 `NA` 筆數並於圖表標記為 `#D9D9D9`）；第二段對扣除已知缺漏後之數值字串（先清除千分位 `,`）執行嚴格數值轉型檢驗（若仍有未知非數值字元則報錯中止）。
-     3. **三層互斥分流與 `assert` 檢核**：解析說明書第 2 章與第 4 節盤點之彙整列標籤，將 `df_raw` 強制拆解為三個互斥 DataFrame 並內嵌斷言：
-        ```python
-        # df_detail: 純一般明細列（剔除所有維度上的 總計/合計/小計/計 與原表 其他 列）
-        # df_other:  原表自帶之 其他 / 未分類 彙整列
-        # df_subtotal: 各層級之 合計 / 總計 / 小計 列（含交叉表次級小計）
-        assert len(df_detail) + len(df_other) + len(df_subtotal) == len(df_raw), "三層互斥分流筆數不守恆！"
-        ```
-        所有後續之極值計算（`v_min, v_max`）、中位數、排行與視覺化繪製，**強制在 `df_detail`（或依選項 2 顯式整併 `df_other` 後之長尾）上進行，100% 杜絕合計列混入排行（Double Counting）**！
-2. **單面板 `300 DPI` 黃金比例畫布與垂直空間配置標準（Single-Panel Golden Ratio Canvas & Vertical Spacing Budget）**：
-   - **畫布尺寸與長寬比鎖定（反過高空白帶護欄）**：
-     - **標準垂直圖表（Vertical Column / Line / Scatter / Histogram / KDE / ECDF / Q-Q / 2D 圖）**：固定採 **`figsize=(12.0, 6.4)`**、`dpi=300`（`3600 × 1920 px`，外框寬高比 `1.875:1`）。
-     - **橫向分位數／多列對照圖表（Horizontal Bar / Quantile / Box / Violin / Ridgeline / Multi-Row）**：固定採 **`figsize=(12.8, 6.7)`**、`dpi=300`（`3840 × 2010 px`，外框寬高比 `1.910:1`），為左側多字元中文標籤與右側補充脈絡欄預留充裕水平展幅（僅當橫向列數 $> 10$ 組導致標籤無法容納時，才按列數適度增高）。
-     - **嚴禁過高畫布（Anti-Tall-Canvas Guardrail）**：單面板圖表嚴禁無故拉高至 `7.4"~7.6"` 以上，避免壓扁數據斜率或於圖表上下產生空洞垂直空白帶。
-   - **黃金比例垂直空間預算（`fig.subplots_adjust(...)`）**：
-     - **主繪圖區占畫布總高 `~62%–65%`**（貼近黃金分割倒數 $1/\varphi \approx 61.8\%$）：**`top ≈ 0.800–0.812`**（無頂部圖例時可微升至 `0.820`）、**`bottom ≈ 0.155–0.190`**（含底部雙層 X 軸定位籤之直柱圖取 `0.180–0.190`；單行標籤直柱／折線圖取 `0.165–0.180`；無雙層標籤之橫向分位數圖取 `0.155–0.170`）。水平邊界建議 `left ≈ 0.075–0.095`（橫向圖依類別字數調整為 `0.16–0.18`，如 `0.172`）、`right ≈ 0.960–0.980`。
-     - **頂部主副標題定位（Figure Coordinates，`x ≈ 0.040–0.055`, `ha="left", va="top"`）**：單行斷言主標題（`16~17.5pt Bold`，推薦 `16.5pt`；若採 `18~20pt` 或雙行標題須同步下移副標題與 `top` 以防壓撞）置於 **`y ≈ 0.958–0.962`**（基準 `0.962`）；導讀副標題（`11.2~12.5pt`，推薦 `11.2pt`）置於 **`y ≈ 0.908–0.912`**（基準 `0.912`）。垂直圖常取 `title_x = 0.055`，寬左欄橫向圖常取 `title_x = 0.040`。
-     - **頂部圖例均衡錨點（Balanced Subtitle–Legend–Axes Rhythm）**：單列無框圖例貼合配置於主繪圖區正上方——`loc="lower left"`、**`bbox_to_anchor=(-0.01, 1.012–1.025)`**（`ncol=2~4`, `frameon=False`，在 Matplotlib 預設 `borderaxespad=0.5` 下實戰基準為 `1.012–1.022`），精準平衡「副標題底部 $\leftrightarrow$ 圖例」與「圖例 $\leftrightarrow$ 主繪圖區頂緣」兩段垂直間距約 **`~30–50 px`（at `300 DPI`）**（注意：若不傳 `borderaxespad=0` 而將 anchor 拉高至 `1.04–1.05`，會使圖例貼撞 `0.908–0.912` 副標題並產生 `~80 px` 懸空縫隙）。
-     - **底部雙行官方來源圖註定位**：圖註文字（`9.0~9.5pt`, `ha="left", va="top"`）左對齊配置於畫布底緣——第一行（官方發布機關、資料集名稱與涵蓋期間）置於 **`y ≈ 0.055–0.058`**（基準 `0.056–0.058`），第二行（官方資料集網址）置於 **`y ≈ 0.028–0.031`**（基準 `0.029–0.030`），確保行距約 `15 px` 且底緣留有 `11–16 px` 安全緩衝不裁切（若改採 `va="bottom"` 才對應 `y ≈ 0.048 / 0.020`，`va="top"` 設 `0.020` 會導致底行下緣裁切出界）。
-   - **標準版面骨架範例（Standard `300 DPI` Single-Panel Layout Blueprint）**：
+1. **強制三層互斥分流 `assert` 與兩段式安全轉型**：
+   - 一律透過 `load_and_split_csv()`（探測 `utf-8-sig` $\rightarrow$ `utf-8` $\rightarrow$ `cp950` $\rightarrow$ `big5`，初始 `dtype=str` 防代碼前置零遺失，先映射已知合法缺漏為 `np.nan`，再剝離 `,` 執行嚴格數值轉型）拆分並執行：
      ```python
-     fig, ax = plt.subplots(figsize=(12.0, 6.4), dpi=300)  # Horizontal quantile/multi-row: (12.8, 6.7)
-     fig.subplots_adjust(left=0.075, right=0.965, top=0.808, bottom=0.188)  # Plot height = 62%~65% (horizontal: bottom=0.155, left=0.172)
-     fig.text(0.055, 0.962, title, fontsize=16.5, fontweight="bold", ha="left", va="top")  # Horizontal wide-left: x=0.040
+     assert len(df_detail) + len(df_other) + len(df_subtotal) == len(df_raw), "三層互斥分流筆數不守恆！"
+     ```
+     **所有統計量與繪圖嚴禁混入 `df_subtotal`（100% 杜絕 Double Counting）**。
+2. **單面板 `300 DPI` 黃金比例畫布與垂直空間預算（反過高空白帶護欄）**：
+   - **標準直立圖（Column / Line / Scatter / Histogram / KDE / ECDF / Q-Q / Marimekko / Waterfall / 2D）**：固定 **`figsize=(12.0, 6.4)`**、`dpi=300`。
+   - **橫向分位數／多列對照圖（Dot Plot / Dumbbell / Bullet / Horizontal Bar / Box / Violin / Ridgeline）**：固定 **`figsize=(12.8, 6.7)`**、`dpi=300`（僅橫向列數 $>10$ 致標籤擁擠時按列數微增高；一般單面板嚴禁無故拉高至 `7.4"~7.6"` 以上）。
+   - **黃金比例垂直配置**：主繪圖區占總高 **`~62%–65%`**（`top ≈ 0.800–0.812`［含頂部膠囊時取 `0.780–0.800`］, `bottom ≈ 0.155–0.190`；標準 `left ≈ 0.075–0.095`，寬左欄橫向圖 `left ≈ 0.16–0.18`，`right ≈ 0.960–0.980`）。
+   - **標準版面骨架**：
+     ```python
+     fig, ax = plt.subplots(figsize=(12.0, 6.4), dpi=300)  # Horizontal/Dot/Bullet: (12.8, 6.7)
+     fig.subplots_adjust(left=0.075, right=0.965, top=0.808, bottom=0.188)
+     fig.text(0.055, 0.962, title, fontsize=16.5, fontweight="bold", ha="left", va="top")  # Wide-left: x=0.040
      fig.text(0.055, 0.912, subtitle, fontsize=11.2, ha="left", va="top")
-     ax.legend(loc="lower left", bbox_to_anchor=(-0.01, 1.012), ncol=4, frameon=False)  # Horizontal/2-row: 1.012~1.022
-     fig.text(0.055, 0.058, footnote_line1, fontsize=9.2, ha="left", va="top")
+     ax.legend(loc="lower left", bbox_to_anchor=(-0.01, 1.012), ncol=4, frameon=False)
+     fig.text(0.055, 0.058, footnote_line1, fontsize=9.2, ha="left", va="top")  # Or add_editorial_footer()
      fig.text(0.055, 0.030, footnote_line2, fontsize=9.0, ha="left", va="top")
      ```
-3. **極簡座標軸與水平基準網格**：調用 `despine_axes(ax, grid_axis="y")`（橫向長條圖則傳入 `grid_axis="x"`）隱藏頂部與右側邊框並設定極淡輔助虛線，輸出解析度統一為 **`dpi=300`**。
-4. **節點上方直接數據標註與陡降折線右偏避讓（Direct Node Callouts & Steep-Slope Offset）**：每個折線圓點或長條末端直接標註粗體數值／百分比（`10~13pt Bold`），並預留軸線安全空間（如 `ax.set_ylim(0, 108)` 或 `ax.set_xlim(0, max_val * 1.18)`）。若為大斜率陡降折線，中間下降節點的標籤必須設定為**向右上微偏（`x + 0.14, y + 2.5, ha='left'`）**，嚴防左上至右下的折線直接穿過數字中央。
-5. **零 Emoji 鐵律（Zero-Emoji Rule for FreeType / Microsoft JhengHei）**：Windows `Microsoft JhengHei`（微軟正黑體）不支援彩色 Emoji（如 `⚠️`、`🟢`、`🔴`、`✅`），在 `matplotlib` 渲染時必產生缺字方框（Tofu Box `□`）。圖表內所有文字、圖例與標註膠囊**絕對禁止使用任何 Emoji**，一律改用微軟正黑體原生內建之幾何符號（`▲`、`●`、`■`、`★`）。
-6. **頂部斷言主標題與底部「精簡官方資料來源圖註」（Official Source Footnote）**：
-   - **頂部**：依第 2 點垂直座標配置 `16~17.5pt Bold`（最大 `20pt` 時須下調副標題／`top`）完整核心斷言主標題（Assertion，優先採用說明書標註為 `【官方已說明】` 或 `【檔案觀察】` 之欄位發現）與 `11.2~12.5pt` 導讀副標題。
-   - **底部精簡官方圖註（Footnote）**：依第 2 點雙行座標（`va="top"` 時 `y ≈ 0.055–0.058` / `0.028–0.031`, `9.0~9.5pt`）列出所引用之**原始官方發布機關與資料集正式名稱**（**絕對禁止寫成「資料來源：資料說明書」或使用者自己的說明檔！**），且每項資料集**只要附加說明以下 2 項資訊即可**（免除冗長的三重時間戳記、樣本數與前處理說明，釋放畫布空間以放大圖表主體）：
-     1. **官方資料集網址**
-     2. **資料涵蓋期間**
+3. **零 Emoji 鐵律（Zero-Emoji Rule）與精簡官方資料來源**：
+   - Windows `Microsoft JhengHei` 遇彩色 Emoji 必現缺字方框（`□`），圖表內一律禁止 Emoji，僅用原生幾何符號（`▲`、`●`、`■`、`★`）。
+   - 底部資料來源**必須寫原始官方發布機關與資料集正式名稱**（嚴禁寫成「資料來源：資料說明書」），精簡版只需附 **1. 官方資料集網址、2. 資料涵蓋期間**。

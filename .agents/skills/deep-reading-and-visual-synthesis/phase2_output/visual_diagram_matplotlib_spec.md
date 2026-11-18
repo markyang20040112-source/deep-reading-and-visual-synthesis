@@ -1,6 +1,8 @@
 # 視覺化知識圖譜與概念架構圖規範（Format A: Visual Knowledge Diagram Spec）
 
-> **單一職責定位（Single Responsibility）**：本檔專責 **Format A（視覺化知識圖譜 `.png`）** 的多圖拆分策略、五大瑞士網格拓撲（T1～T5）、主幹分叉連線與 `matplotlib`（搭配 [`generate_mindmap.py`](../scripts/generate_mindmap.py) 引擎）座標級渲染工程守則，並收錄供 Format B 調用之 **A4 直向原生（`7.44"` / `189mm`）輕量流程簡圖輔助 API**。跨格式共用的組塊階層、**筆風設定檔 8 大插槽綁定（Format A 全圖文字受 `Slot 1`、`Slot 4`、`Slot 5` 與 `Slot 8` 100% 控制）**與分層顏色設定集請見 [`visual_cognition_principles.md`](visual_cognition_principles.md)。
+> **單一職責定位（Single Responsibility）**：本檔專責 **Format A（視覺化知識圖譜 `.png`）** 的多圖拆分策略、五大瑞士網格拓撲（T1～T5）、主幹分叉連線與 `matplotlib`（搭配 [`generate_mindmap.py`](../scripts/generate_mindmap.py) 引擎）座標級渲染工程守則，並收錄供 Format B 調用之 **A4 直向原生（`7.44"` / `189mm`）輕量流程簡圖輔助 API**。
+> - **前置選型與第三層設計武器庫連動**：第二層多圖分拆與拓撲診斷由 [`advisors/layer2_advisor_a_diagram.md`](advisors/layer2_advisor_a_diagram.md) 執行；若第三層（[`advisors/layer3_advisor_design_style_color.md`](advisors/layer3_advisor_design_style_color.md)）開啟模式 2（`editorial_narrative`：80/20 聚光燈高亮與瓶頸膠囊地標）或模式 3（`bespoke_metaphor`：`0~100` 畫布冰山分層／階梯漏斗／雙向天平空間隱喻），請加載 **[`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)**。
+> - **筆風與色彩底線**：全圖文字受 `Slot 1`、`Slot 4`、`Slot 5` 與 `Slot 8` 控制，分層色彩與組塊階層請見 [`visual_cognition_principles.md`](visual_cognition_principles.md)。
 
 > [!CAUTION]
 > **核心鐵律**：嚴禁使用擴散生圖模型（Imagen / DALL-E）繪製中文字圖表！所有繁體中文知識圖譜必須 100% 由 Python `matplotlib` 精確渲染。此外，**嚴禁將高密度 Format A 知識圖譜（或 A4 橫向跨頁大圖）直接嵌入 Format B PDF 報告**——Format A 與 Format B 徹底解耦（Format B 內需架構流程圖時，一律改用 A4 直向原生輕量簡圖 API）。

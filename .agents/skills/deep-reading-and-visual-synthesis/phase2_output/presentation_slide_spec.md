@@ -1,6 +1,8 @@
 # 斷言-證據式簡報設計與原生向量排版規範（Format C: Presentation Slide Spec）
 
-> **單一職責定位（Single Responsibility）**：本檔專責 **Format C（16:9 高階主管簡報 `.pptx`）** 的斷言-證據（Assertion-Evidence）三區架構、首尾定錨與中段雙因子動態配頁、**防審美疲勞之八大版型指派與防撞車仲裁引擎（`S0`～`S7`）** 與 `python-pptx` 原生向量繪製規範。跨格式共用的組塊階層、**筆風設定檔 8 大插槽綁定（Format C 之 Zone 1 斷言標題、Zone 2 卡片列槽錨點、Zone 3 行動橫幅與 `Speaker_Notes` 講稿受 `Slot 1`、`Slot 4`、`Slot 7` 與 `Slot 8` 100% 控制）**與分層顏色設定集請見 [`visual_cognition_principles.md`](visual_cognition_principles.md)。
+> **單一職責定位（Single Responsibility）**：本檔專責 **Format C（16:9 高階主管簡報 `.pptx`）** 的斷言-證據（Assertion-Evidence）三區架構、首尾定錨與中段雙因子動態配頁、**防審美疲勞之八大版型指派與防撞車仲裁引擎（`S0`～`S7`）** 與 `python-pptx` 原生向量繪製規範。
+> - **前置分鏡與第三層設計武器庫連動**：第二層四幕劇分鏡與版型配當由 [`advisors/layer2_advisor_c_slide.md`](advisors/layer2_advisor_c_slide.md) 執行；若第三層（[`advisors/layer3_advisor_design_style_color.md`](advisors/layer3_advisor_design_style_color.md)）開啟模式 2（`editorial_narrative`：單一巨幅數據衝擊頁與雙基準線對決）或模式 3（`bespoke_metaphor`：主題場景化容器／漏斗／天平向量視覺與乾淨主題精靈圖標點綴），請加載 **[`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)**。
+> - **筆風與色彩底線**：Zone 1 斷言標題、Zone 2 卡片錨點、Zone 3 行動橫幅與 `Speaker_Notes` 講稿受 `Slot 1`、`Slot 4`、`Slot 7` 與 `Slot 8` 控制，分層色彩與組塊階層請見 [`visual_cognition_principles.md`](visual_cognition_principles.md)。
 
 ---
 

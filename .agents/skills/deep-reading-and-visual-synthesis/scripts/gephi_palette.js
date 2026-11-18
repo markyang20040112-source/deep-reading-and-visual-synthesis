@@ -453,8 +453,53 @@
     return PALETTE;
   }
 
+  const THEMATIC_PRESETS = {
+    milk_tea: ['#C87D55', '#5C8D89', '#D9A05B', '#8C5A3C'],
+    bubble_tea: ['#C87D55', '#5C8D89', '#D9A05B', '#8C5A3C'],
+    forest_eco: ['#3A7D44', '#2C6E8F', '#C98A3E', '#6B8E23'],
+    matcha_forest: ['#3A7D44', '#2C6E8F', '#C98A3E', '#6B8E23'],
+    ocean_blue: ['#0284C7', '#0D9488', '#E07A5F', '#4F46E5'],
+    ocean_hydro: ['#0284C7', '#0D9488', '#E07A5F', '#4F46E5'],
+    coffee_roast: ['#7F4F24', '#4A7C59', '#C68B59', '#9C6644'],
+    pineapple_tropical: ['#D97706', '#15803D', '#0284C7', '#B45309'],
+    agri_gold: ['#D97706', '#15803D', '#0284C7', '#B45309']
+  };
+
+  function expandSingleHexToFour(hexCode) {
+    const baseHex = normalizeHex(hexCode);
+    const [l, a, b] = hexToLab(baseHex);
+    const targetL = Math.max(52.0, Math.min(72.0, l));
+    const c2 = labToHex(targetL, -b * 0.88, a * 0.88);
+    const c3 = labToHex(targetL, b * 0.82, -a * 0.82);
+    const c4 = labToHex(targetL, -a * 0.78, -b * 0.78);
+    return [baseHex, c2, c3, c4];
+  }
+
+  function deriveThematicPalette(themePresetOrHex, options = {}) {
+    let hexList = null;
+    if (Array.isArray(themePresetOrHex)) {
+      const cleaned = themePresetOrHex.map(h => String(h || '').trim()).filter(Boolean);
+      hexList = cleaned.length === 1 ? expandSingleHexToFour(cleaned[0]) : cleaned;
+    } else if (typeof themePresetOrHex === 'string') {
+      const key = themePresetOrHex.trim().toLowerCase().replace(/[\s-]+/g, '_');
+      if (THEMATIC_PRESETS[key]) {
+        hexList = THEMATIC_PRESETS[key].slice();
+      } else {
+        hexList = expandSingleHexToFour(themePresetOrHex.trim());
+      }
+    } else {
+      throw new Error('deriveThematicPalette expects a preset name, a hex string, or an array of hex strings.');
+    }
+    const built = buildPaletteFromPrimaryHexes(hexList);
+    if (options && options.activate) {
+      setActivePalette(built);
+    }
+    return built;
+  }
+
   return {
     PALETTE,
+    THEMATIC_PRESETS,
     hexToRgb,
     hexToLab,
     labToHex,
@@ -464,6 +509,7 @@
     bindQualitativeColors,
     getCategoryBadgeTint,
     buildPaletteFromPrimaryHexes,
+    deriveThematicPalette,
     setActivePalette
   };
 });

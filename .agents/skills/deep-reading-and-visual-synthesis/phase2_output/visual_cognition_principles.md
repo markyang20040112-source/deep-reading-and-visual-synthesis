@@ -17,11 +17,14 @@
 
 ---
 
-## 二、 筆風設定檔解耦與 8 大插槽 100% 全域穿透綁定法則（Decoupled Writing Style Profiles & 100% Slot Penetration）
+## 二、 表達三支柱統御原則：筆風插槽 × 分層配色 × 第三層設計武器庫（Three Pillars of Expression）
 
-- **設計哲學與徹底解耦原則（Full Decoupling of Visual Geometry vs. Writing Style）**：
-  - 底層視覺規範僅定義「空間幾何、字級、留白與色彩對比」，**絕對不寫死任何單一行文語氣或錨點格式**（原寫死之「白話直覺先行、由淺入深」已抽離為擁有者專屬筆風檔 [`../config/owner_styles/plain_first_progressive.md`](../config/owner_styles/plain_first_progressive.md)）。
-  - 所有生成內容的語氣、資訊展開順序、標題句型、卡片錨點、圖譜箭頭謂詞、統計圖表微文案、簡報講稿與禁用詞，**100% 由當前啟用之「筆風設定檔（Writing Style Profile）」動態控制**（支援不同輸出格式交叉指定不同筆風檔）。
+- **設計哲學與徹底解耦原則（Full Decoupling of Visual Geometry vs. Writing Style vs. Design Spectrum）**：
+  - 底層視覺規範僅定義「空間幾何、字級、留白與色彩對比」，**絕對不寫死任何單一行文語氣或單一裝飾風格**。
+  - 在 Phase 2 **第三層（最後決策層）**，透過「表達三支柱」統御所有選定之產出格式（Format A / B / C / D / E，詳細實作流程見 [`advisors/layer3_advisor_design_style_color.md`](advisors/layer3_advisor_design_style_color.md)）：
+    1. **支柱 1：設計光譜與轉譯武器庫開／關**：依任務特性於 `standard_rigorous`（模式 1：標準嚴謹）、`editorial_narrative`（模式 2：資料八／經濟學人編輯室敘事）與 `bespoke_metaphor`（模式 3：資料七 RE:LAB 具象材質與空間隱喻，見 [`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)）間切換，可統一或分檔混搭。
+    2. **支柱 2：筆風設定檔（`Slot 1～8` 100% 全域穿透）**：控制所有生成內容的語氣、資訊展開順序、標題句型、卡片錨點、圖譜箭頭謂詞、統計圖表微文案、簡報講稿與禁用詞。
+    3. **支柱 3：分層顏色設定集（`chart_palettes` ＋ `document_themes` ＋ `derive_thematic_palette`）**：統籌數值色彩科學與文件視覺佈景主題。
 - **作者私人筆風庫 vs. 外部使用者隔離（Owner-Only Style Isolation）**：
   - 當本機 Git 身分驗證為擁有者 `markyang20040112-source` 時，直接讀取 [`../config/owner_styles/`](../config/owner_styles/) 下之專屬筆風庫（`plain_first_progressive.md`、`rigorous_empirical_stat.md`、`editorial_data_journalism.md`、`personalized_essay_style.md`）。
   - 當外部新使用者執行時，系統嚴格隱藏並隔離 `config/owner_styles/`，僅依空白結構模板 [`../config/styles/_style_schema_template.md`](../config/styles/_style_schema_template.md) 讀取或生成存放於 `config/user_styles/` 的使用者自訂筆風檔。
@@ -51,9 +54,9 @@
 | 產出格式 | 畫布 / 頁面基準 | 主標題 / 斷言字級 | 區塊 / 卡片標題 | 內文 / 條目字級 | 膠囊標籤 / 橫幅 / 註腳 | 單行最佳漢字寬度 / 幾何配置 |
 | :--- | :--- | :---: | :---: | :---: | :---: | :--- |
 | **Format A：知識圖譜** | `23.8" × 15.4"` 標準<br>*(依 2/3 列密度自適應 `12.6"–15.4"`, `240 DPI`)* | `25.0~26.0pt`<br>*(副標題 `14.5~15.5pt`)* | `16.6~17.5pt`<br>*(分區 `15.5~16.5pt`)* | **`16.0~16.5pt`**<br>*(行距 `1.48~1.52×`)* | **雙重小方框 `13.4~14.0pt`**<br>*(卡徽章＋連線膠囊同級；底橫幅 `14.5~16.2pt`)* | **~52～66 漢字/列點**（不刪內容，依卡寬自然折 2 滿行填滿 `88%–92%`；加寬走廊 `>= 6.2–7.4`；文案受 `Slot 5` 控制） |
-| **Format B：決策報告 & Medium 專欄** | `A4 直向`（印域寬 `189mm`，**禁嵌 Format A 圖譜**；簡圖採 `7.44"` 直向原生繪製）或 **Medium 原生 `.md`** | `20~24pt`<br>*(Medium `#`)* | `12.0~14.5pt`<br>*(Medium `###`)* | **正文 `p`：`10.8~11.2pt`**<br>*(行高 `1.68~1.75`、段距 `~8px`)*<br>**表格/卡片 (`td`/`.card-body`/`.callout`)：`9.6~10.0pt`**<br>*(行高 `1.50~1.55`)*<br>**文體 5 Medium：正文 `<=1,600` 字（免 PDF）** | **圖說 `figcaption`：`9.0pt`**<br>*(行高 `1.45`)*<br>*(Medium 文末 `---` 參考資料來源不計入 1,600 字)* | **`38~44 漢字`**（通用 `<h2>` 殘餘空間自適應分頁 + 短/長表分流護欄；文體 5 禁用自訂 HTML/表格，每段 3～4 行適配手機閱讀；文案受 `Slot 3 & 4` 控制） |
+| **Format B：決策報告 & Medium 專欄** | `A4 直向`（[`document_report_spec.md`](document_report_spec.md) 印域寬 `189mm`，**禁嵌 Format A 圖譜**；簡圖採 `7.44"` 直向原生繪製）或 **Medium 原生 `.md`**（[`medium_column_spec.md`](medium_column_spec.md)） | `20~24pt`<br>*(Medium `#`)* | `12.0~14.5pt`<br>*(Medium `###`)* | **正文 `p`：`10.8~11.2pt`**<br>*(行高 `1.68~1.75`、段距 `~8px`)*<br>**表格/卡片 (`td`/`.card-body`/`.callout`)：`9.6~10.0pt`**<br>*(行高 `1.50~1.55`)*<br>**文體 5 Medium：正文 `<=1,600` 字（免 PDF）** | **圖說 `figcaption`：`9.0pt`**<br>*(行高 `1.45`)*<br>*(Medium 文末 `---` 參考資料來源不計入 1,600 字)* | **`38~44 漢字`**（通用 `<h2>` 殘餘空間自適應分頁 + 短/長表分流護欄；文體 5 禁用自訂 HTML/表格，每段 3～4 行適配手機閱讀；文案受 `Slot 3 & 4` 控制） |
 | **Format C：簡報投影片** | `16:9`（`13.333" × 7.5"`） | **Zone 1 斷言：`19.5~22pt`**<br>*(S0 首尾頁：`26~32pt`)* | `14.5~16.0pt` | **雙欄卡 (`S1`)：`13.0~14.5pt`**<br>**三/四欄卡 (`S2`/`S3`/`S7`)：`11.5~12.5pt`** | **左上章節膠囊：`9.5pt`**<br>**Zone 3 底部橫幅：`12.5~14.0pt`** | **雙欄：`22~26 漢字/行`**；**三/四欄：`16~19 漢字/行`**（每列槽 $\le 45$ 漢字，垂直置中；文案受 `Slot 4 & 7` 控制） |
-| **Format D：量化圖表** | 單面板 `12.0" × 6.4"`（直柱／折線）／`12.8" × 6.7"`（橫向分位數），主繪圖區占畫布高 `~62%–65%`；多面板依面板數動態縮放 (`300 DPI`)<br>*(Medium 模式限 1～2 張獨立單面板，禁 `ncols=2`)* | `16~20pt` | `12.5~13.5pt`<br>*(副標題 `11.2~12.5pt`)* | **`10.5~12.0pt`** | **`9.0~10.5pt`**<br>*(雙行精簡官方來源圖註 `9.0~9.5pt`：1.官方資料集網址、2.資料涵蓋期間)* | 支援 `editorial_storytelling`（敘事圖解）與 `pure_dataviz`（純資料視覺化／10 大分配圖形）雙軌結構；微文案受 `Slot 6` 控制 |
+| **Format D：量化圖表** | 單面板 `12.0" × 6.4"`（直柱／折線）／`12.8" × 6.7"`（橫向點陣／分位數），主繪圖區占畫布高 `~62%–65%` (`300 DPI`)<br>*(Medium 模式限 1～2 張獨立單面板，禁 `ncols=2`)* | `16~20pt` | `12.5~13.5pt`<br>*(副標題 `11.2~12.5pt`)* | **`10.5~12.0pt`** | **`9.0~10.5pt`**<br>*(精簡 2 項來源或資料八四層結構底註)* | 依 [`quantitative_chart_spec.md`](quantitative_chart_spec.md) 編碼誠實三鐵律＋8 大元件檢核，按需開啟五大圖表家族（`chart_family1~5`）與第三層設計武器庫；微文案受 `Slot 6` 控制 |
 | **Format E：數據儀表板** | 響應式 Web ／ 單面板靜態匯出依 Format D（`12.0" × 6.4"` / `12.8" × 6.7"`, `~62%–65%`） ／ 全景圖 `24"×14"` (`300 DPI`) | `20~24px` (`pt`) | `14~16px` (`pt`) | **`12~14px`** (`10~12pt`) | **`11~12px`** (`9.0~9.5pt`) | 頂欄 3～4 張 KPI 卡 + 動態多視角畫布 + 明細表（UI 微文案與 Tooltip 受 `Slot 6` 控制） |
 
 - **漢字避頭尾標點保護（Kinsoku Shori）**：所有基於座標繪圖的渲染引擎（`matplotlib`）在強制折行後，必須先剝離續行前導全形/半形縮排（`\u3000 `），檢查次行首字是否為禁則標點（`，、。；：！？）》」】』％`）或前一行末字是否為開括號（`（《「【『`），將違規字元回推或下移後再重新掛回縮排。

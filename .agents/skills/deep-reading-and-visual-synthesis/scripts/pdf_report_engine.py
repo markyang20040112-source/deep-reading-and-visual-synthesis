@@ -128,6 +128,12 @@ def build_report_css(
     dt = load_document_theme(doc_theme_id)
     primary_acc = dt.get("primary_accent", "#0284C7")
     primary_tint = dt.get("primary_tint", "#E0F2FE")
+    warn_acc = dt.get("warn_accent", "#D97706")
+    warn_tint = dt.get("warn_tint", "#FEF3C7")
+    succ_acc = dt.get("success_accent", "#0D9488")
+    succ_tint = dt.get("success_tint", "#CCFBF1")
+    danger_acc = dt.get("danger_accent", "#E11D48")
+    danger_tint = dt.get("danger_tint", "#FFE4E6")
     ink_pri = dt.get("ink_primary", "#0F172A")
     ink_sec = dt.get("ink_secondary", "#1E293B")
     ink_muted = dt.get("ink_muted", "#475569")
@@ -215,7 +221,9 @@ p {{
 }}
 
 /* Unindented paragraphs inside structured containers */
-td p, th p, .card p, .card-body p, .callout p, .equation-box p, figcaption, .no-indent {{
+td p, th p, .card p, .card-body p, .callout p, .equation-box p,
+.editorial-masthead p, .big-stat-callout p, .myth-reality-split p, .methodology-traffic-light p,
+figcaption, .no-indent {{
   text-indent: 0 !important;
 }}
 
@@ -240,7 +248,8 @@ td p, th p, .card p, .card-body p, .callout p, .equation-box p, figcaption, .no-
   align-items: stretch;
 }}
 
-.card, .matrix-box, .callout, .equation-box, figure, tr, .light-tail-group, .keep-with-callout {{
+.card, .matrix-box, .callout, .equation-box, figure, tr, .light-tail-group, .keep-with-callout,
+.editorial-masthead, .big-stat-callout, .myth-reality-split, .methodology-traffic-light {{
   break-inside: avoid;
   page-break-inside: avoid;
 }}
@@ -248,6 +257,152 @@ td p, th p, .card p, .card-body p, .callout p, .equation-box p, figcaption, .no-
 .callout.keep-with-prev, .keep-with-prev {{
   break-before: avoid;
   page-break-before: avoid;
+}}
+
+/* Layer 3 Editorial Narrative Armory Components (Zero fixed height, zero overflow:hidden) */
+.editorial-masthead {{
+  border-top: 4px solid {ink_pri};
+  border-bottom: 1.5px solid {border_c};
+  padding: 10px 0 8px 0;
+  margin: 0 0 14px 0;
+  background: {bg_card};
+}}
+
+.editorial-masthead .masthead-kicker {{
+  font-size: 9pt;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: {primary_acc};
+  margin: 0 0 4px 0;
+}}
+
+.editorial-masthead .masthead-deck {{
+  font-size: 10.6pt;
+  line-height: 1.55;
+  color: {ink_muted};
+  margin: 4px 0 0 0;
+}}
+
+.big-stat-callout {{
+  margin: 10px 0 12px 0;
+  padding: 12px 16px;
+  background: {primary_tint};
+  border-left: 5px solid {primary_acc};
+  border-top: 1px solid {border_c};
+  border-right: 1px solid {border_c};
+  border-bottom: 1px solid {border_c};
+  border-radius: 0 8px 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}}
+
+.big-stat-callout .big-stat-number,
+.big-stat-callout .stat-value {{
+  font-size: 24pt;
+  font-weight: 800;
+  line-height: 1.15;
+  color: {primary_acc};
+  margin: 0;
+}}
+
+.big-stat-callout .big-stat-label,
+.big-stat-callout .stat-desc {{
+  font-size: 9.8pt;
+  line-height: 1.52;
+  color: {ink_sec};
+  margin: 0;
+}}
+
+.myth-reality-split {{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 10px 0 12px 0;
+  align-items: stretch;
+}}
+
+.myth-reality-split .myth-box {{
+  border: 1.5px solid {danger_acc};
+  border-top: 4px solid {danger_acc};
+  border-radius: 8px;
+  background: {danger_tint};
+  padding: 9px 12px;
+  font-size: 9.8pt;
+  line-height: 1.54;
+  color: {ink_sec};
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}}
+
+.myth-reality-split .reality-box {{
+  border: 1.5px solid {succ_acc};
+  border-top: 4px solid {succ_acc};
+  border-radius: 8px;
+  background: {succ_tint};
+  padding: 9px 12px;
+  font-size: 9.8pt;
+  line-height: 1.54;
+  color: {ink_sec};
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}}
+
+.methodology-traffic-light {{
+  margin: 10px 0 12px 0;
+  padding: 10px 14px;
+  border: 1.5px solid {border_c};
+  border-left: 5px solid {warn_acc};
+  border-radius: 8px;
+  background: #F8FAFC;
+  font-size: 9.5pt;
+  line-height: 1.52;
+  color: {ink_sec};
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}}
+
+.methodology-traffic-light .traffic-tier {{
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}}
+
+.methodology-traffic-light .traffic-badge-green {{
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 8.5pt;
+  font-weight: 700;
+  background: {succ_tint};
+  color: {succ_acc};
+  white-space: nowrap;
+}}
+
+.methodology-traffic-light .traffic-badge-yellow {{
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 8.5pt;
+  font-weight: 700;
+  background: {warn_tint};
+  color: {warn_acc};
+  white-space: nowrap;
+}}
+
+.methodology-traffic-light .traffic-badge-red {{
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 8.5pt;
+  font-weight: 700;
+  background: {danger_tint};
+  color: {danger_acc};
+  white-space: nowrap;
 }}
 
 .card {{
@@ -554,9 +709,9 @@ def _is_lightweight_preceding_block(node: Optional[_SpanNode], html_src: str) ->
         return False
     if node.tag == "p":
         return text_len <= 240
-    if "equation-box" in classes:
+    if "equation-box" in classes or "big-stat-callout" in classes or "methodology-traffic-light" in classes:
         return text_len <= 420
-    if "card-grid-2" in classes or "card-grid-3" in classes:
+    if "card-grid-2" in classes or "card-grid-3" in classes or "myth-reality-split" in classes:
         return text_len <= 650
     if node.tag == "table":
         return _count_table_body_rows(node) <= 3 and text_len <= 600

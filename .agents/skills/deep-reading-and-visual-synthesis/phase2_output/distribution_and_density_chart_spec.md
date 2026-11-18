@@ -1,8 +1,8 @@
-# 分配與密度圖形完整實證指南與逐步導學規範（Distribution & Density Chart Spec）
+# 圖表家族 4：10 大分配與密度圖形完整實證指南與逐步導學規範（Chart Family 4: Distribution & Density Chart Spec）
 
-> **單一職責定位（Single Responsibility）**：本檔專責 **Format D & Format E 在「純資料視覺化／統計實證模式（`pure_dataviz`）」與「分配圖形逐步導學互動模式（Step-by-Step Distribution Tutor）」** 下的 **10 大分配與密度圖形決策矩陣、幾何與視覺防呆鐵律、直方圖 vs. KDE vs. 次數多邊圖取捨、背景基準疊加與分面比較（Context Overlay / Shadow Distribution）8 大鐵律、四大實證案例設計，以及三層指標消歧與資料血統護欄**。
+> **單一職責定位（Single Responsibility）**：本檔為 Format D ⇄ E **圖表家族 4 終端細分規範**，**僅當第二層（[`advisors/layer2_advisor_de_chart.md`](advisors/layer2_advisor_de_chart.md)）選定連續分布／密度圖形或「分配圖形逐步導學互動模式（`step_by_step_tutor`）」時按需載入**。專責規範 **10 大分配與密度圖形決策矩陣、幾何與視覺防呆鐵律、直方圖 vs. KDE vs. 次數多邊圖取捨、背景基準疊加與分面比較（Context Overlay / Shadow Distribution）8 大鐵律、四大實證案例設計，以及三層指標消歧與資料血統護欄**。
 >
-> 🔗 **跨檔雙向連動**：與 [`quantitative_chart_spec.md`](quantitative_chart_spec.md)（Format D）、[`data_dashboard_spec.md`](data_dashboard_spec.md)（Format E）及 [`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py) 緊密連動；圖表內外所有微文案與導學解說口吻受當前啟用筆風設定檔（預設推薦 [`../config/owner_styles/rigorous_empirical_stat.md`](../config/owner_styles/rigorous_empirical_stat.md) 之 `Slot 2`、`Slot 6` 與 `Slot 8`）100% 控制。
+> 🔗 **跨檔雙向連動**：須搭配核心契約 [`quantitative_chart_spec.md`](quantitative_chart_spec.md)（Format D）使用，並與 [`data_dashboard_spec.md`](data_dashboard_spec.md)（Format E）及 [`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py) 緊密連動；若第三層開啟模式 2 或 3 則加讀 [`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)。圖表內外微文案與導學解說口吻受當前啟用筆風設定檔（預設推薦 [`../config/owner_styles/rigorous_empirical_stat.md`](../config/owner_styles/rigorous_empirical_stat.md) 之 `Slot 2`、`Slot 6` 與 `Slot 8`）100% 控制。
 
 ---
 
@@ -107,10 +107,10 @@
 # === scripts/hcl_color_engine.py Distribution & Context Overlay Black-Box API ===
 from hcl_color_engine import (
     add_halo_vline,             # (ax, x, color=None, linestyle="--", linewidth=2.2, halo_color="#FFFFFF", halo_width=4.8, label=None, zorder=5) -> Line2D (defaults to GEPHI_QUALITATIVE_HEX[0])
-    annotate_floor_extreme,     # (ax, x, y_floor=0.0, label_text="", dot_color=None, dot_size=46.0, arrow_height_ratio=0.14, text_offset_x=0.0, fontsize=9.5, zorder=6) -> Annotation (defaults to sequential_scales["orange"][4])
+    annotate_floor_extreme,     # (ax, x, y_floor=0.0, label_text="", dot_color=None, dot_size=46.0, arrow_height_ratio=0.14, text_offset_x=0.0, fontsize=9.5, zorder=6, label=None, color=None) -> Annotation (defaults to sequential_scales["orange"][4])
     compute_clipped_kde,        # (data, x_min=0.0, x_max=None, bw_method="scott", grid_size=512) -> (x_grid, density_normalized_area_1, bandwidth_h)
     plot_clipped_kde,           # (ax, data, x_min=0.0, x_max=None, bw_method="scott", grid_size=512, color=None, fill_color=None, fill_alpha=0.28, linewidth=2.2, label=None, zorder=3) -> (x_grid, density_norm, h) (defaults to GEPHI_QUALITATIVE_HEX[0])
-    setup_context_overlay_grid, # (n_panels, ncols=4, figsize_per_panel=(4.2, 3.2), dpi=300, xlim=None, ylim=None, baseline_data=None, baseline_x_min=0.0, baseline_bw="scott", baseline_color="#CBD5E1") -> (fig, active_axes, baseline_info)
+    setup_context_overlay_grid, # (n_panels, ncols=4, figsize_per_panel=(4.2, 3.2), dpi=300, xlim=None, ylim=None, baseline_data=None, baseline_x_min=0.0, baseline_bw="scott", baseline_color="#CBD5E1", baseline_fill_alpha=0.35, baseline_label="全體基準分布 (Context)") -> (fig, active_axes, baseline_info)
 )
 ```
 

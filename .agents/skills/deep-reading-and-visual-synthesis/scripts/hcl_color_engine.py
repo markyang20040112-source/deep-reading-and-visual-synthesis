@@ -1951,6 +1951,2394 @@ def load_and_split_csv(
     return df_raw, df_detail, df_other, df_subtotal, stats_report
 
 
+# -------------------------------------------------------------------------
+# Stage 1 Armory & Chart Families High-Precision Black-Box Engine
+# (a) Editorial Narrative Components (Data 8 & Data 100 Mode)
+# (b) 5 Chart Families High-Precision Plotting Helpers
+# (c) RE:LAB 6-Channel Bespoke Metaphor & Thematic Palette Helpers (Data 7 Mode)
+# -------------------------------------------------------------------------
+
+def _ensure_cjk_font() -> None:
+    """Ensure Matplotlib has CJK-capable sans-serif fonts registered and unicode_minus disabled."""
+    try:
+        import matplotlib.pyplot as plt
+        current = list(plt.rcParams.get("font.sans-serif", []))
+        cjk_candidates = [
+            "Microsoft JhengHei",
+            "PingFang TC",
+            "Noto Sans CJK TC",
+            "Heiti TC",
+            "SimHei",
+            "Arial Unicode MS",
+        ]
+        missing = [c for c in cjk_candidates if c not in current]
+        if missing:
+            plt.rcParams["font.sans-serif"] = cjk_candidates + [c for c in current if c not in cjk_candidates]
+        plt.rcParams["axes.unicode_minus"] = False
+    except Exception:
+        pass
+
+
+class _SpotlightStyleResult(dict):
+    """
+    Dictionary-compatible container returned by `apply_spotlight_colors`.
+    Supports:
+    - Dict key access: `res["colors"]`, `res["point_colors"]`, `res["text_colors"]`,
+      `res["fontweights"]`, `res["sizes"]`, `res["is_highlight"]`, `res["highlight_indices"]`
+    - Attribute access: `res.colors`, `res.text_colors`, `res.fontweights`, `res.sizes`
+    - 3-tuple unpacking: `colors, text_colors, fontweights = apply_spotlight_colors(...)`
+    """
+    def __getattr__(self, name: str) -> object:
+        try:
+            return self[name]
+        except KeyError as exc:
+            raise AttributeError(name) from exc
+
+    def __iter__(self):
+        return iter((self["colors"], self["text_colors"], self["fontweights"]))
+
+
+def apply_spotlight_colors(
+    values_or_labels: Sequence[object],
+    top_n: int = 1,
+    bottom_n: int = 1,
+    highlight_indices: Optional[Sequence[int]] = None,
+    highlight_color: Optional[str] = None,
+    context_color: str = "#94A3B8",
+    **kwargs,
+) -> _SpotlightStyleResult:
+    """
+    Data 8 Editorial Spotlight vs. Context Hierarchy Styling.
+    Highlights top_n, bottom_n, and/or explicit `highlight_indices` (or `highlight_labels` via kwargs)
+    with deep accent color (`highlight_color`), bold `#0F172A` text, and enlarged dot sizes,
+    while pushing remaining context items to muted slate (`context_color="#94A3B8"`) and `#475569` regular text.
+    """
+    items = list(values_or_labels) if values_or_labels is not None else []
+    n = len(items)
+    resolved_hl_color = (
+        highlight_color
+        if highlight_color is not None
+        else GEPHI_SEQUENTIAL_SCALES.get("blue", ["#EBF7F9", "#BCE2EB", "#5DBACD", "#2C8B9F", "#0E5B6B"])[4]
+    )
+    hl_text_color = str(kwargs.get("highlight_text_color", "#0F172A"))
+    ctx_text_color = str(kwargs.get("context_text_color", "#475569"))
+    hl_weight = str(kwargs.get("highlight_fontweight", "bold"))
+    ctx_weight = str(kwargs.get("context_fontweight", "normal"))
+    hl_size = float(kwargs.get("highlight_size", 105.0))
+    ctx_size = float(kwargs.get("context_size", 54.0))
+
+    if n == 0:
+        return _SpotlightStyleResult({
+            "colors": [],
+            "point_colors": [],
+            "dot_colors": [],
+            "text_colors": [],
+            "label_colors": [],
+            "fontweights": [],
+            "weights": [],
+            "sizes": [],
+            "dot_sizes": [],
+            "is_highlight": [],
+            "highlight_indices": [],
+        })
+
+    hl_set = set()
+    if highlight_indices is not None:
+        for idx in highlight_indices:
+            try:
+                i_val = int(idx)
+                if i_val < 0:
+                    i_val = n + i_val
+                if 0 <= i_val < n:
+                    hl_set.add(i_val)
+            except (TypeError, ValueError):
+                continue
+
+    highlight_labels = kwargs.get("highlight_labels")
+    if highlight_labels:
+        hl_label_strs = {str(lbl).strip() for lbl in highlight_labels}
+        for i, item in enumerate(items):
+            if str(item).strip() in hl_label_strs:
+                hl_set.add(i)
+
+    parsed_nums: List[Tuple[float, int]] = []
+    for i, item in enumerate(items):
+        v = _parse_numeric_or_na(item)
+        if v is not None:
+            parsed_nums.append((v, i))
+
+    t_n = max(0, int(top_n))
+    b_n = max(0, int(bottom_n))
+    if t_n > 0 or b_n > 0:
+        if len(parsed_nums) > 0:
+            sorted_asc = sorted(parsed_nums, key=lambda pair: (pair[0], pair[1]))
+            for _, i_low in sorted_asc[:b_n]:
+                hl_set.add(i_low)
+            for _, i_high in sorted_asc[max(0, len(sorted_asc) - t_n):]:
+                hl_set.add(i_high)
+        else:
+            for i_top in range(min(n, t_n)):
+                hl_set.add(i_top)
+            for i_bot in range(max(0, n - b_n), n):
+                hl_set.add(i_bot)
+
+    is_hl = [i in hl_set for i in range(n)]
+    colors = [resolved_hl_color if flag else context_color for flag in is_hl]
+    text_colors = [hl_text_color if flag else ctx_text_color for flag in is_hl]
+    fontweights = [hl_weight if flag else ctx_weight for flag in is_hl]
+    sizes = [hl_size if flag else ctx_size for flag in is_hl]
+
+    return _SpotlightStyleResult({
+        "colors": colors,
+        "point_colors": colors,
+        "dot_colors": colors,
+        "text_colors": text_colors,
+        "label_colors": text_colors,
+        "fontweights": fontweights,
+        "weights": fontweights,
+        "sizes": sizes,
+        "dot_sizes": sizes,
+        "is_highlight": is_hl,
+        "highlight_indices": sorted(hl_set),
+    })
+
+
+class _BadgeVLineResult(tuple):
+    """
+    Native tuple `(line, badge_annotation)` returned by `add_badge_vline` with attribute and dict-key access.
+    """
+    def __new__(cls, line: object, badge: object):
+        obj = super().__new__(cls, (line, badge))
+        obj.line = line
+        obj.badge = badge
+        obj.annotation = badge
+        return obj
+
+    def __getitem__(self, key):
+        if key == "line":
+            return self.line
+        if key in ("badge", "annotation"):
+            return self.badge
+        return super().__getitem__(key)
+
+
+def _estimate_badge_width_pts(text: str, fontsize: float, pad_pts: float = 18.0) -> float:
+    """Estimate horizontal width in points of a multi-line CJK/ASCII pill badge."""
+    lines = str(text or "").splitlines() or [""]
+    max_w = 0.0
+    for ln in lines:
+        w = 0.0
+        for ch in ln:
+            w += (1.04 * fontsize) if ord(ch) > 127 else (0.60 * fontsize)
+        max_w = max(max_w, w)
+    return max_w + pad_pts
+
+
+def _rebalance_badge_vlines_on_ax(ax: object) -> None:
+    """
+    Automatic horizontal collision avoidance when multiple `add_badge_vline` calls are made on the same `ax`.
+    Shifts colliding top pill badges horizontally in offset points while keeping their leader lines anchored
+    to the exact `(x, 1.0)` top of each vertical reference line.
+    When an renderer is available, measures real rendered bbox widths for exact multi-badge de-collision.
+    """
+    registry = getattr(ax, "_badge_vlines_registry", None)
+    if not registry or len(registry) < 2:
+        return
+    try:
+        fig = ax.figure
+        fig_w_pts = float(fig.get_figwidth()) * 72.0
+        fig_h_pts = float(fig.get_figheight()) * 72.0
+        pos = ax.get_position()
+        ax_w_pts = max(100.0, fig_w_pts * float(pos.width))
+        ax_h_pts = max(80.0, fig_h_pts * float(pos.height))
+        x_min, x_max = ax.get_xlim()
+        x_span = float(x_max - x_min)
+        if abs(x_span) < 1e-9:
+            return
+    except Exception:
+        return
+
+    # Sort items by data x position
+    ordered = sorted(registry, key=lambda item: float(item["x"]))
+    n = len(ordered)
+    x_centers_pts = [((float(item["x"]) - float(x_min)) / x_span) * ax_w_pts for item in ordered]
+
+    # Try to measure real rendered pill widths in points if a canvas renderer exists
+    widths_pts = [float(item["width_pts"]) for item in ordered]
+    try:
+        dpi = float(fig.dpi) if hasattr(fig, "dpi") and float(fig.dpi) > 0 else 72.0
+        renderer = fig.canvas.get_renderer() if hasattr(fig.canvas, "get_renderer") else None
+        if renderer is not None:
+            for idx, item in enumerate(ordered):
+                patch = item["ann"].get_bbox_patch()
+                if patch is not None:
+                    ext = patch.get_window_extent(renderer=renderer)
+                    if ext.width > 1.0:
+                        widths_pts[idx] = max(widths_pts[idx], float(ext.width) * 72.0 / dpi)
+    except Exception:
+        pass
+
+    offsets = [float(item["user_x_offset_pts"]) for item in ordered]
+    locked = [bool(item["user_locked"]) for item in ordered]
+
+    min_gap_pts = 8.0
+    for _pass in range(28):
+        changed = False
+        for i in range(n - 1):
+            c_left = x_centers_pts[i] + offsets[i]
+            c_right = x_centers_pts[i + 1] + offsets[i + 1]
+            req_dist = 0.5 * (widths_pts[i] + widths_pts[i + 1]) + min_gap_pts
+            actual_dist = c_right - c_left
+            if actual_dist < req_dist - 0.05:
+                overlap = req_dist - actual_dist
+                if not locked[i] and not locked[i + 1]:
+                    offsets[i] -= 0.51 * overlap
+                    offsets[i + 1] += 0.51 * overlap
+                    changed = True
+                elif not locked[i]:
+                    offsets[i] -= overlap
+                    changed = True
+                elif not locked[i + 1]:
+                    offsets[i + 1] += overlap
+                    changed = True
+        if not changed:
+            break
+
+    for item, eff_offset in zip(ordered, offsets):
+        item["effective_x_offset_pts"] = eff_offset
+        ann = item["ann"]
+        lift_pts = max(6.0, (float(item["badge_y_axes"]) - 1.0) * ax_h_pts)
+        ann.set_position((eff_offset, lift_pts))
+
+
+def add_badge_vline(
+    ax: object,
+    x: float,
+    badge_text: str,
+    color: Optional[str] = None,
+    linestyle: str = "--",
+    linewidth: float = 2.0,
+    badge_y_axes: float = 1.03,
+    x_offset_pts: float = 0.0,
+    zorder: int = 6,
+    **kwargs,
+) -> _BadgeVLineResult:
+    """
+    Data 8 Editorial Dual/Multi Benchmark Reference Line + Top Rounded Callout Pill Badge.
+    - Draws a white-halo vertical reference dashed line at `x`.
+    - Places a white-background, colored-border rounded pill badge at the top of the plot area (`badge_y_axes`).
+    - Automatically avoids horizontal pill collisions when multiple `add_badge_vline` calls share the same `ax`.
+    """
+    _ensure_cjk_font()
+    import matplotlib.patheffects as patheffects
+
+    existing_count = len(getattr(ax, "_badge_vlines_registry", []))
+    if color is not None:
+        resolved_color = str(color)
+    else:
+        palette_choices = [
+            GEPHI_SEQUENTIAL_SCALES.get("blue", ["#EBF7F9", "#BCE2EB", "#5DBACD", "#2C8B9F", "#0E5B6B"])[3],
+            GEPHI_SEQUENTIAL_SCALES.get("orange", ["#FFF3EA", "#FBD8C0", "#ECA072", "#CA6F35", "#97481B"])[3],
+            GEPHI_SEQUENTIAL_SCALES.get("pink", ["#FFF0F5", "#F9CEE0", "#E89BB6", "#C46487", "#8D3658"])[3],
+            GEPHI_SEQUENTIAL_SCALES.get("green", ["#F1F7EE", "#D0E5CC", "#8FBA88", "#5E8F56", "#396032"])[3],
+        ]
+        resolved_color = palette_choices[existing_count % len(palette_choices)]
+
+    halo_color = str(kwargs.pop("halo_color", "#FFFFFF"))
+    halo_width = float(kwargs.pop("halo_width", linewidth + 2.2))
+    fontsize = float(kwargs.pop("fontsize", 9.5))
+    fontweight = str(kwargs.pop("fontweight", "bold"))
+    badge_bg = str(kwargs.pop("badge_bg", "#FFFFFF"))
+    badge_text_color = str(kwargs.pop("badge_text_color", resolved_color))
+    badge_border_lw = float(kwargs.pop("badge_border_lw", 1.5))
+    ymax_line = float(kwargs.pop("ymax", 1.005))
+    ymin_line = float(kwargs.pop("ymin", 0.0))
+    line_zorder = float(kwargs.pop("line_zorder", 3.0))
+
+    line = ax.axvline(
+        x=float(x),
+        ymin=ymin_line,
+        ymax=ymax_line,
+        color=resolved_color,
+        linestyle=linestyle,
+        linewidth=linewidth,
+        zorder=line_zorder,
+        clip_on=False,
+        **{k: v for k, v in kwargs.items() if k in ("alpha", "label")},
+    )
+    line.set_path_effects([
+        patheffects.Stroke(linewidth=halo_width, foreground=halo_color),
+        patheffects.Normal(),
+    ])
+
+    try:
+        fig = ax.figure
+        ax_h_pts = max(80.0, float(fig.get_figheight()) * 72.0 * float(ax.get_position().height))
+    except Exception:
+        ax_h_pts = 280.0
+    lift_pts = max(6.0, (float(badge_y_axes) - 1.0) * ax_h_pts)
+
+    bbox_props = dict(
+        boxstyle="round,pad=0.38,rounding_size=0.45",
+        facecolor=badge_bg,
+        edgecolor=resolved_color,
+        linewidth=badge_border_lw,
+    )
+    if "bbox" in kwargs and isinstance(kwargs["bbox"], dict):
+        bbox_props.update(kwargs["bbox"])
+
+    ann = ax.annotate(
+        str(badge_text),
+        xy=(float(x), 1.0),
+        xycoords=("data", "axes fraction"),
+        xytext=(float(x_offset_pts), lift_pts),
+        textcoords="offset points",
+        ha="center",
+        va="bottom",
+        fontsize=fontsize,
+        fontweight=fontweight,
+        color=badge_text_color,
+        bbox=bbox_props,
+        arrowprops=dict(
+            arrowstyle="-",
+            color=resolved_color,
+            lw=1.3,
+            shrinkA=0,
+            shrinkB=1,
+        ),
+        zorder=zorder + 1,
+        annotation_clip=False,
+    )
+
+    if not hasattr(ax, "_badge_vlines_registry"):
+        ax._badge_vlines_registry = []
+        try:
+            ax.callbacks.connect("xlim_changed", lambda target_ax: _rebalance_badge_vlines_on_ax(target_ax))
+        except Exception:
+            pass
+
+    ax._badge_vlines_registry.append({
+        "x": float(x),
+        "badge_text": str(badge_text),
+        "ann": ann,
+        "line": line,
+        "badge_y_axes": float(badge_y_axes),
+        "user_x_offset_pts": float(x_offset_pts),
+        "effective_x_offset_pts": float(x_offset_pts),
+        "user_locked": abs(float(x_offset_pts)) > 1e-6,
+        "width_pts": _estimate_badge_width_pts(str(badge_text), fontsize=fontsize),
+    })
+    _rebalance_badge_vlines_on_ax(ax)
+
+    return _BadgeVLineResult(line, ann)
+
+
+def add_editorial_footer(
+    fig: object,
+    footer_lines: object,
+    y_top: float = 0.088,
+    line_spacing: float = 0.022,
+    rule_color: str = "#CBD5E1",
+    fontsize: float = 9.0,
+    **kwargs,
+) -> List[object]:
+    """
+    Data 8 Editorial 4-Tier Structured Footer (`資料補充 / 註 / 來源 / 提醒`).
+    - Draws a crisp horizontal top separator rule across the figure bottom margin.
+    - Renders structured multi-line editorial notes with bold lead tags (`#0F172A`) and slate body text (`#475569`).
+    - Accepts `footer_lines` as a `List[str]`, `Dict[str, str]`, `List[Tuple[str, str]]`, or multi-line `str`.
+    """
+    _ensure_cjk_font()
+    from matplotlib.lines import Line2D
+
+    x_left = float(kwargs.pop("x_left", 0.04))
+    x_right = float(kwargs.pop("x_right", 0.96))
+    text_color = str(kwargs.pop("text_color", "#475569"))
+    prefix_color = str(kwargs.pop("prefix_color", "#0F172A"))
+    rule_linewidth = float(kwargs.pop("rule_linewidth", 0.9))
+    rule_offset = float(kwargs.pop("rule_offset", 0.012))
+    auto_adjust_bottom = bool(kwargs.pop("auto_adjust_bottom", True))
+
+    normalized_lines: List[Tuple[Optional[str], str]] = []
+    if isinstance(footer_lines, dict):
+        for k, v in footer_lines.items():
+            normalized_lines.append((str(k).strip(), str(v).strip()))
+    elif isinstance(footer_lines, str):
+        for raw_ln in footer_lines.splitlines():
+            s = raw_ln.strip()
+            if s:
+                normalized_lines.append((None, s))
+    elif isinstance(footer_lines, (list, tuple)):
+        for item in footer_lines:
+            if isinstance(item, (list, tuple)) and len(item) >= 2:
+                normalized_lines.append((str(item[0]).strip(), str(item[1]).strip()))
+            elif item is not None:
+                normalized_lines.append((None, str(item).strip()))
+
+    # Parse `Prefix：Body` when prefix wasn't passed as a tuple/dict
+    parsed_entries: List[Tuple[Optional[str], str]] = []
+    for pfx, body in normalized_lines:
+        if pfx is not None:
+            clean_pfx = pfx.rstrip(":：")
+            parsed_entries.append((f"{clean_pfx}：", body))
+        else:
+            split_done = False
+            for sep in ("：", ":"):
+                if sep in body:
+                    head, tail = body.split(sep, 1)
+                    if 1 <= len(head.strip()) <= 10:
+                        parsed_entries.append((f"{head.strip()}：", tail.strip()))
+                        split_done = True
+                        break
+            if not split_done:
+                parsed_entries.append((None, body))
+
+    if auto_adjust_bottom:
+        try:
+            needed_bottom = float(y_top) + 0.088
+            if hasattr(fig, "subplotpars") and float(fig.subplotpars.bottom) < needed_bottom:
+                fig.subplots_adjust(bottom=min(0.32, needed_bottom))
+        except Exception:
+            pass
+
+    artists: List[object] = []
+    rule_y = float(y_top) + rule_offset
+    rule_line = Line2D(
+        [x_left, x_right],
+        [rule_y, rule_y],
+        transform=fig.transFigure,
+        color=rule_color,
+        linewidth=rule_linewidth,
+        zorder=10,
+    )
+    fig.add_artist(rule_line)
+    artists.append(rule_line)
+
+    renderer = None
+    try:
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+    except Exception:
+        renderer = None
+
+    for idx, (pfx, body) in enumerate(parsed_entries):
+        y_curr = float(y_top) - idx * float(line_spacing)
+        if pfx:
+            t_pfx = fig.text(
+                x_left,
+                y_curr,
+                pfx,
+                fontsize=fontsize,
+                fontweight="bold",
+                color=prefix_color,
+                ha="left",
+                va="top",
+                **kwargs,
+            )
+            artists.append(t_pfx)
+            if renderer is not None:
+                try:
+                    bbox_fig = t_pfx.get_window_extent(renderer=renderer).transformed(fig.transFigure.inverted())
+                    x_body = float(bbox_fig.x1) + 0.002
+                except Exception:
+                    x_body = x_left + len(pfx) * (fontsize * 0.00145)
+            else:
+                x_body = x_left + len(pfx) * (fontsize * 0.00145)
+            t_body = fig.text(
+                x_body,
+                y_curr,
+                body,
+                fontsize=fontsize,
+                fontweight="normal",
+                color=text_color,
+                ha="left",
+                va="top",
+                **kwargs,
+            )
+            artists.append(t_body)
+        else:
+            t_full = fig.text(
+                x_left,
+                y_curr,
+                body,
+                fontsize=fontsize,
+                fontweight="normal",
+                color=text_color,
+                ha="left",
+                va="top",
+                **kwargs,
+            )
+            artists.append(t_full)
+
+    return artists
+
+
+def add_regime_shading_and_events(
+    ax: object,
+    regimes: Optional[Sequence[object]] = None,
+    events: Optional[Sequence[object]] = None,
+    **kwargs,
+) -> Dict[str, List[object]]:
+    """
+    Data 7《臺灣數據百閱》Time-Series Regime Background Shading Bands & Historical/Policy Event Callout Boxes.
+    - `regimes`: list of dicts `{"start": x0, "end": x1, "label": "...", "color": "#F1F5F9", "alpha": 0.55}`
+      or tuples `(x0, x1, label[, color])`.
+    - `events`: list of dicts `{"x": x_val, "y": y_val (optional), "label": "...", "color": "#CA6F35"}`
+      or tuples `(x_val, label)` / `(x_val, y_val, label[, color])`.
+    """
+    _ensure_cjk_font()
+    regime_patches: List[object] = []
+    regime_texts: List[object] = []
+    event_annotations: List[object] = []
+    event_lines: List[object] = []
+
+    default_band_Palette = [
+        GEPHI_LIGHT_BADGE_TINTS[1] if len(GEPHI_LIGHT_BADGE_TINTS) > 1 else "#EBF7F9",
+        "#F1F5F9",
+        GEPHI_LIGHT_BADGE_TINTS[0] if len(GEPHI_LIGHT_BADGE_TINTS) > 0 else "#FFF3EA",
+        GEPHI_LIGHT_BADGE_TINTS[3] if len(GEPHI_LIGHT_BADGE_TINTS) > 3 else "#F1F7EE",
+    ]
+    fontsize = float(kwargs.pop("fontsize", 9.0))
+
+    if regimes:
+        for idx, reg in enumerate(regimes):
+            if isinstance(reg, dict):
+                x0 = reg.get("start", reg.get("x0", reg.get("xmin", reg.get("from"))))
+                x1 = reg.get("end", reg.get("x1", reg.get("xmax", reg.get("to"))))
+                label = str(reg.get("label", reg.get("title", reg.get("name", ""))))
+                color = str(reg.get("color", default_band_Palette[idx % len(default_band_Palette)]))
+                alpha = float(reg.get("alpha", 0.55))
+                text_color = str(reg.get("text_color", "#334155"))
+                label_y = float(reg.get("label_y", 0.965))
+            elif isinstance(reg, (list, tuple)) and len(reg) >= 2:
+                x0, x1 = reg[0], reg[1]
+                label = str(reg[2]) if len(reg) >= 3 else ""
+                color = str(reg[3]) if len(reg) >= 4 else default_band_Palette[idx % len(default_band_Palette)]
+                alpha = 0.55
+                text_color = "#334155"
+                label_y = 0.965
+            else:
+                continue
+
+            if x0 is None or x1 is None:
+                continue
+            span_patch = ax.axvspan(float(x0), float(x1), color=color, alpha=alpha, zorder=0, lw=0)
+            regime_patches.append(span_patch)
+            if label:
+                mid_x = 0.5 * (float(x0) + float(x1))
+                t_obj = ax.text(
+                    mid_x,
+                    label_y,
+                    label,
+                    transform=ax.get_xaxis_transform(),
+                    ha="center",
+                    va="top",
+                    fontsize=fontsize,
+                    fontweight="bold",
+                    color=text_color,
+                    bbox=dict(boxstyle="round,pad=0.22", facecolor="#FFFFFF", edgecolor="none", alpha=0.78),
+                    zorder=2,
+                )
+                regime_texts.append(t_obj)
+
+    if events:
+        default_ev_color = GEPHI_SEQUENTIAL_SCALES.get("orange", ["#FFF3EA", "#FBD8C0", "#ECA072", "#CA6F35", "#97481B"])[3]
+        stagger_levels = [0.84, 0.70, 0.56, 0.77]
+        for idx, ev in enumerate(events):
+            y_val = None
+            color = default_ev_color
+            dx_pts = 0.0
+            dy_pts = 26.0
+            y_axes = stagger_levels[idx % len(stagger_levels)]
+            draw_vline = True
+
+            if isinstance(ev, dict):
+                x_val = ev.get("x")
+                y_val = ev.get("y")
+                label = str(ev.get("label", ev.get("text", ev.get("title", ""))))
+                color = str(ev.get("color", default_ev_color))
+                dx_pts = float(ev.get("dx_pts", ev.get("x_offset_pts", 0.0)))
+                dy_pts = float(ev.get("dy_pts", ev.get("y_offset_pts", 26.0)))
+                if "y_axes" in ev:
+                    y_axes = float(ev["y_axes"])
+                draw_vline = bool(ev.get("vline", y_val is None))
+            elif isinstance(ev, (list, tuple)):
+                if len(ev) == 2:
+                    x_val, label = ev[0], str(ev[1])
+                elif len(ev) >= 3:
+                    if isinstance(ev[1], (int, float)) and not isinstance(ev[1], bool):
+                        x_val, y_val, label = ev[0], float(ev[1]), str(ev[2])
+                        draw_vline = False
+                        if len(ev) >= 4:
+                            color = str(ev[3])
+                    else:
+                        x_val, label, color = ev[0], str(ev[1]), str(ev[2])
+                else:
+                    continue
+            else:
+                continue
+
+            if x_val is None:
+                continue
+
+            if draw_vline:
+                vl = ax.axvline(float(x_val), color=color, linestyle=":", linewidth=1.4, alpha=0.85, zorder=3)
+                event_lines.append(vl)
+
+            bbox_ev = dict(
+                boxstyle="round,pad=0.35,rounding_size=0.35",
+                facecolor="#FFFFFF",
+                edgecolor=color,
+                linewidth=1.3,
+            )
+            if y_val is not None:
+                ax.scatter(
+                    [float(x_val)],
+                    [float(y_val)],
+                    s=58,
+                    color=color,
+                    edgecolors="#FFFFFF",
+                    linewidths=1.5,
+                    zorder=5,
+                )
+                ann = ax.annotate(
+                    label,
+                    xy=(float(x_val), float(y_val)),
+                    xycoords="data",
+                    xytext=(dx_pts, dy_pts),
+                    textcoords="offset points",
+                    ha="center",
+                    va="bottom" if dy_pts >= 0 else "top",
+                    fontsize=fontsize,
+                    fontweight="bold",
+                    color="#0F172A",
+                    bbox=bbox_ev,
+                    arrowprops=dict(arrowstyle="-|>", color=color, lw=1.3, shrinkA=2, shrinkB=4),
+                    zorder=6,
+                )
+            else:
+                ann = ax.annotate(
+                    label,
+                    xy=(float(x_val), y_axes),
+                    xycoords=("data", "axes fraction"),
+                    xytext=(dx_pts, 0.0),
+                    textcoords="offset points",
+                    ha="center",
+                    va="center",
+                    fontsize=fontsize,
+                    fontweight="bold",
+                    color="#0F172A",
+                    bbox=bbox_ev,
+                    zorder=6,
+                )
+            event_annotations.append(ann)
+
+    return {
+        "regime_patches": regime_patches,
+        "regime_texts": regime_texts,
+        "event_lines": event_lines,
+        "event_annotations": event_annotations,
+    }
+
+
+def add_inset_leaderboard(
+    ax: object,
+    labels: Sequence[str],
+    values: Sequence[float],
+    bbox: Tuple[float, float, float, float] = (0.62, 0.08, 0.34, 0.32),
+    title: str = "",
+    color: Optional[str] = None,
+    **kwargs,
+) -> object:
+    """
+    Data 7 Bubble Tea Density Map Mode: Rounded white-card Inset Leaderboard in a corner of the main chart.
+    Returns the created `inset_ax` Matplotlib Axes object.
+    """
+    _ensure_cjk_font()
+    import numpy as np
+
+    bg_color = str(kwargs.pop("bg_color", "#FFFFFF"))
+    border_color = str(kwargs.pop("border_color", "#CBD5E1"))
+    value_fmt = str(kwargs.pop("value_fmt", "{:.1f}"))
+    max_items = int(kwargs.pop("max_items", 5))
+    fontsize = float(kwargs.pop("fontsize", 8.5))
+    sort_desc = bool(kwargs.pop("sort_desc", False))
+    zorder = int(kwargs.pop("zorder", 8))
+
+    resolved_color = color if color is not None else GEPHI_QUALITATIVE_HEX[0]
+    top_color = GEPHI_SEQUENTIAL_SCALES.get("orange", ["#FFF3EA", "#FBD8C0", "#ECA072", "#CA6F35", "#97481B"])[3]
+
+    pairs = [(str(lbl), float(val)) for lbl, val in zip(labels, values) if _parse_numeric_or_na(val) is not None]
+    if sort_desc:
+        pairs.sort(key=lambda item: item[1], reverse=True)
+    pairs = pairs[:max(1, max_items)]
+
+    inset_ax = ax.inset_axes(list(bbox), zorder=zorder)
+    inset_ax.set_facecolor(bg_color)
+    for side in ("top", "right", "bottom", "left"):
+        if side in inset_ax.spines:
+            inset_ax.spines[side].set_visible(True)
+            inset_ax.spines[side].set_color(border_color)
+            inset_ax.spines[side].set_linewidth(1.2)
+
+    if not pairs:
+        inset_ax.set_xticks([])
+        inset_ax.set_yticks([])
+        return inset_ax
+
+    # Reverse so rank #1 is at top of horizontal bar chart
+    display_pairs = list(reversed(pairs))
+    y_pos = np.arange(len(display_pairs))
+    disp_labels = [p[0] for p in display_pairs]
+    disp_vals = [p[1] for p in display_pairs]
+    v_max = max(max(disp_vals), 1e-6)
+
+    bar_colors = [
+        (top_color if color is None else resolved_color) if idx == len(display_pairs) - 1 else resolved_color
+        for idx in range(len(display_pairs))
+    ]
+    inset_ax.barh(y_pos, [v_max * 1.05] * len(display_pairs), height=0.58, color="#F1F5F9", edgecolor="none", zorder=1)
+    inset_ax.barh(y_pos, disp_vals, height=0.58, color=bar_colors, edgecolor="none", zorder=2)
+
+    inset_ax.set_yticks(y_pos)
+    inset_ax.set_yticklabels(disp_labels, fontsize=fontsize, fontweight="bold", color="#1E293B")
+    inset_ax.tick_params(axis="y", length=0, pad=4)
+    inset_ax.set_xticks([])
+    inset_ax.set_xlim(0, v_max * 1.34)
+    inset_ax.set_ylim(-0.65, len(display_pairs) - 0.30)
+
+    for y_i, val in zip(y_pos, disp_vals):
+        inset_ax.text(
+            val + v_max * 0.04,
+            y_i,
+            value_fmt.format(val),
+            va="center",
+            ha="left",
+            fontsize=fontsize,
+            fontweight="bold",
+            color="#0F172A",
+            zorder=3,
+        )
+
+    if title:
+        inset_ax.set_title(
+            title,
+            fontsize=fontsize + 0.8,
+            fontweight="bold",
+            color="#0F172A",
+            loc="left",
+            pad=5,
+        )
+
+    return inset_ax
+
+
+# -------------------------------------------------------------------------
+# (b) 5 Chart Families High-Precision Plotting Helpers
+# -------------------------------------------------------------------------
+
+def plot_cleveland_dot(
+    ax: object,
+    labels: Sequence[str],
+    values: Sequence[float],
+    top_n: int = 1,
+    bottom_n: int = 1,
+    highlight_indices: Optional[Sequence[int]] = None,
+    highlight_color: Optional[str] = None,
+    context_color: str = "#94A3B8",
+    stem_color: str = "#CBD5E1",
+    stem_linestyle: str = "--",
+    stem_linewidth: float = 1.0,
+    value_fmt: str = "{:.1f}",
+    value_offset_pts: float = 7.0,
+    sort_values: bool = True,
+    ascending: bool = True,
+    x_padding_ratio: float = 0.14,
+    **kwargs,
+) -> Dict[str, object]:
+    """
+    Data 8 Editorial Cleveland Dot Plot:
+    - Focuses X-axis on the true non-zero variation interval (unless `force_zero=True`).
+    - Replaces heavy solid bars with horizontal dashed guide stems (`#CBD5E1`) + spotlight/context dots.
+    - Applies `apply_spotlight_colors` to highlight top_n / bottom_n extremes in both dot color/size and Y-tick typography.
+    - Places direct value labels immediately to the right of every dot.
+    """
+    _ensure_cjk_font()
+    import numpy as np
+
+    pairs = [
+        (str(lbl), float(val))
+        for lbl, val in zip(labels, values)
+        if _parse_numeric_or_na(val) is not None
+    ]
+    if not pairs:
+        return {"scatter": None, "stems": None, "annotations": [], "spotlight": None, "ax": ax}
+
+    if sort_values:
+        pairs.sort(key=lambda item: item[1], reverse=not ascending)
+
+    sorted_labels = [p[0] for p in pairs]
+    sorted_vals = [p[1] for p in pairs]
+    n = len(pairs)
+    y_pos = np.arange(n)
+
+    spot = apply_spotlight_colors(
+        sorted_vals,
+        top_n=top_n,
+        bottom_n=bottom_n,
+        highlight_indices=highlight_indices,
+        highlight_color=highlight_color,
+        context_color=context_color,
+        highlight_size=kwargs.pop("highlight_size", 110.0),
+        context_size=kwargs.pop("context_size", 56.0),
+    )
+
+    v_min = min(sorted_vals)
+    v_max = max(sorted_vals)
+    span = max(1e-6, v_max - v_min)
+    force_zero = bool(kwargs.pop("force_zero", False))
+    custom_xlim = kwargs.pop("xlim", None)
+
+    if custom_xlim is not None:
+        x_left, x_right = float(custom_xlim[0]), float(custom_xlim[1])
+    elif force_zero:
+        x_left = 0.0
+        x_right = v_max + span * max(0.16, float(x_padding_ratio))
+    else:
+        x_left = v_min - span * 0.11
+        x_right = v_max + span * max(0.16, float(x_padding_ratio))
+
+    ax.set_xlim(x_left, x_right)
+    ax.set_ylim(-0.75, n - 0.25)
+
+    stems = ax.hlines(
+        y=y_pos,
+        xmin=x_left,
+        xmax=sorted_vals,
+        color=stem_color,
+        linestyle=stem_linestyle,
+        linewidth=stem_linewidth,
+        zorder=2,
+    )
+
+    sc = ax.scatter(
+        sorted_vals,
+        y_pos,
+        s=spot["sizes"],
+        c=spot["colors"],
+        edgecolors="#FFFFFF",
+        linewidths=1.5,
+        zorder=4,
+        **kwargs,
+    )
+
+    ax.set_yticks(y_pos)
+    tick_labels = ax.set_yticklabels(sorted_labels, fontsize=10.5)
+    for tick_lbl, t_color, t_weight in zip(tick_labels, spot["text_colors"], spot["fontweights"]):
+        tick_lbl.set_color(t_color)
+        tick_lbl.set_fontweight(t_weight)
+    ax.tick_params(axis="y", length=0, pad=6)
+
+    anns = []
+    import matplotlib.patheffects as patheffects
+    fontsize_val = float(kwargs.get("value_fontsize", 9.8))
+    for i, (val, y_i) in enumerate(zip(sorted_vals, y_pos)):
+        txt = value_fmt(val) if callable(value_fmt) else value_fmt.format(val)
+        ann = ax.annotate(
+            txt,
+            xy=(val, float(y_i)),
+            xytext=(float(value_offset_pts), 0.0),
+            textcoords="offset points",
+            va="center",
+            ha="left",
+            fontsize=fontsize_val,
+            fontweight=spot["fontweights"][i],
+            color=spot["text_colors"][i],
+            zorder=7,
+        )
+        ann.set_path_effects([
+            patheffects.Stroke(linewidth=2.8, foreground="#FFFFFF"),
+            patheffects.Normal(),
+        ])
+        anns.append(ann)
+
+    despine_axes(ax, grid_axis="x", grid_alpha=0.45)
+    return {
+        "scatter": sc,
+        "stems": stems,
+        "annotations": anns,
+        "spotlight": spot,
+        "labels": sorted_labels,
+        "values": sorted_vals,
+        "ax": ax,
+    }
+
+
+def plot_dumbbell(
+    ax: object,
+    labels: Sequence[str],
+    val_start: Sequence[float],
+    val_end: Sequence[float],
+    label_start: str = "期初 / 基準",
+    label_end: str = "期末 / 現況",
+    color_start: Optional[str] = None,
+    color_end: Optional[str] = None,
+    bar_color: str = "#CBD5E1",
+    bar_linewidth: float = 3.2,
+    dot_size: float = 90.0,
+    show_delta: bool = True,
+    delta_fmt: str = "{:+.1f}",
+    sort_by: Optional[str] = "end",
+    **kwargs,
+) -> Dict[str, object]:
+    """
+    Data 7 Dumbbell Span Plot with connecting bars and signed delta callouts.
+    """
+    _ensure_cjk_font()
+    import numpy as np
+
+    c_start = color_start if color_start is not None else GEPHI_QUALITATIVE_HEX[1]
+    c_end = color_end if color_end is not None else GEPHI_QUALITATIVE_HEX[0]
+
+    rows = []
+    for lbl, vs, ve in zip(labels, val_start, val_end):
+        ps, pe = _parse_numeric_or_na(vs), _parse_numeric_or_na(ve)
+        if ps is not None and pe is not None:
+            rows.append((str(lbl), float(ps), float(pe), float(pe - ps)))
+
+    if not rows:
+        return {"scatter_start": None, "scatter_end": None, "bars": None, "annotations": [], "ax": ax}
+
+    if sort_by == "end":
+        rows.sort(key=lambda r: r[2])
+    elif sort_by == "start":
+        rows.sort(key=lambda r: r[1])
+    elif sort_by == "delta":
+        rows.sort(key=lambda r: r[3])
+
+    n = len(rows)
+    y_pos = np.arange(n)
+    r_labels = [r[0] for r in rows]
+    r_start = [r[1] for r in rows]
+    r_end = [r[2] for r in rows]
+    r_delta = [r[3] for r in rows]
+
+    bars = ax.hlines(
+        y=y_pos,
+        xmin=[min(a, b) for a, b in zip(r_start, r_end)],
+        xmax=[max(a, b) for a, b in zip(r_start, r_end)],
+        color=bar_color,
+        linewidth=bar_linewidth,
+        zorder=2,
+    )
+    sc_start = ax.scatter(
+        r_start,
+        y_pos,
+        s=dot_size,
+        color=c_start,
+        edgecolors="#FFFFFF",
+        linewidths=1.5,
+        label=label_start,
+        zorder=4,
+    )
+    sc_end = ax.scatter(
+        r_end,
+        y_pos,
+        s=dot_size,
+        color=c_end,
+        edgecolors="#FFFFFF",
+        linewidths=1.5,
+        label=label_end,
+        zorder=5,
+    )
+
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(r_labels, fontsize=10.5, fontweight="bold", color="#1E293B")
+    ax.tick_params(axis="y", length=0, pad=6)
+
+    all_vals = r_start + r_end
+    v_min, v_max = min(all_vals), max(all_vals)
+    span = max(1e-6, v_max - v_min)
+    ax.set_xlim(v_min - span * 0.10, v_max + span * 0.16)
+    ax.set_ylim(-0.65, n - 0.30)
+
+    anns = []
+    if show_delta:
+        pos_ink = GEPHI_SEQUENTIAL_SCALES.get("orange", ["#FFF3EA", "#FBD8C0", "#ECA072", "#CA6F35", "#97481B"])[3]
+        neg_ink = GEPHI_SEQUENTIAL_SCALES.get("blue", ["#EBF7F9", "#BCE2EB", "#5DBACD", "#2C8B9F", "#0E5B6B"])[3]
+        for y_i, vs, ve, d_val in zip(y_pos, r_start, r_end, r_delta):
+            x_right_dot = max(vs, ve)
+            d_txt = delta_fmt.format(d_val)
+            d_col = pos_ink if d_val >= 0 else neg_ink
+            ann = ax.annotate(
+                d_txt,
+                xy=(x_right_dot, float(y_i)),
+                xytext=(8.0, 0.0),
+                textcoords="offset points",
+                va="center",
+                ha="left",
+                fontsize=9.5,
+                fontweight="bold",
+                color=d_col,
+                zorder=6,
+            )
+            anns.append(ann)
+
+    despine_axes(ax, grid_axis="x", grid_alpha=0.45)
+    if kwargs.get("show_legend", True):
+        ax.legend(frameon=False, loc="upper right", fontsize=9.5)
+
+    return {
+        "scatter_start": sc_start,
+        "scatter_end": sc_end,
+        "bars": bars,
+        "annotations": anns,
+        "ax": ax,
+    }
+
+
+def _decollide_1d_positions(positions: List[float], min_dist: float) -> List[float]:
+    """Relax 1D vertical label coordinates so adjacent labels maintain at least `min_dist` separation."""
+    if len(positions) <= 1 or min_dist <= 0:
+        return list(positions)
+    indexed = sorted(enumerate(positions), key=lambda pair: pair[1])
+    adjusted = [p for _, p in indexed]
+    for _ in range(12):
+        moved = False
+        for i in range(len(adjusted) - 1):
+            gap = adjusted[i + 1] - adjusted[i]
+            if gap < min_dist:
+                push = 0.5 * (min_dist - gap)
+                adjusted[i] -= push
+                adjusted[i + 1] += push
+                moved = True
+        if not moved:
+            break
+    out = [0.0] * len(positions)
+    for (orig_idx, _), adj_val in zip(indexed, adjusted):
+        out[orig_idx] = adj_val
+    return out
+
+
+def plot_slope_chart(
+    ax: object,
+    labels: Sequence[str],
+    val_t1: Sequence[float],
+    val_t2: Sequence[float],
+    t1_label: str = "期初 (T1)",
+    t2_label: str = "期末 (T2)",
+    up_color: Optional[str] = None,
+    down_color: Optional[str] = None,
+    neutral_color: str = "#94A3B8",
+    value_fmt: str = "{:.1f}",
+    linewidth: float = 2.4,
+    dot_size: float = 75.0,
+    **kwargs,
+) -> Dict[str, object]:
+    """
+    Data 5 & Data 7 Two-Period Ranking & Trajectory Slope Chart with 1D vertical label collision avoidance.
+    """
+    _ensure_cjk_font()
+
+    c_up = up_color if up_color is not None else GEPHI_QUALITATIVE_HEX[0]
+    c_down = down_color if down_color is not None else GEPHI_QUALITATIVE_HEX[1]
+    threshold = float(kwargs.pop("threshold", 1e-6))
+
+    rows = []
+    for lbl, v1, v2 in zip(labels, val_t1, val_t2):
+        p1, p2 = _parse_numeric_or_na(v1), _parse_numeric_or_na(v2)
+        if p1 is not None and p2 is not None:
+            rows.append((str(lbl), float(p1), float(p2)))
+
+    if not rows:
+        return {"lines": [], "annotations": [], "ax": ax}
+
+    v_all = [r[1] for r in rows] + [r[2] for r in rows]
+    v_min, v_max = min(v_all), max(v_all)
+    v_span = max(1e-6, v_max - v_min)
+
+    ax.axvline(0.0, color="#CBD5E1", linestyle="--", linewidth=1.2, zorder=1)
+    ax.axvline(1.0, color="#CBD5E1", linestyle="--", linewidth=1.2, zorder=1)
+
+    y1_adj = _decollide_1d_positions([r[1] for r in rows], min_dist=v_span * 0.055)
+    y2_adj = _decollide_1d_positions([r[2] for r in rows], min_dist=v_span * 0.055)
+
+    lines = []
+    anns = []
+    for idx, (lbl, v1, v2) in enumerate(rows):
+        diff = v2 - v1
+        if diff > threshold:
+            col = c_up
+            fw = "bold"
+            t_col = "#0F172A"
+        elif diff < -threshold:
+            col = c_down
+            fw = "bold"
+            t_col = "#0F172A"
+        else:
+            col = neutral_color
+            fw = "normal"
+            t_col = "#475569"
+
+        ln = ax.plot([0.0, 1.0], [v1, v2], color=col, linewidth=linewidth, zorder=3)[0]
+        ax.scatter([0.0, 1.0], [v1, v2], s=dot_size, color=col, edgecolors="#FFFFFF", linewidths=1.5, zorder=4)
+        lines.append(ln)
+
+        ann_left = ax.annotate(
+            f"{lbl}  {value_fmt.format(v1)}",
+            xy=(0.0, v1),
+            xytext=(-0.05, y1_adj[idx]),
+            textcoords="data",
+            ha="right",
+            va="center",
+            fontsize=9.8,
+            fontweight=fw,
+            color=t_col,
+            zorder=5,
+        )
+        ann_right = ax.annotate(
+            f"{value_fmt.format(v2)}  {lbl}",
+            xy=(1.0, v2),
+            xytext=(1.05, y2_adj[idx]),
+            textcoords="data",
+            ha="left",
+            va="center",
+            fontsize=9.8,
+            fontweight=fw,
+            color=t_col,
+            zorder=5,
+        )
+        anns.extend([ann_left, ann_right])
+
+    ax.set_xlim(-0.42, 1.42)
+    ax.set_ylim(v_min - v_span * 0.10, v_max + v_span * 0.12)
+    ax.set_xticks([0.0, 1.0])
+    ax.set_xticklabels([t1_label, t2_label], fontsize=11.0, fontweight="bold", color="#0F172A")
+    ax.set_yticks([])
+    for side in ("top", "right", "left", "bottom"):
+        if side in ax.spines:
+            ax.spines[side].set_visible(False)
+    ax.tick_params(axis="x", length=0, pad=8)
+
+    return {"lines": lines, "annotations": anns, "ax": ax}
+
+
+def plot_bullet(
+    ax: object,
+    labels: Sequence[str],
+    actuals: Sequence[float],
+    targets: Sequence[float],
+    bands: Optional[Sequence[Sequence[float]]] = None,
+    band_colors: Optional[Sequence[str]] = None,
+    actual_color: Optional[str] = None,
+    target_color: str = "#0F172A",
+    bar_height: float = 0.60,
+    actual_height: float = 0.28,
+    value_fmt: str = "{:.1f}",
+    **kwargs,
+) -> Dict[str, object]:
+    """
+    Data 5 Stephen Few (2006) Bullet Graph:
+    Encodes actual performance bar, target perpendicular reference marker, and 3-tier qualitative background ranges.
+    """
+    _ensure_cjk_font()
+    import numpy as np
+
+    n = min(len(labels), len(actuals), len(targets))
+    if n == 0:
+        return {"actual_bars": None, "target_lines": [], "band_bars": [], "ax": ax}
+
+    c_actual = (
+        actual_color
+        if actual_color is not None
+        else GEPHI_SEQUENTIAL_SCALES.get("blue", ["#EBF7F9", "#BCE2EB", "#5DBACD", "#2C8B9F", "#0E5B6B"])[3]
+    )
+    b_colors = list(band_colors) if band_colors is not None else ["#CBD5E1", "#E2E8F0", "#F1F5F9"]
+
+    y_pos = np.arange(n)
+    clean_labels = [str(labels[i]) for i in range(n)]
+    clean_actuals = [float(actuals[i]) for i in range(n)]
+    clean_targets = [float(targets[i]) for i in range(n)]
+
+    resolved_bands: List[List[float]] = []
+    if bands is not None and len(bands) > 0:
+        if isinstance(bands[0], (int, float)):
+            shared = sorted(float(x) for x in bands)
+            resolved_bands = [list(shared) for _ in range(n)]
+        else:
+            for i in range(n):
+                row_b = bands[i] if i < len(bands) else bands[-1]
+                resolved_bands.append(sorted(float(x) for x in row_b))
+    else:
+        for act, tgt in zip(clean_actuals, clean_targets):
+            ref = max(act, tgt, 1.0)
+            resolved_bands.append([0.65 * ref, 0.95 * ref, 1.20 * ref])
+
+    band_bars = []
+    max_x = 0.0
+    for i, y_i in enumerate(y_pos):
+        tiers = resolved_bands[i]
+        max_x = max(max_x, tiers[-1], clean_actuals[i], clean_targets[i])
+        prev = 0.0
+        for t_idx, tier_end in enumerate(tiers):
+            w = max(0.0, tier_end - prev)
+            col = b_colors[min(t_idx, len(b_colors) - 1)]
+            b_patch = ax.barh(
+                y_i,
+                w,
+                left=prev,
+                height=bar_height,
+                color=col,
+                edgecolor="none",
+                zorder=1,
+            )
+            band_bars.append(b_patch)
+            prev = tier_end
+
+    actual_bars = ax.barh(
+        y_pos,
+        clean_actuals,
+        height=actual_height,
+        color=c_actual,
+        edgecolor="none",
+        zorder=3,
+        label=kwargs.get("actual_label", "實際值 (Actual)"),
+    )
+
+    target_lines = []
+    for i, (y_i, tgt) in enumerate(zip(y_pos, clean_targets)):
+        tl = ax.plot(
+            [tgt, tgt],
+            [y_i - bar_height * 0.44, y_i + bar_height * 0.44],
+            color=target_color,
+            linewidth=2.6,
+            zorder=4,
+            label=kwargs.get("target_label", "目標值 (Target)") if i == 0 else None,
+        )[0]
+        target_lines.append(tl)
+
+    anns = []
+    for y_i, act, tgt, tiers in zip(y_pos, clean_actuals, clean_targets, resolved_bands):
+        right_edge = max(tiers[-1], act, tgt)
+        pct = (act / tgt * 100.0) if abs(tgt) > 1e-9 else 0.0
+        ann = ax.annotate(
+            f"{value_fmt.format(act)} / 目標 {value_fmt.format(tgt)} ({pct:.0f}%)",
+            xy=(right_edge, float(y_i)),
+            xytext=(8.0, 0.0),
+            textcoords="offset points",
+            va="center",
+            ha="left",
+            fontsize=9.2,
+            fontweight="bold",
+            color="#0F172A",
+            zorder=5,
+        )
+        anns.append(ann)
+
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(clean_labels, fontsize=10.5, fontweight="bold", color="#0F172A")
+    ax.tick_params(axis="y", length=0, pad=6)
+    ax.set_xlim(0.0, max_x * 1.28)
+    ax.set_ylim(-0.65, n - 0.30)
+    despine_axes(ax, grid_axis="x", grid_alpha=0.40)
+
+    return {
+        "actual_bars": actual_bars,
+        "target_lines": target_lines,
+        "band_bars": band_bars,
+        "annotations": anns,
+        "ax": ax,
+    }
+
+
+def plot_marimekko(
+    ax: object,
+    categories: Sequence[str],
+    weights: Sequence[float],
+    sub_matrix_pct: Sequence[Sequence[float]],
+    sub_labels: Sequence[str],
+    colors: Optional[Sequence[str]] = None,
+    edgecolor: str = "#FFFFFF",
+    linewidth: float = 1.6,
+    show_cell_labels: bool = True,
+    min_pct_for_label: float = 7.5,
+    show_weight_header: bool = True,
+    weight_fmt: str = "{:.0f}",
+    **kwargs,
+) -> Dict[str, object]:
+    """
+    Data 7 2D Marimekko / Mekko Chart:
+    - Column X-width is proportional to each entity's scale/weight (`weights`), normalized to 0..100%.
+    - Column Y-height is a 0..100% stacked composition across `sub_labels`.
+    - Automatically checks WCAG contrast via `ink()` for direct in-cell labels.
+    """
+    _ensure_cjk_font()
+    from matplotlib.patches import Rectangle
+    import numpy as np
+
+    n_cats = len(categories)
+    n_subs = len(sub_labels)
+    if n_cats == 0 or n_subs == 0:
+        return {"patches": [], "annotations": [], "x_edges": [], "ax": ax}
+
+    w_arr = np.asarray([max(0.0, float(w)) for w in weights[:n_cats]], dtype="float64")
+    total_w = float(w_arr.sum())
+    if total_w <= 0:
+        w_shares = np.full(n_cats, 100.0 / n_cats)
+    else:
+        w_shares = (w_arr / total_w) * 100.0
+
+    mat = np.asarray(sub_matrix_pct, dtype="float64")
+    if mat.shape == (n_cats, n_subs):
+        cat_sub_mat = mat.copy()
+    elif mat.shape == (n_subs, n_cats):
+        cat_sub_mat = mat.T.copy()
+    else:
+        raise ValueError(
+            f"sub_matrix_pct shape {mat.shape} does not match categories ({n_cats}) x sub_labels ({n_subs})."
+        )
+
+    # Normalize each category column to sum to 100%
+    for i in range(n_cats):
+        col_sum = float(cat_sub_mat[i].sum())
+        if col_sum > 0:
+            cat_sub_mat[i] = (cat_sub_mat[i] / col_sum) * 100.0
+
+    if colors is not None:
+        sub_colors = list(colors)
+    else:
+        base_cols = list(GEPHI_QUALITATIVE_HEX)
+        if n_subs > 4:
+            base_cols.append(GEPHI_DISCRETE_NEUTRALS["other_aggregated"])
+            while len(base_cols) < n_subs:
+                base_cols.append("#94A3B8")
+        sub_colors = base_cols[:n_subs]
+
+    x_edges = [0.0]
+    for w_s in w_shares:
+        x_edges.append(x_edges[-1] + float(w_s))
+
+    patches = []
+    anns = []
+    legend_handles = []
+
+    for j in range(n_subs):
+        col_hex = sub_colors[j % len(sub_colors)]
+        proxy = Rectangle((0, 0), 1, 1, facecolor=col_hex, edgecolor=edgecolor, linewidth=linewidth, label=str(sub_labels[j]))
+        legend_handles.append(proxy)
+
+    for i in range(n_cats):
+        x0 = x_edges[i]
+        w = w_shares[i]
+        y_bot = 0.0
+        for j in range(n_subs):
+            h_pct = float(cat_sub_mat[i, j])
+            col_hex = sub_colors[j % len(sub_colors)]
+            rect = Rectangle(
+                (x0, y_bot),
+                w,
+                h_pct,
+                facecolor=col_hex,
+                edgecolor=edgecolor,
+                linewidth=linewidth,
+                zorder=2,
+            )
+            ax.add_patch(rect)
+            patches.append(rect)
+
+            if show_cell_labels and h_pct >= min_pct_for_label and w >= 7.5:
+                cell_ink = ink(col_hex)
+                label_str = f"{sub_labels[j]}\n{h_pct:.1f}%" if (h_pct >= 13.5 and w >= 12.0) else f"{h_pct:.1f}%"
+                ann = ax.text(
+                    x0 + 0.5 * w,
+                    y_bot + 0.5 * h_pct,
+                    label_str,
+                    ha="center",
+                    va="center",
+                    fontsize=8.8 if w >= 12.0 else 8.0,
+                    fontweight="bold",
+                    color=cell_ink,
+                    zorder=4,
+                )
+                anns.append(ann)
+            y_bot += h_pct
+
+        if show_weight_header:
+            w_txt = weight_fmt.format(w_arr[i])
+            hdr = ax.text(
+                x0 + 0.5 * w,
+                101.5,
+                w_txt,
+                ha="center",
+                va="bottom",
+                fontsize=8.8,
+                fontweight="bold",
+                color="#334155",
+                zorder=4,
+            )
+            anns.append(hdr)
+
+    x_mids = [0.5 * (x_edges[i] + x_edges[i + 1]) for i in range(n_cats)]
+    x_tick_labels = [f"{categories[i]}\n({w_shares[i]:.1f}%)" for i in range(n_cats)]
+    ax.set_xticks(x_mids)
+    ax.set_xticklabels(x_tick_labels, fontsize=9.8, fontweight="bold", color="#0F172A")
+    ax.set_yticks([0, 20, 40, 60, 80, 100])
+    ax.set_xlim(0.0, 100.0)
+    ax.set_ylim(0.0, 108.0 if show_weight_header else 101.0)
+    ax.set_ylabel("結構佔比 (%)", fontsize=10.5, fontweight="bold", color="#0F172A")
+    despine_axes(ax, grid_axis=None)
+    if hasattr(ax, "spines") and "left" in ax.spines:
+        ax.spines["left"].set_bounds(0.0, 100.0)
+
+    title_str = kwargs.get("title")
+    show_leg = bool(kwargs.get("show_legend", True))
+    legend_ncol = int(kwargs.get("legend_ncol", min(n_subs, 5)))
+    legend_rows = max(1, (n_subs + max(1, legend_ncol) - 1) // max(1, legend_ncol)) if show_leg else 0
+    default_title_pad = (28.0 + 18.0 * (legend_rows - 1)) if show_leg else 14.0
+    title_pad = float(kwargs.get("title_pad", default_title_pad))
+
+    if show_leg and hasattr(ax, "set_title"):
+        _orig_set_title = getattr(ax, "_marimekko_orig_set_title", ax.set_title)
+        ax._marimekko_orig_set_title = _orig_set_title
+        ax._marimekko_min_title_pad = title_pad
+
+        def _safe_set_title(label, fontdict=None, loc=None, pad=None, **st_kwargs):
+            min_pad = getattr(ax, "_marimekko_min_title_pad", title_pad)
+            eff_pad = max(float(pad), min_pad) if pad is not None else min_pad
+            return _orig_set_title(label, fontdict=fontdict, loc=loc, pad=eff_pad, **st_kwargs)
+
+        ax.set_title = _safe_set_title
+
+    if title_str:
+        ax.set_title(
+            str(title_str),
+            loc=str(kwargs.get("title_loc", "left")),
+            fontsize=float(kwargs.get("title_fontsize", 12.5)),
+            fontweight="bold",
+            color="#0F172A",
+            pad=title_pad,
+        )
+    elif show_leg and hasattr(ax, "get_title"):
+        for _loc, _attr in (("left", "_left_title"), ("center", "title"), ("right", "_right_title")):
+            existing_t = ax.get_title(loc=_loc)
+            if existing_t:
+                t_obj = getattr(ax, _attr, None)
+                saved_fs = t_obj.get_fontsize() if t_obj is not None else None
+                saved_fw = t_obj.get_fontweight() if t_obj is not None else None
+                saved_col = t_obj.get_color() if t_obj is not None else None
+                st_kw = {"loc": _loc, "pad": title_pad}
+                if saved_fs is not None:
+                    st_kw["fontsize"] = saved_fs
+                if saved_fw is not None:
+                    st_kw["fontweight"] = saved_fw
+                if saved_col is not None:
+                    st_kw["color"] = saved_col
+                ax.set_title(existing_t, **st_kw)
+
+    if show_leg:
+        legend_loc = str(kwargs.get("legend_loc", "lower left"))
+        default_anchor = (0.0, 1.005 if show_weight_header else 1.01)
+        legend_anchor = kwargs.get("legend_bbox_to_anchor", default_anchor)
+        ax.legend(
+            handles=legend_handles,
+            loc=legend_loc,
+            bbox_to_anchor=legend_anchor,
+            ncol=max(1, legend_ncol),
+            frameon=False,
+            fontsize=8.8,
+            columnspacing=1.2,
+            handletextpad=0.45,
+            borderaxespad=0.0,
+        )
+
+    return {
+        "patches": patches,
+        "annotations": anns,
+        "x_edges": x_edges,
+        "width_shares": w_shares.tolist(),
+        "ax": ax,
+    }
+
+
+def plot_waterfall(
+    ax: object,
+    step_labels: Sequence[str],
+    deltas: Sequence[float],
+    is_total_flags: Optional[Sequence[bool]] = None,
+    pos_color: Optional[str] = None,
+    neg_color: Optional[str] = None,
+    total_color: str = "#334155",
+    connector_color: str = "#94A3B8",
+    connector_linestyle: str = "--",
+    bar_width: float = 0.56,
+    value_fmt: str = "{:+.1f}",
+    total_fmt: str = "{:.1f}",
+    **kwargs,
+) -> Dict[str, object]:
+    """
+    Data 2, 3 & 7 Bridge Waterfall Chart with floating positive/negative bars and horizontal dashed step connectors.
+    """
+    _ensure_cjk_font()
+    import numpy as np
+
+    n = min(len(step_labels), len(deltas))
+    if n == 0:
+        return {"bars": None, "connectors": [], "annotations": [], "ax": ax}
+
+    c_pos = pos_color if pos_color is not None else GEPHI_QUALITATIVE_HEX[0]
+    c_neg = neg_color if neg_color is not None else GEPHI_QUALITATIVE_HEX[1]
+
+    clean_labels = [str(step_labels[i]) for i in range(n)]
+    clean_vals = [float(deltas[i]) for i in range(n)]
+
+    if is_total_flags is not None:
+        totals_mask = [bool(f) for f in is_total_flags[:n]]
+    else:
+        totals_mask = [False] * n
+        totals_mask[0] = True
+        if n >= 3 and abs(sum(clean_vals[:-1]) - clean_vals[-1]) <= max(1e-4, abs(clean_vals[-1]) * 1e-3):
+            totals_mask[-1] = True
+        elif any(any(k in clean_labels[-1].lower() for k in ("期末", "總計", "合計", "total", "net")) for _ in (0,)):
+            totals_mask[-1] = True
+
+    bottoms: List[float] = []
+    heights: List[float] = []
+    end_levels: List[float] = []
+    bar_colors: List[str] = []
+
+    running = 0.0
+    for i, (val, is_tot) in enumerate(zip(clean_vals, totals_mask)):
+        if is_tot:
+            # If user passed 0 or match for final total, use running sum if val == 0 and i > 0
+            eff_tot = running if (i > 0 and abs(val) < 1e-12) else val
+            bottoms.append(0.0)
+            heights.append(eff_tot)
+            running = eff_tot
+            end_levels.append(running)
+            bar_colors.append(total_color)
+        else:
+            bottoms.append(running)
+            heights.append(val)
+            running += val
+            end_levels.append(running)
+            bar_colors.append(c_pos if val >= 0 else c_neg)
+
+    x_pos = np.arange(n)
+    bars = ax.bar(
+        x_pos,
+        heights,
+        bottom=bottoms,
+        width=bar_width,
+        color=bar_colors,
+        edgecolor="#FFFFFF",
+        linewidth=1.3,
+        zorder=3,
+    )
+
+    connectors = []
+    for i in range(n - 1):
+        y_conn = end_levels[i]
+        ln = ax.plot(
+            [x_pos[i] + bar_width * 0.5, x_pos[i + 1] - bar_width * 0.5],
+            [y_conn, y_conn],
+            color=connector_color,
+            linestyle=connector_linestyle,
+            linewidth=1.2,
+            zorder=2,
+        )[0]
+        connectors.append(ln)
+
+    ax.axhline(0.0, color="#CBD5E1", linewidth=1.0, zorder=1)
+
+    all_y = [0.0] + bottoms + end_levels
+    y_min, y_max = min(all_y), max(all_y)
+    y_span = max(1e-6, y_max - y_min)
+    ax.set_ylim(y_min - y_span * 0.14 if y_min < 0 else 0.0, y_max + y_span * 0.16)
+
+    anns = []
+    for i, (x_i, bot, h_val, end_v, is_tot) in enumerate(zip(x_pos, bottoms, heights, end_levels, totals_mask)):
+        if is_tot:
+            txt = total_fmt.format(h_val)
+            y_anchor = max(0.0, h_val)
+            va_align = "bottom"
+            dy = 5.0
+        else:
+            txt = value_fmt.format(h_val)
+            if h_val >= 0:
+                y_anchor = bot + h_val
+                va_align = "bottom"
+                dy = 5.0
+            else:
+                y_anchor = bot + h_val
+                va_align = "top"
+                dy = -5.0
+        ann = ax.annotate(
+            txt,
+            xy=(float(x_i), y_anchor),
+            xytext=(0.0, dy),
+            textcoords="offset points",
+            ha="center",
+            va=va_align,
+            fontsize=9.5,
+            fontweight="bold",
+            color="#0F172A" if is_tot else bar_colors[i],
+            zorder=5,
+        )
+        anns.append(ann)
+
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels(clean_labels, fontsize=10.0, fontweight="bold", color="#0F172A")
+    despine_axes(ax, grid_axis="y", grid_alpha=0.45)
+
+    return {
+        "bars": bars,
+        "connectors": connectors,
+        "annotations": anns,
+        "end_levels": end_levels,
+        "ax": ax,
+    }
+
+
+# -------------------------------------------------------------------------
+# (c) RE:LAB 6-Channel Bespoke Metaphor & Thematic Palette Helpers (Data 7 Mode)
+# -------------------------------------------------------------------------
+
+def _build_tapered_cup_path(
+    x_center: float,
+    y_bottom: float,
+    y_top: float,
+    w_bottom: float,
+    w_top: float,
+    corner_r_x: float = 0.06,
+    corner_r_y_ratio: float = 0.06,
+):
+    """Build a smooth Matplotlib Path for a tapered glass tumbler with a rounded bottom."""
+    from matplotlib.path import Path
+
+    h = max(1e-6, y_top - y_bottom)
+    ry = h * corner_r_y_ratio
+    rx = min(corner_r_x, w_bottom * 0.35)
+
+    x_tl = x_center - 0.5 * w_top
+    x_tr = x_center + 0.5 * w_top
+    x_bl = x_center - 0.5 * w_bottom
+    x_br = x_center + 0.5 * w_bottom
+
+    verts = [
+        (x_tl, y_top),
+        (x_bl, y_bottom + ry),
+        (x_bl, y_bottom),
+        (x_bl + rx, y_bottom),
+        (x_br - rx, y_bottom),
+        (x_br, y_bottom),
+        (x_br, y_bottom + ry),
+        (x_tr, y_top),
+        (x_tl, y_top),
+    ]
+    codes = [
+        Path.MOVETO,
+        Path.LINETO,
+        Path.CURVE3,
+        Path.CURVE3,
+        Path.LINETO,
+        Path.CURVE3,
+        Path.CURVE3,
+        Path.LINETO,
+        Path.CLOSEPOLY,
+    ]
+    return Path(verts, codes)
+
+
+def plot_liquid_container_bars(
+    ax: object,
+    labels: Sequence[str],
+    values: Sequence[float],
+    max_capacity: Optional[float] = None,
+    container_style: str = "glass_cup",
+    liquid_color: str = "#FFFFFF",
+    canvas_bg: str = "#5BC0EB",
+    glass_edge_color: str = "#E2F1F8",
+    value_fmt: str = "{:.0f} ml",
+    subtitle_values: Optional[Sequence[str]] = None,
+    **kwargs,
+) -> Dict[str, object]:
+    """
+    Data 7 RE:LAB NT$100 Milk Purchasing Power High-Gloss Container Chart:
+    - Renders multi-layered vector glass cups (or battery/test-tube containers) with rim thickness,
+      heavy curved glass base cushion, left/right specular reflection strips, and an exact `clip_path`
+      liquid fill + 3D meniscus surface ellipse.
+    """
+    _ensure_cjk_font()
+    from matplotlib.patches import Ellipse, FancyBboxPatch, PathPatch, Polygon, Rectangle
+
+    clean_pairs = [
+        (str(lbl), float(val))
+        for lbl, val in zip(labels, values)
+        if _parse_numeric_or_na(val) is not None
+    ]
+    n = len(clean_pairs)
+    if n == 0:
+        return {"containers": [], "liquids": [], "highlights": [], "annotations": [], "ax": ax}
+
+    c_labels = [p[0] for p in clean_pairs]
+    c_vals = [p[1] for p in clean_pairs]
+    v_max = max(c_vals)
+    cap = float(max_capacity) if (max_capacity is not None and float(max_capacity) >= v_max) else (v_max * 1.12)
+    cap = max(cap, 1.0)
+
+    set_fig_bg = bool(kwargs.pop("set_fig_bg", True))
+    ax.set_facecolor(canvas_bg)
+    if set_fig_bg and hasattr(ax, "figure") and ax.figure is not None:
+        ax.figure.patch.set_facecolor(canvas_bg)
+
+    bg_lum = relative_luminance(canvas_bg)
+    primary_ink = str(kwargs.pop("text_color", "#FFFFFF" if bg_lum < 0.42 else "#0F172A"))
+    secondary_ink = str(kwargs.pop("subtitle_color", "#E0F2FE" if primary_ink == "#FFFFFF" else "#334155"))
+
+    containers = []
+    liquids = []
+    highlights = []
+    anns = []
+
+    style_key = str(container_style or "glass_cup").strip().lower()
+    w_top = float(kwargs.pop("cup_top_width", 0.62))
+    w_bot = float(kwargs.pop("cup_bottom_width", 0.46 if style_key == "glass_cup" else 0.58))
+    wall_dx = 0.038
+    base_thick = cap * 0.055
+
+    for idx, (lbl, val) in enumerate(zip(c_labels, c_vals)):
+        xc = float(idx)
+        fill_h = max(0.0, min(cap, val))
+
+        # 1. Outer Glass Silhouette + Heavy Glass Base Cushion
+        outer_path = _build_tapered_cup_path(
+            xc,
+            y_bottom=-base_thick,
+            y_top=cap * 1.02,
+            w_bottom=w_bot + 2.0 * wall_dx,
+            w_top=w_top + 2.0 * wall_dx,
+        )
+        outer_patch = PathPatch(
+            outer_path,
+            facecolor="#FFFFFF",
+            alpha=0.22,
+            edgecolor=glass_edge_color,
+            linewidth=2.0,
+            zorder=2,
+        )
+        ax.add_patch(outer_patch)
+        containers.append(outer_patch)
+
+        # Heavy bottom glass base refraction cushion
+        base_path = _build_tapered_cup_path(
+            xc,
+            y_bottom=-base_thick,
+            y_top=0.0,
+            w_bottom=w_bot + 1.6 * wall_dx,
+            w_top=w_bot + 1.8 * wall_dx,
+            corner_r_y_ratio=0.35,
+        )
+        base_patch = PathPatch(
+            base_path,
+            facecolor="#FFFFFF",
+            alpha=0.36,
+            edgecolor="none",
+            zorder=2.5,
+        )
+        ax.add_patch(base_patch)
+
+        # 2. Inner Cavity Clip Path & Exact Liquid Level Fill
+        inner_path = _build_tapered_cup_path(
+            xc,
+            y_bottom=0.0,
+            y_top=cap,
+            w_bottom=w_bot,
+            w_top=w_top,
+            corner_r_y_ratio=0.04,
+        )
+        inner_clip_patch = PathPatch(
+            inner_path,
+            facecolor="#FFFFFF",
+            alpha=0.08,
+            edgecolor="#FFFFFF",
+            linewidth=0.8,
+            zorder=3,
+        )
+        ax.add_patch(inner_clip_patch)
+
+        if fill_h > 0:
+            liq_rect = Rectangle(
+                (xc - 0.6 * w_top, -base_thick * 0.2),
+                1.2 * w_top,
+                fill_h + base_thick * 0.2,
+                facecolor=liquid_color,
+                alpha=0.95,
+                edgecolor="none",
+                zorder=3.5,
+            )
+            ax.add_patch(liq_rect)
+            liq_rect.set_clip_path(inner_clip_patch)
+            liquids.append(liq_rect)
+
+            # 3D liquid meniscus ellipse at height fill_h
+            ratio_h = fill_h / cap
+            w_at_fill = w_bot + ratio_h * (w_top - w_bot)
+            meniscus = Ellipse(
+                (xc, fill_h),
+                width=w_at_fill * 0.98,
+                height=cap * 0.032,
+                facecolor=liquid_color,
+                edgecolor="#E2E8F0",
+                linewidth=1.1,
+                alpha=0.98,
+                zorder=4,
+            )
+            ax.add_patch(meniscus)
+            liquids.append(meniscus)
+
+        # 3. High-Gloss Vertical Glass Specular Reflection Strips & Top Rim
+        # Left primary reflection band (tapered matching the cup wall)
+        y_r0, y_r1 = cap * 0.06, cap * 0.94
+        w_at_r0 = w_bot + 0.06 * (w_top - w_bot)
+        w_at_r1 = w_bot + 0.94 * (w_top - w_bot)
+        left_strip = Polygon(
+            [
+                (xc - 0.41 * w_at_r0, y_r0),
+                (xc - 0.31 * w_at_r0, y_r0),
+                (xc - 0.31 * w_at_r1, y_r1),
+                (xc - 0.41 * w_at_r1, y_r1),
+            ],
+            closed=True,
+            facecolor="#FFFFFF",
+            alpha=0.38,
+            edgecolor="none",
+            zorder=5,
+        )
+        ax.add_patch(left_strip)
+        highlights.append(left_strip)
+
+        # Right subtle rim reflection strip
+        right_strip = Polygon(
+            [
+                (xc + 0.33 * w_at_r0, cap * 0.10),
+                (xc + 0.39 * w_at_r0, cap * 0.10),
+                (xc + 0.39 * w_at_r1, cap * 0.90),
+                (xc + 0.33 * w_at_r1, cap * 0.90),
+            ],
+            closed=True,
+            facecolor="#FFFFFF",
+            alpha=0.22,
+            edgecolor="none",
+            zorder=5,
+        )
+        ax.add_patch(right_strip)
+        highlights.append(right_strip)
+
+        # Top glass rim ellipse ring
+        top_rim = Ellipse(
+            (xc, cap * 1.02),
+            width=w_top + 2.0 * wall_dx,
+            height=cap * 0.038,
+            facecolor="none",
+            edgecolor=glass_edge_color,
+            linewidth=1.8,
+            alpha=0.88,
+            zorder=6,
+        )
+        ax.add_patch(top_rim)
+        highlights.append(top_rim)
+
+        if style_key == "battery":
+            term = FancyBboxPatch(
+                (xc - 0.12 * w_top, cap * 1.02),
+                0.24 * w_top,
+                cap * 0.045,
+                boxstyle="round,pad=0.01",
+                facecolor=glass_edge_color,
+                edgecolor="none",
+                zorder=6,
+            )
+            ax.add_patch(term)
+
+        # 4. Direct Value Label & Country/Category Footer Label
+        val_str = value_fmt(val) if callable(value_fmt) else value_fmt.format(val)
+        has_sub = bool(subtitle_values and idx < len(subtitle_values) and subtitle_values[idx])
+        val_y = cap * 1.135 if has_sub else cap * 1.075
+        t_val = ax.text(
+            xc,
+            val_y,
+            val_str,
+            ha="center",
+            va="bottom",
+            fontsize=13.5,
+            fontweight="bold",
+            color=primary_ink,
+            zorder=7,
+        )
+        anns.append(t_val)
+
+        if has_sub:
+            t_sub = ax.text(
+                xc,
+                cap * 1.062,
+                str(subtitle_values[idx]),
+                ha="center",
+                va="bottom",
+                fontsize=9.5,
+                fontweight="bold",
+                color=secondary_ink,
+                zorder=7,
+            )
+            anns.append(t_sub)
+
+        t_lbl = ax.text(
+            xc,
+            -base_thick - cap * 0.06,
+            lbl,
+            ha="center",
+            va="top",
+            fontsize=12.5,
+            fontweight="bold",
+            color=primary_ink,
+            zorder=7,
+        )
+        anns.append(t_lbl)
+
+    ax.set_xlim(-0.70, (n - 1) + 0.70)
+    ax.set_ylim(-base_thick - cap * 0.22, cap * 1.28)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for side in ("top", "right", "bottom", "left"):
+        if side in ax.spines:
+            ax.spines[side].set_visible(False)
+
+    return {
+        "containers": containers,
+        "liquids": liquids,
+        "highlights": highlights,
+        "annotations": anns,
+        "max_capacity": cap,
+        "ax": ax,
+    }
+
+
+def _generate_procedural_pineapple_texture(size: int = 512):
+    """
+    Generate a rich, high-resolution procedural organic pineapple cross-section texture (`size x size x 4` RGBA uint8)
+    used when `texture_img_path` is not provided or as a fallback.
+    """
+    import numpy as np
+
+    yy, xx = np.mgrid[-1.0:1.0:complex(0, size), -1.0:1.0:complex(0, size)]
+    rr = np.sqrt(xx ** 2 + yy ** 2)
+    theta = np.arctan2(yy, xx)
+
+    rgba = np.zeros((size, size, 4), dtype=np.uint8)
+    inside = rr <= 1.0
+
+    # Base golden yellow flesh gradient
+    radial_wave = 0.5 + 0.5 * np.cos(16.0 * theta)
+    fibrous_ripples = 0.5 + 0.5 * np.sin(38.0 * rr - 16.0 * theta)
+
+    r_ch = np.clip(248.0 - 22.0 * rr + 10.0 * radial_wave, 0, 255)
+    g_ch = np.clip(208.0 - 38.0 * (rr ** 1.4) + 14.0 * radial_wave + 8.0 * fibrous_ripples, 0, 255)
+    b_ch = np.clip(46.0 + 25.0 * (1.0 - rr) + 12.0 * fibrous_ripples, 0, 255)
+
+    # Central lighter core (r < 0.23)
+    core_mask = rr < 0.23
+    r_ch = np.where(core_mask, 254.0, r_ch)
+    g_ch = np.where(core_mask, 240.0 - 25.0 * (rr / 0.23), g_ch)
+    b_ch = np.where(core_mask, 138.0 - 30.0 * (rr / 0.23), b_ch)
+
+    # Radial carpel septum lines (16 segments between r=0.23 and r=0.88)
+    septum = (rr >= 0.23) & (rr <= 0.88) & (np.abs(np.sin(8.0 * theta)) < 0.045)
+    r_ch = np.where(septum, r_ch * 0.90, r_ch)
+    g_ch = np.where(septum, g_ch * 0.84, g_ch)
+    b_ch = np.where(septum, b_ch * 0.70, b_ch)
+
+    # Ring of 16 seed pockets around r = 0.74
+    for k in range(16):
+        ang = (2.0 * math.pi * k) / 16.0 + (math.pi / 16.0)
+        sx, sy = 0.74 * math.cos(ang), 0.74 * math.sin(ang)
+        d_seed = np.sqrt((xx - sx) ** 2 + (yy - sy) ** 2)
+        seed_dot = d_seed < 0.042
+        r_ch = np.where(seed_dot, 180.0, r_ch)
+        g_ch = np.where(seed_dot, 83.0, g_ch)
+        b_ch = np.where(seed_dot, 9.0, b_ch)
+
+    # Scalloped golden-brown rind outer ring (0.90 <= r <= 1.05, clipped by vector Wedge r=1.0)
+    rind_boundary = 0.905 + 0.022 * np.cos(24.0 * theta)
+    rind_mask = rr >= rind_boundary
+    r_ch = np.where(rind_mask, 194.0, r_ch)
+    g_ch = np.where(rind_mask, 106.0, g_ch)
+    b_ch = np.where(rind_mask, 18.0, b_ch)
+
+    rgba[..., 0] = r_ch.astype(np.uint8)
+    rgba[..., 1] = g_ch.astype(np.uint8)
+    rgba[..., 2] = b_ch.astype(np.uint8)
+    rgba[..., 3] = 255
+    return rgba
+
+
+def plot_masked_texture_wedge(
+    ax: object,
+    pct_value: float,
+    texture_img_path: Optional[str] = None,
+    title: str = "",
+    subtitle: str = "",
+    base_disc_color: str = "#E2E8F0",
+    wedge_edge_color: str = "#FFFFFF",
+    start_angle: float = 90.0,
+    clockwise: bool = True,
+    value_fmt: Optional[str] = None,
+    **kwargs,
+) -> Dict[str, object]:
+    """
+    Data 7 RE:LAB Pineapple Export Wedge / Small-Multiples Texture Mask Chart:
+    - Draws a muted 100% full reference disc (`base_disc_color`).
+    - Loads a text-free texture image (from `image-generator` or procedural pineapple cross-section fallback)
+      and clips it with a mathematically exact `matplotlib.patches.Wedge` of angle `360 * pct`.
+    """
+    _ensure_cjk_font()
+    import os
+    from matplotlib.patches import Circle, Wedge
+    import numpy as np
+
+    raw_v = float(pct_value)
+    p_norm = (raw_v / 100.0) if raw_v > 1.0 else raw_v
+    p_clamped = max(0.0, min(1.0, p_norm))
+    pct_display = p_clamped * 100.0
+
+    img_arr = None
+    if texture_img_path and os.path.exists(str(texture_img_path)):
+        try:
+            from PIL import Image
+            pil_img = Image.open(str(texture_img_path)).convert("RGBA")
+            w, h = pil_img.size
+            side = min(w, h)
+            left = (w - side) // 2
+            top = (h - side) // 2
+            pil_sq = pil_img.crop((left, top, left + side, top + side)).resize((512, 512))
+            img_arr = np.asarray(pil_sq)
+        except Exception:
+            img_arr = None
+
+    if img_arr is None:
+        img_arr = _generate_procedural_pineapple_texture(size=512)
+
+    base_disc = Circle(
+        (0.0, 0.0),
+        radius=1.0,
+        facecolor=base_disc_color,
+        edgecolor="#CBD5E1",
+        linewidth=1.4,
+        zorder=1,
+    )
+    ax.add_patch(base_disc)
+
+    angle_span = 360.0 * p_clamped
+    if p_clamped >= 0.9999:
+        theta1, theta2 = 0.0, 360.0
+    elif clockwise:
+        theta1 = float(start_angle) - angle_span
+        theta2 = float(start_angle)
+    else:
+        theta1 = float(start_angle)
+        theta2 = float(start_angle) + angle_span
+
+    im = ax.imshow(
+        img_arr,
+        extent=[-1.0, 1.0, -1.0, 1.0],
+        origin="upper",
+        zorder=2,
+    )
+
+    wedge_patch = Wedge(
+        (0.0, 0.0),
+        r=1.0,
+        theta1=theta1,
+        theta2=theta2,
+        facecolor="none",
+        edgecolor=wedge_edge_color,
+        linewidth=2.4,
+        zorder=3,
+    )
+    ax.add_patch(wedge_patch)
+    im.set_clip_path(wedge_patch)
+
+    # Redraw wedge border on top so slice boundary is razor sharp
+    border_wedge = Wedge(
+        (0.0, 0.0),
+        r=1.0,
+        theta1=theta1,
+        theta2=theta2,
+        facecolor="none",
+        edgecolor=wedge_edge_color,
+        linewidth=2.2,
+        zorder=4,
+    )
+    ax.add_patch(border_wedge)
+
+    val_text = value_fmt.format(pct_display) if value_fmt else f"{pct_display:.1f}%"
+    badge_color = kwargs.pop("badge_color", "#B45309")
+    t_pct = ax.text(
+        0.0,
+        -1.18,
+        val_text,
+        ha="center",
+        va="top",
+        fontsize=15.0,
+        fontweight="bold",
+        color=badge_color,
+        zorder=5,
+    )
+
+    t_title = None
+    if title:
+        t_title = ax.text(
+            0.0,
+            1.14,
+            str(title),
+            ha="center",
+            va="bottom",
+            fontsize=12.5,
+            fontweight="bold",
+            color="#0F172A",
+            zorder=5,
+        )
+
+    t_sub = None
+    if subtitle:
+        t_sub = ax.text(
+            0.0,
+            -1.38,
+            str(subtitle),
+            ha="center",
+            va="top",
+            fontsize=9.5,
+            color="#475569",
+            zorder=5,
+        )
+
+    ax.set_xlim(-1.22, 1.22)
+    ax.set_ylim(-1.52 if subtitle else -1.35, 1.32 if title else 1.15)
+    ax.set_aspect("equal")
+    ax.axis("off")
+
+    return {
+        "image": im,
+        "wedge": wedge_patch,
+        "border_wedge": border_wedge,
+        "base_disc": base_disc,
+        "pct_text": t_pct,
+        "title_text": t_title,
+        "subtitle_text": t_sub,
+        "ax": ax,
+    }
+
+
+def _generate_procedural_coffee_bean_sprite(size: int = 128):
+    """Generate a crisp 128x128 RGBA roasted coffee bean icon with 3D shading and central S-crease."""
+    import numpy as np
+
+    yy, xx = np.mgrid[-1.0:1.0:complex(0, size), -1.0:1.0:complex(0, size)]
+    # Tilted oval bean (rotated by 28 degrees)
+    ang = math.radians(28.0)
+    xr = xx * math.cos(ang) + yy * math.sin(ang)
+    yr = -xx * math.sin(ang) + yy * math.cos(ang)
+
+    ellipse_d = (xr / 0.62) ** 2 + (yr / 0.84) ** 2
+    bean_mask = ellipse_d <= 1.0
+
+    # S-curve central crease along yr
+    crease_center_x = 0.09 * np.sin(2.6 * yr)
+    crease_dist = np.abs(xr - crease_center_x)
+    crease_mask = (crease_dist < 0.055) & (ellipse_d <= 0.88)
+
+    # 3D Lambertian highlight on upper-left
+    light = np.clip(1.0 - 0.55 * ((xr + 0.22) ** 2 + (yr + 0.25) ** 2), 0.35, 1.08)
+
+    rgba = np.zeros((size, size, 4), dtype=np.uint8)
+    r_ch = np.where(crease_mask, 42.0, np.clip(122.0 * light, 35, 168))
+    g_ch = np.where(crease_mask, 22.0, np.clip(74.0 * light, 18, 108))
+    b_ch = np.where(crease_mask, 12.0, np.clip(38.0 * light, 10, 62))
+
+    # Crisp rim outline
+    rim_mask = (ellipse_d > 0.86) & bean_mask
+    r_ch = np.where(rim_mask, 58.0, r_ch)
+    g_ch = np.where(rim_mask, 32.0, g_ch)
+    b_ch = np.where(rim_mask, 16.0, b_ch)
+
+    rgba[..., 0] = r_ch.astype(np.uint8)
+    rgba[..., 1] = g_ch.astype(np.uint8)
+    rgba[..., 2] = b_ch.astype(np.uint8)
+    rgba[..., 3] = np.where(bean_mask, 255, 0).astype(np.uint8)
+    return rgba
+
+
+def plot_sprite_scatter(
+    ax: object,
+    x_vals: Sequence[float],
+    y_vals: Sequence[float],
+    sprite_img_path: Optional[str] = None,
+    labels: Optional[Sequence[str]] = None,
+    zoom: float = 0.18,
+    auto_remove_white_bg: bool = True,
+    white_threshold: int = 242,
+    **kwargs,
+) -> Dict[str, object]:
+    """
+    Data 7 RE:LAB Coffee Bean Sprite Scatter Plot:
+    - Loads a sprite icon (or procedural roasted coffee bean fallback), automatically strips solid white
+      backgrounds via PIL when `auto_remove_white_bg=True`, and anchors sprites at exact `(x, y)` coordinates
+      using `OffsetImage` & `AnnotationBbox` with leader-line callouts.
+    """
+    _ensure_cjk_font()
+    import os
+    from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+    import numpy as np
+
+    pts = []
+    for idx, (xv, yv) in enumerate(zip(x_vals, y_vals)):
+        px, py = _parse_numeric_or_na(xv), _parse_numeric_or_na(yv)
+        if px is not None and py is not None:
+            lbl = str(labels[idx]) if (labels is not None and idx < len(labels) and labels[idx] is not None) else ""
+            pts.append((float(px), float(py), lbl))
+
+    if not pts:
+        return {"artists": [], "annotations": [], "ax": ax}
+
+    sprite_rgba = None
+    if sprite_img_path and os.path.exists(str(sprite_img_path)):
+        try:
+            from PIL import Image
+            pil_img = Image.open(str(sprite_img_path)).convert("RGBA")
+            arr = np.asarray(pil_img).copy()
+            if auto_remove_white_bg:
+                white_mask = (
+                    (arr[..., 0] >= white_threshold)
+                    & (arr[..., 1] >= white_threshold)
+                    & (arr[..., 2] >= white_threshold)
+                )
+                arr[white_mask, 3] = 0
+            sprite_rgba = arr
+        except Exception:
+            sprite_rgba = None
+
+    if sprite_rgba is None:
+        sprite_rgba = _generate_procedural_coffee_bean_sprite(size=128)
+
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    ax.scatter(xs, ys, s=10, alpha=0.0, zorder=1)
+
+    x_min, x_max = min(xs), max(xs)
+    y_min, y_max = min(ys), max(ys)
+    x_span = max(1e-6, x_max - x_min)
+    y_span = max(1e-6, y_max - y_min)
+    ax.set_xlim(x_min - x_span * 0.12, x_max + x_span * 0.16)
+    ax.set_ylim(y_min - y_span * 0.14, y_max + y_span * 0.16)
+
+    artists = []
+    anns = []
+    offsets_cycle = [(14, 14), (14, -16), (-14, 14), (-14, -16), (18, 0), (-18, 0)]
+
+    for idx, (px, py, lbl) in enumerate(pts):
+        oi = OffsetImage(sprite_rgba, zoom=float(zoom))
+        ab = AnnotationBbox(oi, (px, py), frameon=False, zorder=4)
+        ax.add_artist(ab)
+        artists.append(ab)
+
+        if lbl:
+            dx, dy = offsets_cycle[idx % len(offsets_cycle)]
+            ha_align = "left" if dx >= 0 else "right"
+            ann = ax.annotate(
+                lbl,
+                xy=(px, py),
+                xytext=(float(dx), float(dy)),
+                textcoords="offset points",
+                ha=ha_align,
+                va="center",
+                fontsize=9.2,
+                fontweight="bold",
+                color="#0F172A",
+                arrowprops=dict(arrowstyle="-", color="#64748B", lw=1.0, shrinkA=0, shrinkB=6),
+                zorder=5,
+            )
+            anns.append(ann)
+
+    despine_axes(ax, grid_axis="both", grid_alpha=0.45)
+    return {"artists": artists, "annotations": anns, "ax": ax}
+
+
+THEMATIC_PALETTE_PRESETS: Dict[str, Tuple[str, List[str]]] = {
+    "milk_tea": ("RE:LAB Milk Tea & Caramel Palette", ["#C87D55", "#5C8D89", "#D9A05B", "#8C5A3C"]),
+    "bubble_tea": ("RE:LAB Bubble Tea & Caramel Palette", ["#C87D55", "#5C8D89", "#D9A05B", "#8C5A3C"]),
+    "forest_eco": ("Forest Canopy & Eco Sustainability Palette", ["#3A7D44", "#2C6E8F", "#C98A3E", "#6B8E23"]),
+    "matcha_forest": ("Matcha & Forest Botanical Palette", ["#3A7D44", "#2C6E8F", "#C98A3E", "#6B8E23"]),
+    "ocean_blue": ("Pelagic Ocean & Hydro Palette", ["#0284C7", "#0D9488", "#E07A5F", "#4F46E5"]),
+    "ocean_hydro": ("Pelagic Ocean & Hydro Palette", ["#0284C7", "#0D9488", "#E07A5F", "#4F46E5"]),
+    "coffee_roast": ("Roasted Espresso & Crema Palette", ["#7F4F24", "#4A7C59", "#C68B59", "#9C6644"]),
+    "pineapple_tropical": ("Tropical Pineapple & Agro Export Palette", ["#D97706", "#15803D", "#0284C7", "#B45309"]),
+    "agri_gold": ("Tropical Pineapple & Agro Export Palette", ["#D97706", "#15803D", "#0284C7", "#B45309"]),
+}
+
+
+def _expand_single_hex_to_four(hex_code: str) -> List[str]:
+    """Expand a single representative topic hex color into 4 perceptually balanced CIELAB base colors."""
+    base_hex = _normalize_hex(hex_code)
+    l_val, a_val, b_val = hex_to_lab(base_hex)
+    target_l = max(52.0, min(72.0, l_val))
+    c2 = lab_to_hex(target_l, -b_val * 0.88, a_val * 0.88)
+    c3 = lab_to_hex(target_l, b_val * 0.82, -a_val * 0.82)
+    c4 = lab_to_hex(target_l, -a_val * 0.78, -b_val * 0.78)
+    return [base_hex, c2, c3, c4]
+
+
+def derive_thematic_palette(
+    theme_preset_or_hex: object,
+    sync_js_path: Optional[str] = None,
+    activate: bool = False,
+    **kwargs,
+) -> Dict[str, object]:
+    """
+    Data 7 RE:LAB Thematic CIELAB Palette Derivation:
+    - Accepts a preset name (`"milk_tea"`, `"forest_eco"`, `"ocean_blue"`, `"coffee_roast"`, `"pineapple_tropical"`),
+      a single topic HEX string (e.g. `"#C87D55"`), or a list of 1..4 HEX strings.
+    - Derives a complete CIELAB-calibrated palette (4 qualitative colors, 4 zero-alpha light badge tints,
+      four 5-node sequential scales, and 9-node symmetric diverging scale).
+    - Optionally syncs `gephi_palette.js` at `sync_js_path` and activates the palette in-place if `activate=True`.
+    """
+    palette_id = str(kwargs.pop("palette_id", "thematic_cielab_palette"))
+    palette_name = str(kwargs.pop("palette_name", "Thematic CIELAB Palette"))
+
+    if isinstance(theme_preset_or_hex, str):
+        key = theme_preset_or_hex.strip().lower().replace("-", "_").replace(" ", "_")
+        if key in THEMATIC_PALETTE_PRESETS:
+            preset_title, hex_list = THEMATIC_PALETTE_PRESETS[key]
+            palette_id = f"thematic_{key}"
+            palette_name = preset_title
+        else:
+            hex_list = _expand_single_hex_to_four(theme_preset_or_hex.strip())
+    elif isinstance(theme_preset_or_hex, (list, tuple)):
+        cleaned = [str(h).strip() for h in theme_preset_or_hex if str(h).strip()]
+        if not cleaned:
+            raise ValueError("derive_thematic_palette received an empty list.")
+        hex_list = _expand_single_hex_to_four(cleaned[0]) if len(cleaned) == 1 else cleaned[:4]
+    else:
+        raise TypeError("theme_preset_or_hex must be a preset name str, a HEX str, or a sequence of HEX strings.")
+
+    palette_obj = build_palette_from_primary_hexes(
+        hex_list,
+        palette_id=palette_id,
+        palette_name=palette_name,
+        sync_js_path=sync_js_path,
+    )
+    if activate:
+        activate_chart_palette(palette_obj)
+    return palette_obj
+
+
 if __name__ == "__main__":
     import argparse
     import json

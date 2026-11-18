@@ -1,17 +1,17 @@
-# 結構化深度報告、雙模態排版與 Medium 數據敘事專欄規範（Format B: Document Report & Medium Column Spec）
+# 結構化深度報告與雙模態排版規範（Format B Genres 1–4: Document Report & Print PDF Spec）
 
-> **單一職責定位（Single Responsibility）**：本檔專責 **Format B（結構化深度分析報告 `.md` + 高解析印刷級 `.pdf` 體裁 1～4，以及文體 5：Medium 每週一圖數據敘事專欄 `.md`）** 的文體選擇、注意力節律排版、Playwright A4 印刷 CSS 規格、防斷框工程守則，以及 Medium 專欄 `<= 1,600` 字原生語法與「參考資料來源（僅附：1.官方資料集網址、2.資料涵蓋期間）」分離計字規範。跨格式共用的組塊階層、**筆風設定檔 8 大插槽綁定（Format B 正文散文、表格/卡片錨點、公式導讀、圖說與禁用詞受 `Slot 1`、`Slot 3`、`Slot 4` 與 `Slot 8` 100% 控制）**與分層顏色設定集請見 [`visual_cognition_principles.md`](visual_cognition_principles.md)。
+> **單一職責定位（Single Responsibility）**：本檔專責 **Format B 文體 1～4（結構化深度分析報告 `.md` + 高解析印刷級 `.pdf`）** 的文體選擇、注意力節律排版、Playwright/Chromium A4 印刷 CSS 規格與防斷框工程守則。
+> - **文體 5（Medium 每週一圖數據敘事專欄 `.md`，`<= 1,600` 字）已獨立拆出**：請改讀 **[`medium_column_spec.md`](medium_column_spec.md)**（與本檔 100% 隔離，互不干擾）。
+> - **筆風與第三層設計武器庫連動**：正文散文、表格/卡片錨點、公式導讀與圖說受當前筆風 `Slot 1`、`Slot 3`、`Slot 4` & `Slot 8` 控制（[`visual_cognition_principles.md`](visual_cognition_principles.md)）；若第三層開啟模式 2/3，同步載入 **[`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)** 以使用編輯室社論組件（`.editorial-masthead`、`.big-stat-callout`、`.myth-reality-split`、`.methodology-traffic-light`）。
 
 ---
 
-## 一、 五大報告與專欄文體、結構配比與「動態擴章 vs. 單一故事線收斂」法則（5 Document Genres & Expansion / Convergence Rules）
+## 一、 文體 1～4 結構配比與「動態擴章」法則（Document Genres 1–4 & Zero-Truncation）
 
-- **理論依據**：**體裁分析理論（Genre Analysis, Swales 1990）**、**金字塔原理（Pyramid Principle, Minto 2009）** 與 **馬丁尼杯數據敘事結構（Martini Glass Narrative Structure, Segel & Heer 2010）**。
-- **文體 1～4（深度報告）之頁數無硬性上限與動態擴章原則（Zero-Truncation Dynamic Chapters）**：
+- **理論依據**：**體裁分析理論（Genre Analysis, Swales 1990）** 與 **金字塔原理（Pyramid Principle, Minto 2009）**。
+- **頁數無硬性上限與動態擴章原則（Zero-Truncation Dynamic Chapters）**：
   - 報告總頁數由內容深度、圖表數量與視覺留白自然決定，**嚴禁設定固定頁數上限（如強行壓縮至 6 頁）或為了湊頁數而灌水**。
   - 當 Phase 1 Step 5 收斂出 $> 4$ 個知識分支（含 `(a) 核心論證主幹分支` 與 `(b) 批判延伸與跨域遷移分支`）時，**嚴禁刪減或合併壓縮延伸議題**！必須**動態擴充一級大章節（`壹、貳、參、肆、伍、陸、柒...`）**，讓每一個批判延伸、假設邊界與跨域遷移分支皆享有獨立完整的「敘事段落 + 三線表/雙欄卡 + 洞見收斂」章節。
-- **文體 5（Medium 每週一圖數據敘事專欄）之單一故事線漏斗收斂與 `<= 1,600` 字鐵律**：
-  - 針對公開數據新聞與課堂「每週一圖」作業，採用**單一故事線收斂（Single-Hook Convergence）**，正文嚴格控制在 **`<= 1,600` 繁體中文字（不含文末 `---` 下方之參考資料來源附註）**，搭配 1～2 張獨立單面板統計圖（`.png`），**免除編譯 PDF**。
 
 | 文體類型 | 適用場景 | 核心結構與篇幅權重配比（`%`） |
 | :--- | :--- | :--- |
@@ -19,7 +19,8 @@
 | **2. 高階決策備忘錄**<br>*(Executive Strategy Memo)* | 商業調查報告、轉型策略、管理實證 | ① 執行摘要與 SCQA 破題 (`15%`) → ② 核心矛盾與實證數據診斷 (`25%`) → ③ 系統架構與失效機制解剖 (`30%`) → ④ 雙軌治理與分階段行動路線圖 (`30%`) |
 | **3. 方法論實踐藍圖**<br>*(Methodological Blueprint)* | 工程架構、演算法、治理管線或操作指南 | ① 核心設計哲學與邊界 (`15%`) → ② 系統架構與運作機制 (`35%`) → ③ 落地步驟與檢核矩陣 (`30%`) → ④ 常見反模式（Anti-patterns）與防禦對策 (`20%`) |
 | **4. 跨域知識卡片組**<br>*(Atomic Knowledge Cards)* | 高密度概念萃取、建立個人知識庫 | ① 全局概念索引地圖 (`15%`) → ② 原子概念卡（每卡含：白話定義、運作機制、正反案例、跨域連結）(`65%`) → ③ 實踐自測清單 (`20%`) |
-| **5. Medium 每週一圖數據敘事專欄**<br>*(Medium Data Storytelling Column, `<= 1,600` 字)* | 搭配 CSV 原始檔與《資料說明書》之公開數據新聞、課堂「每週一圖」作業（免編譯 PDF） | ① 新聞感主副標題與反直覺黃金數字 Hook 開場 (`15%`) → ② 圖 1（`01_chart_hook.png`）嵌入與現象結構拆解短段落 (`35%`) → ③ 關鍵數據金句引言塊（Pull Quote）與圖 2（`02_chart_drilldown.png`，選配）深層原因分析 (`35%`) → ④《資料說明書》第 6 章解讀邊界反思與結尾洞見 (`15%`) ＋ `---` 文末參考資料來源（僅附：1.官方資料集網址、2.資料涵蓋期間，**不計入正文 1,600 字額度**） |
+
+*(註：若任務為 **文體 5：Medium 每週一圖數據敘事專欄**，請立即切換至獨立專檔 [`medium_column_spec.md`](medium_column_spec.md)，免除編譯 PDF。)*
 
 ---
 
@@ -103,42 +104,15 @@ from verify_visual_outputs import (
 
 ---
 
-## 四、 文體 5 專屬規範：Medium 每週一圖數據敘事專欄（`<= 1,600` 字）、參考資料來源分離計字規則與課堂繳交協定（Genre 5: Medium Data Storytelling Column Spec）
+## 四、 第三層編輯室社論組件（Layer 3 Armory Print-CSS Components）
 
-### 1. Medium 100% 原生相容語法與七步閱讀結構（Zero Custom HTML / Zero Tables）
-- **交付位置與免 PDF 編譯鐵律**：存為 `reading_sessions/<YYYYMMDD_主題簡稱>/02_outputs/02_medium_article.md`（或 `02_report.md`），**免除呼叫 `pdf_report_engine.py` 編譯 A4 PDF**。
-- **全面禁用不支援語法**：為確保使用者可直接複製貼上至 `medium.com` 發布，**全面禁用** Medium 不支援的 HTML `.card-grid-2` `<div>` 卡片容器、`<figure>` 標籤，以及任何 **Markdown/HTML 表格（`|---|---|` 或 `<table>`）**！
-- **Medium 最佳七步閱讀結構**：
-  1. `# 新聞感數據主標題` ＋ `### 一句話破題副標題`（點出核心反差與關鍵發現）
-  2. **開場 Hook 短段落**（直接拋出純明細 `df_detail` 最反直覺的核心黃金數字抓眼球）
-  3. **`![圖 1 圖說文字](./01_chart_hook.png)`**（主色系 `GEPHI_QUALITATIVE_HEX[0]` / `orange` 破題圖）
-  4. **現象解讀與結構拆解**（2～3 個短段落，每段嚴控 3～4 行，最佳化網頁與手機直向閱讀節奏，重點數據以 `**粗體**` 加強）
-  5. **`> 關鍵數據金句引言塊（Medium Pull Quote）`**
-  6. **`![圖 2 圖說文字](./02_chart_drilldown.png)`（若為雙圖時穿插，次色系 `GEPHI_QUALITATIVE_HEX[1]` / `blue` 深挖圖）＋ 深層原因分析**
-  7. **數據背後的解讀邊界與結尾洞見**（自然融入《資料說明書》第 6 章的核心外推邊界，如生態謬誤、抽樣涵蓋偏差或第 3 章前處理反思）
+當第三層（[`advisors/layer3_advisor_design_style_color.md`](advisors/layer3_advisor_design_style_color.md)）開啟 **模式 2 (`editorial_narrative`)** 或 **模式 3 (`bespoke_metaphor`)** 時，`scripts/pdf_report_engine.py` 內建以下 4 組經 Chromium A4 實測防斷框（`break-inside: avoid`、零固定高度）之編輯室社論組件可供呼叫（完整 HTML 範本見 [`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md) 第一部）：
+- **`.editorial-masthead`**（搭配 `.masthead-kicker`、`<h1>`、`.masthead-deck`）：報刊頭條頂部粗橫線開篇區。
+- **`.big-stat-callout`**（搭配 `.big-stat-number`、`.big-stat-label`）：巨型黃金數字衝擊盒。
+- **`.myth-reality-split`**（搭配 `.myth-box` 左紅 vs. `.reality-box` 右綠）：常見直覺迷思 vs. 實證真相雙欄對撞解剖台。
+- **`.methodology-traffic-light`**（搭配 `.traffic-tier` 及 `.traffic-badge-green` / `.traffic-badge-yellow` / `.traffic-badge-red`）：對應《資料說明書》證據紀律標籤之方法論紅黃綠燈警示卡。
 
-### 2. 文末「參考資料來源」精簡規格鐵律 ＋ 字數分離計算規則（關鍵強制規範）
-- **水平分隔線隔離**：在文章正文第 7 步結尾後，必須以水平分隔線 `---` 隔開，附上精簡的 **「參考資料來源」** 附註區塊。
-- **內容精簡與正確性鐵律（每筆官方公開資料集僅需附加說明 2 項資訊）**：
-  - 列出所引用的**原始官方發布機關與資料集正式名稱**，且每一筆資料集下方**只要附加說明以下 2 項資訊即可**（直接從《資料說明書》第 1 章提取，免除冗長的三重時間戳記、統計母體樣本說明與授權條款段落）：
-    1. **官方資料集網址**
-    2. **資料涵蓋期間**
-  - **絕對禁止將使用者自己生成的「資料說明書」寫成資料來源！**
-- **字數分離計算規則（不列入正文 1,600 字計算內）**：
-  - 此 `---` 下方的「參考資料來源」附註區塊，**不計入正文 1,600 字額度內**。
-  - `---` 上方的**正文（含主副標題、內文段落、引言塊與圖說）嚴格控制在 `<= 1,600` 繁體中文字**。
-  - 完稿後可調用 `verify_visual_outputs.verify_medium_article_words("02_medium_article.md")`（或執行 `python scripts/verify_visual_outputs.py --verify-medium 02_medium_article.md`）自動檢驗，並在文稿最底部自動輸出**雙軌字數統計**：
-    > `📊 字數統計：正文共 XXX 字（不含文末參考資料來源，符合 <= 1,600 字規範；若含文末來源共 YYY 字）。`
-
-### 3. GitHub 單一檔案協作紀錄自動推送與課堂 Google Doc 繳交懶人區塊
-- 將 Phase 1 從「廣角候選切角選單 $\rightarrow$ 互動延伸討論 $\rightarrow$ 漏斗收束定案」的完整討論過程詳實寫入 `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`。
-- 自動執行 `git add`、`git commit` 與 `git push` 上傳至公開 GitHub 倉庫（依 `git remote get-url origin` 實際綁定之公開倉庫網址，預設為 `https://github.com/markyang20040112-source/deep-reading-and-visual-synthesis`），並在回覆結尾直接印出符合課堂 Google Doc（[每週一圖：作業範例](https://docs.google.com/document/d/1ZQUB9kwHqW162xjAFyPbVNEs-kJQteMvxohhGVhCad0/edit?usp=sharing)）格式的一鍵複製繳交區塊（含該次 `01_phase1_socratic_log.md` 的 **GitHub 單一檔案 `blob/main/...` 完整網址**）：
-  ```text
-  {學號} {姓名}
-  {您的 medium.com 報導連結}
-  {您在 Gemini 網頁版製作資料說明書的分享連結 (AI 對話 1)}
-  https://github.com/markyang20040112-source/deep-reading-and-visual-synthesis/blob/main/reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md
-  ```
+*(註：若任務為 **文體 5：Medium 每週一圖數據敘事專欄**，請改讀獨立專檔 [`medium_column_spec.md`](medium_column_spec.md)，本檔條文不適用。)*
 
 
 

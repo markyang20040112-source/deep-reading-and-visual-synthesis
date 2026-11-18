@@ -1,53 +1,78 @@
 # Deep Reading & Visual Synthesis (深度閱讀引導與視覺化知識統整技能庫)
 
-本倉庫包含 **「深度閱讀引導與視覺化知識統整（Deep Reading & Visual Synthesis）」** Agent 技能之完整模組化規範、科學渲染引擎，以及每次深度閱讀專案所生成的知識資產。
+本倉庫包含 **「深度閱讀引導與視覺化知識統整（Deep Reading & Visual Synthesis）」** Agent 技能之完整模組化規範、科學渲染引擎，以及公私雙倉庫隔離範本架構。
+
+---
+
+## 🏗️ 全系統架構全景圖（System Architecture Overview）
+
+![Deep Reading & Visual Synthesis 全系統架構全景圖](assets/skill_architecture_overview.png)
 
 ---
 
 ## 🗺️ 倉庫全景檔案地圖與單一職責分工 (Project File Map & Single Responsibility)
 
+本技能庫採 **「三層漸進決策漏斗（O(1) 按需載入）＋ 表達三支柱全域穿透 ＋ 八大黑盒引擎」** 設計，確保 AI 在極低注意力負荷下維持高穩定度的知識萃取與出版級視覺渲染：
+
 ```text
 deep-reading-and-visual-synthesis/
-├── README.md                                                 # [總覽] 倉庫全景地圖、檔案分工矩陣與運作流程說明
-├── .agents/skills/deep-reading-and-visual-synthesis/         # 【核心技能定義區 — 採按需載入 (Lazy Routing) 省流量架構】
-│   ├── SKILL.md                                              # [總控台] 雙階段隔離鐵律、檔案路由地圖、歸檔規範與靈感生命週期唯一權威定義
-│   ├── THEORY_ARCHIVE.md                                     # [文獻庫] 認知心理學、視覺感知與排版工學實證文獻封存庫 (日常執行嚴禁讀取)
-│   ├── phase1_reading/
-│   │   └── phase1_socratic_reading_guide.md                  # [階段一] 四大輸入模式路由、五步蘇格拉底式引導、CSV+資料說明書「讀取—分析—討論」漏斗敘事三迴路與收斂協定
-│   ├── phase2_output/
-│   │   ├── phase2_output_router.md                           # [階段二總路由] 輸出分流總控台、「動態三軸視覺決策引擎」、「A2 無損分流擴展」與「Medium 專欄輕量路由」
-│   │   ├── visual_cognition_principles.md                    # [共通底層規範] 單畫布 4→2→3 vs 跨畫布擴展、由淺入深敘事、同步字級階梯總表與 HCL 色彩學
-│   │   ├── visual_diagram_matplotlib_spec.md                 # [特化格式 A：知識圖譜] 28"×18.5" 畫布、01/02/03+ 拆圖擴展、五大拓撲與 generate_mindmap.py API 契約
-│   │   ├── document_report_spec.md                           # [特化格式 B：深度報告與專欄] 五大體裁 (B1~B4 深度報告 + 文體5 Medium <=1,600字專欄) 與 pdf_report_engine.py API 契約
-│   │   ├── presentation_slide_spec.md                        # [特化格式 C：高階簡報] 三區架構、八大版型、2欄/3-4欄分級字級底線與 pptx_slide_engine.py API 契約
-│   │   ├── quantitative_chart_spec.md                        # [特化格式 D：量化圖表] 鎖定版 Gephi·pastel 配色 SSOT、三層分流 assert、單面板跨檔接力與 hcl_color_engine.py API 契約
-│   │   └── data_dashboard_spec.md                            # [特化格式 E：數據儀表板] 動態圖表選型、自包含本地 CSS、gephi_palette.js API 契約與獨立 Git 網站發布規範
-│   └── scripts/                                              # 【底層黑盒渲染與驗證引擎 — 日常執行直接 import 呼叫，免讀原始碼】
-│       ├── hcl_color_engine.py                               # [Python 色彩與分流引擎] Gephi·pastel 色階、0-Alpha 底色、CIELAB 插值與 CSV 三層分流 (load_and_split_csv)
-│       ├── gephi_palette.js                                  # [前端 JS 色彩引擎] 純 JS CIELAB 插值、類別色碼鎖定與 0-Alpha 標籤底色引擎 (UMD/Browser/Node)
-│       ├── generate_mindmap.py                               # [Format A 圖譜引擎] 出版級繁體中文知識圖譜渲染、避頭尾保護與 T1~T5 高階拓撲組件
-│       ├── pdf_report_engine.py                              # [Format B 報告引擎] A4 直向/橫向混合排版 CSS 生成器與 Playwright PDF 編譯引擎
-│       ├── pptx_slide_engine.py                              # [Format C 簡報引擎] 16:9 原生向量投影片組件、欄數自適應字級與版型防撞驗證引擎
-│       └── verify_visual_outputs.py                          # [視覺驗收與清理引擎] PDF/PPTX 轉 PNG 預覽、Medium 專欄分離計字檢驗與暫存檔一鍵清除工具
-└── reading_sessions/                                         # 【閱讀專案與生成資產自動歸檔區】
-    └── <YYYYMMDD_主題簡稱>/
-        ├── data/<原檔名>.csv                                 # [原始數據層] 原始 CSV 檔案原封不動存檔（嚴守規範第 5 節絕對不改動原始檔）
-        ├── 00_source_article.md                              # [輸入層] 原始文章全文或 Gemini 網頁版《資料說明書 (Data Codebook)》無損存檔
-        ├── 01_phase1_socratic_log.md                         # [思辨層] 第一階段蘇格拉底思辨軌跡、CSV 三層分流驗算、候選切角選單與單一故事線/雙群組收斂紀錄
-        └── 02_outputs/                                       # [產出層] 僅存放最終正式成果 (.png / .pdf / .md / .pptx / 正式 Git-Ready 儀表板網站專案) 與對應生成腳本 (.py)
+├── README.md                                                 # [人類導覽] 倉庫全景架構圖、檔案分工矩陣與運作流程說明
+├── assets/
+│   └── skill_architecture_overview.png                       # [架構圖] 全系統架構全景圖（給人類閱覽之 PNG 導覽）
+└── .agents/skills/deep-reading-and-visual-synthesis/         # 【核心技能定義區 — 採 O(1) 按需載入 (Lazy Routing)】
+    ├── SKILL.md                                              # [總控台] Gate 0 身分驗證門神、五大運作鐵律、檔案路由地圖與歸檔規範
+    ├── THEORY_ARCHIVE.md                                     # [文獻庫] 認知心理學、視覺感知與排版工學實證文獻封存庫 (T01~T24)
+    ├── config/                                               # [設定範本] 公開範本與 8 插槽筆風契約（私人色票/筆風由 .gitignore 隔離）
+    │   ├── user_preferences.template.json                    # 個人化設定公開範本（含確認關卡、分層色票、筆風映射與 Git 同步設定）
+    │   ├── styles/_style_schema_template.md                  # 8 大全場景筆風控制契約（Slots 1～8）標準範本
+    │   └── user_styles/.gitkeep                              # 外部使用者自訂筆風存放目錄
+    ├── setup/                                                # [初始化與同步協定]
+    │   ├── onboarding_wizard.md                              # 外部新使用者首次啟動強制初始化精靈
+    │   └── git_sync_and_evolution_protocol.md                # 公私雙倉庫同步、Format E 防嵌套開站、Medium 繳交與 Step E1~E3 進化閉環
+    ├── phase1_reading/                                       # [階段一：深度閱讀與數據探索]
+    │   ├── phase1_socratic_reading_guide.md                  # 四大輸入模式路由與 01_phase1_socratic_log.md 即時持久化協定
+    │   ├── mode1_article_socratic_protocol.md                # 模式 1/3/4：Step 0～5 蘇格拉底鷹架、圖爾敏論證與跨域類比
+    │   └── mode2_dataset_codebook_protocol.md                # 模式 2：CSV＋《資料說明書》「讀取—分析—討論」三迴路與 Track A/B/C 導學
+    ├── phase2_output/                                        # [階段二：三層漸進決策漏斗 ＋ 最小葉節點規格庫]
+    │   ├── phase2_output_router.md                           # [Layer 1 總路由] 決定 Format A~E 產出範圍、A2 無損擴展 vs. Medium 輕量分流
+    │   ├── advisors/                                         # [Layer 2 & Layer 3 顧問大腦 — 未選格式零讀取]
+    │   │   ├── layer2_advisor_a_diagram.md                   # Format A 顧問：無損分圖 (01/02/03+) 與 T1~T5 拓撲推薦
+    │   │   ├── layer2_advisor_b_report.md                    # Format B 顧問：文體 1~4 (A4 PDF) vs. 文體 5 (Medium 專欄)
+    │   │   ├── layer2_advisor_c_slide.md                     # Format C 顧問：四幕劇配頁與 S0~S7 防撞車分鏡表
+    │   │   ├── layer2_advisor_de_chart.md                    # Format D/E 顧問：4D 資料快篩 × 8 溝通意圖 × 30+ 圖表決策樹
+    │   │   └── layer3_advisor_design_style_color.md          # [Layer 3 定裝] 設計光譜武器庫 (模式 1/2/3) × 筆風 × 分層色票全域定裝
+    │   ├── visual_cognition_principles.md                    # [共通底盤] 單畫布 4→2→3 組塊、表達三支柱、跨格式字級階梯與 75-20-5 配額
+    │   ├── editorial_and_metaphor_armory_spec.md             # [設計武器庫] 模式 2 (資料八編輯室技法) & 模式 3 (RE:LAB IDE 跨工具空間隱喻)
+    │   ├── quantitative_chart_spec.md                        # [Format D⇄E SSOT] 編碼誠實三鐵律、圖表 8 元件檢核、配色 SSOT 與三層 CSV 分流
+    │   ├── chart_family1_ranking_and_deviation.md            # [家族 1] 克里夫蘭點陣圖、棒棒糖、啞鈴、斜坡、子彈、蝴蝶金字塔、柏拉圖
+    │   ├── chart_family2_trend_and_comparison.md             # [家族 2] 空間重力斷崖複合、時期色帶折線、配對雙柱剪刀差、面積、範圍甘特
+    │   ├── chart_family3_composition_and_flow.md             # [家族 3] 4+1 堆疊、中心 KPI 環形、馬賽克雙維圖、瀑布、樹圖、旭日、桑基/弦圖
+    │   ├── distribution_and_density_chart_spec.md            # [家族 4] 10 大分配與密度圖形 ＋ 背景基準分面 (Context Overlay) 8 鐵律
+    │   ├── chart_family5_multivariate_and_spatial.md         # [家族 5] 波士頓四象限氣泡矩陣、突出顯示熱力表、雷達圖、主圖＋角落排行副卡
+    │   ├── visual_diagram_matplotlib_spec.md                 # [Format A] 23.8"×15.4" 知識圖譜 (T1~T5) ＋ Format B 7.44" 直向簡圖 API
+    │   ├── document_report_spec.md                           # [Format B1~4] A4 自適應分頁印刷 PDF 報告與現代黑體 / 標楷體雙字體主題
+    │   ├── medium_column_spec.md                             # [Format B5] <=1,600 字純淨原生 Markdown 專欄（免編譯 PDF）
+    │   ├── presentation_slide_spec.md                        # [Format C] 16:9 三區簡報與 S0~S7 欄數自適應防撞引擎
+    │   └── data_dashboard_spec.md                            # [Format E] 零後端互動式數據儀表板、Bento 佈局與獨立 Git 網站發布規範
+    └── scripts/                                              # 【八大底層黑盒渲染、色彩、驗收與進化引擎 — 免讀原始碼直接呼叫】
+        ├── hcl_color_engine.py                               # 身分雙倉同步 + CIELAB 色階 + 三層 CSV 分流 + 10 分配/15 編輯室&RE:LAB 繪圖 API
+        ├── gephi_palette.js                                  # 前端 JS 色彩 SSOT、CIELAB 插值與 deriveThematicPalette (UMD/Browser/Node)
+        ├── generate_mindmap.py                               # Format A 出版級繁體中文知識圖譜引擎（避頭尾保護與 T1~T5 拓撲組件）
+        ├── pdf_report_engine.py                              # Format B A4 自適應分頁 CSS 生成器與 Playwright PDF 編譯引擎
+        ├── pptx_slide_engine.py                              # Format C 16:9 原生向量投影片與防撞驗證引擎
+        ├── verify_visual_outputs.py                          # PDF/PPTX 轉圖驗收、Medium 專欄分離計字檢驗與暫存檔一鍵清理工具
+        ├── report_skill_feedback.py                          # 技能優化靈感三通道自動化 GitHub Issues 回報工具
+        └── check_skill_updates.py                            # 30 天節流之無損技能更新檢查工具
 ```
 
 ---
 
-## 📋 核心檔案職責邊界與按需載入順序 (Strict Role Boundaries & Loading Order)
+## 📋 核心執行階段與嚴格邊界 (Execution Phases & Strict Boundaries)
 
-為避免 AI 注意力分散與 Token 浪費，本技能嚴格執行**「單一事實來源（SSOT）」**、**「按階段按需載入」**與**「底層引擎黑盒呼叫鐵律」**：
-
-| 執行階段 | 讀取檔案順序 | 檔案唯一職責（管什麼） | 嚴格邊界（不管什麼／禁止事項） |
+| 執行階段 | 讀取檔案順序 | 核心職責（管什麼） | 嚴格邊界（不管什麼／禁止事項） |
 | :--- | :--- | :--- | :--- |
-| **0. 啟動入口** | `SKILL.md` | 判定進入階段一或階段二、管理 `reading_sessions/` 歸檔、定義黑盒引擎呼叫鐵律與 `_pending_skill_inspirations.md` 靈感生命週期。 | 不存放具體提問話術或視覺排版參數。 |
-| **1. 第一階段**<br>*(深度閱讀思辨／數據探索)* | `phase1_socratic_reading_guide.md` | 依四大輸入模式執行 Step 0～Step 5 蘇格拉底式提問或「CSV＋資料說明書」讀取—分析—討論三迴路，即時更新 `01_phase1_socratic_log.md`。 | **嚴禁提前讀取 `phase2_output/` 任何檔案**；嚴禁直接將大型 CSV 讀入 LLM 上下文消耗 Token。 |
-| **2. 第二階段 Step 1**<br>*(共通視覺基準)* | `phase2_output_router.md`<br>$\rightarrow$ `visual_cognition_principles.md` | 啟動三軸視覺決策引擎、無損分流擴展（拆圖、擴章、加頁）或 Medium 專欄輕量路由，載入五格式共通定律與同步字級階梯總表。 | 不載入使用者未要求的特化格式規範。 |
-| **3. 第二階段 Step 2**<br>*(特化格式渲染)* | 依需求擇一或組合讀取：<br>• 格式 A：`visual_diagram_matplotlib_spec.md`<br>• 格式 B：`document_report_spec.md`<br>• 格式 C：`presentation_slide_spec.md`<br>• 格式 D：`quantitative_chart_spec.md`<br>• 格式 E：`data_dashboard_spec.md`（🔗與格式 D 連動） | 依各規格檔內建之黑盒 API 契約直接 `import` `scripts/` 引擎渲染成品，透過 `view_file` 逐頁視覺驗收並清除暫存檔；Medium 模式免編譯 PDF 並自動推送 GitHub 輸出繳交區塊；格式 E 完成後可綁定獨立 Git 儲存庫發布網站。 | **正常執行時嚴禁 `read_file` 讀取 `scripts/*.py` 原始碼**；`02_outputs/` 嚴禁殘留臨時預覽檔（`_preview_*.png`、暫存 `.html`）。格式 D 與格式 E 之共通配色規則若有改動須同步更新。 |
-| **4. 技能演進 Step 4**<br>*(文獻查證與固化)* | `THEORY_ARCHIVE.md` | 僅於成果驗收完畢後（或使用者詢問學術依據時）開啟，將實證文獻與新規則固化至技能庫並刪除靈感暫存檔。 | **日常執行階段一與階段二時嚴禁主動讀取**，以節省注意力預算。 |
-
+| **0. Gate 0 啟動門神** | `SKILL.md` | 身分驗證與公私雙倉庫隔離（作者還原私人設定／新用戶導向 `onboarding_wizard.md`）、30 天更新節流與靈感暫存規則。 | 不存放具體提問話術或視覺排版參數；私人設定與 `reading_sessions/` 嚴格受 `.gitignore` 隔離。 |
+| **1. 第一階段 (Phase 1)**<br>*(深度閱讀／數據探索)* | `phase1_socratic_reading_guide.md`<br>$\rightarrow$ `mode1_*` 或 `mode2_*` | 依四大輸入模式二擇一載入子協定：執行 5 步蘇格拉底思辨或「CSV＋資料說明書」三迴路分析，即時寫入 `01_phase1_socratic_log.md`。 | **嚴禁提前讀取 `phase2_output/` 任何檔案**；嚴禁將大型 CSV 直接讀入 LLM 上下文消耗 Token。 |
+| **2. 第二階段 (Phase 2)**<br>*(三層漸進決策漏斗)* | **L1**: `phase2_output_router.md`<br>**L2**: `advisors/layer2_*.md`<br>**L3**: `advisors/layer3_*.md` | 逐層討論拍板：**L1** 決定 Format A~E 範圍 $\rightarrow$ **L2** 僅開選定格式顧問定骨架 $\rightarrow$ **L3** 統一或混搭定裝「設計武器庫 × 筆風 × 配色」。 | 未選中之格式與顧問檔 **100% 零讀取**；預設分步停下來確認，不擅自代選。 |
+| **3. 終端執行與驗收**<br>*(Terminal Execution & QA)* | `visual_cognition_principles.md`<br>+ 選定之單一筆風檔<br>+ 按需之最小葉節點 `*_spec.md` | 僅載入拍板之最小葉節點規格檔，直接 `import` `scripts/` 八大黑盒引擎渲染，並強制呼叫 `verify_visual_outputs.py` 與 `read_file` 實地檢查。 | **日常執行嚴禁讀取 `scripts/*.py` 原始碼**；驗收後立即 `--cleanup` 清除暫存檔；格式 D/E 配色或編碼規則變動須同步更新對應 SSOT。 |
+| **4. 結案進化閉環**<br>*(Step E1～E3 & Sync)* | `git_sync_and_evolution_protocol.md`<br>+ `THEORY_ARCHIVE.md` | 查證實證文獻（T01~T24）、一鍵透過 `report_skill_feedback.py` 回報 GitHub Issues、完成更新後刪除 `_pending_skill_inspirations.md` 歸零。 | **日常閱讀與製圖階段不開啟**，僅於 Git 同步、開站或 Step E1~E3 結案進化時按需載入。 |
