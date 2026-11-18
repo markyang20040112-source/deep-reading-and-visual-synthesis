@@ -69,23 +69,23 @@
 | **拆解多階段成熟度分佈與跨圖接力** | **5 階同質循序漸層 ＋ 雙圖跨面板色相區隔與視覺接力（1+1>2）** | [`quantitative_chart_spec.md`](quantitative_chart_spec.md) |
 | **撰寫 Medium 每週一圖／輕量數據新聞專欄（`<= 1,600` 字 ＋ 1～2 張圖）** | **1～2 張獨立單面板 `300 DPI` 統計圖（圖 1 主色破題 $\rightarrow$ 圖 2 次色深挖，內嵌三層分流 `assert` 與精簡官方資料來源圖註［僅附：1.官方資料集網址、2.資料涵蓋期間］）＋ 文體 5 Medium 原生 Markdown 專欄（含文末參考資料來源分離計字）** | [`quantitative_chart_spec.md`](quantitative_chart_spec.md) + [`document_report_spec.md`](document_report_spec.md) |
 | **探索多維度數據集（總覽、篩選、排行、增減發散與深鑽明細）** | **不寫死圖表格式之動態數據儀表板（KPI 卡 + 動態多視角互動圖表 + 明細表與 CSV 匯出，引用 `gephi_palette.js`）** | [`data_dashboard_spec.md`](data_dashboard_spec.md) ⇄ [`quantitative_chart_spec.md`](quantitative_chart_spec.md) |
-| **提供高密度治理規範、審計清單與完整論述** | **A4 雙模態混合排版 PDF 報告**（`pdf_report_engine.py`：支援 A4 橫向滿版大圖跨頁與三線表） | [`document_report_spec.md`](document_report_spec.md) |
+| **提供高密度治理規範、審計清單與完整論述** | **A4 直向雙模態混合排版 PDF 報告**（`pdf_report_engine.py`：支援通用 `<h2>` 自適應分頁、短/長表分流、三線表與 A4 直向輕量簡圖，禁嵌 Format A 大圖） | [`document_report_spec.md`](document_report_spec.md) |
 | **進行高階主管會議簡報與決策提案** | **16:9 斷言-證據式（Assertion-Evidence）原生向量投影片**（`pptx_slide_engine.py`） | [`presentation_slide_spec.md`](presentation_slide_spec.md) |
 
 ### 軸線三：無損分流擴展鐵律 vs. Medium 單一故事線輕量交付場景（Zero-Loss Expansion vs. Single-Hook Lightweight Delivery）
 
 > **【A2 無損分流擴展鐵律（適用一般文獻／深度報告／簡報）：以「拆圖、擴章、加頁」取代「刪減內容」】**：
-> 當第一階段 `01_phase1_socratic_log.md` 第五節收斂出 $> 4$ 個分支（含 `(a) 核心論證主幹分支` 與 `(b) 批判延伸與跨域遷移分支`）時，**嚴禁為了塞進單一畫布而刪減任何細節或批判延伸議題**！單張 2D 視覺畫布維持 3～4 個宏觀大區塊以守住 `12pt` 字級底線，並自動啟動以下跨畫布／跨章節無損擴展：
+> 當第一階段 `01_phase1_socratic_log.md` 第五節收斂出 $> 4$ 個分支（含 `(a) 核心論證主幹分支` 與 `(b) 批判延伸與跨域遷移分支`）時，**嚴禁為了塞進單一畫布而刪減任何細節或批判延伸議題**！單張 2D 視覺畫布維持 3～4 個宏觀大區塊以守住 `16.0–16.5pt`（緊湊高可讀 `23.8"` 畫布）字級底線，並自動啟動以下跨畫布／跨章節無損擴展：
 > - **Format A（知識圖譜拆圖擴展）**：`01` 繪製核心論證主幹（3～4 個核心模組）；`02` 繪製核心機制與架構深挖圖；**`03+` 自動加開「批判邊界、反例壓力測試與跨域類比遷移專題圖」**，完整承載所有延伸分支。
 > - **Format B（深度報告動態擴章）**：章節編號依分支總數 $N$ 自然延展（`壹、貳、參、肆、伍、陸、柒...`），讓每個核心主幹與批判延伸分支皆擁有獨立章節、三線表或戰術卡片。
 > - **Format C（高階簡報動態加頁）**：中段內容頁隨實質命題數 $N$ 動態加頁（如以 `S1` 雙欄對比呈現正反辯證、以 `S5` 象限呈現邊界條件），並附上完整演講備忘稿。
 > - **Format D / E（量化圖表與儀表板擴展）**：自動增加子面板（Subplots）、背景基準分面網格或互動切換視角（Tabs）。
 
 - **場景 1：若使用者於五維度確認中選擇「完整全套產出」**，則依序生成（並可依資料屬性加選或單獨指定 **Format E 數據儀表板**）：
-  1. `01_article_master_structure_map.png`（Format A：全篇核心主幹總覽圖）
-  2. `02_<specific_mechanism_diagram>.png`（Format A：核心機制/架構深挖圖）
+  1. `01_article_master_structure_map.png`（Format A：獨立交付之全篇核心主幹總覽圖）
+  2. `02_<specific_mechanism_diagram>.png`（Format A：獨立交付之核心機制/架構深挖圖）
   3. `03_<critical_synthesis_or_quantitative_charts>.png`（Format A 批判延伸與跨域遷移專題圖，及／或 Format D 量化實證圖表）
-  4. `01_executive_strategy_report.md` & `.pdf`（Format B：結構化決策報告，嵌入上述高清圖表或 A4 橫向跨頁大圖）
+  4. `01_executive_strategy_report.md` & `.pdf`（Format B：結構化決策報告——嚴禁嵌入 Format A 高密度圖譜，若有架構圖需求則專用繪製 `7.44"` A4 直向原生輕量流程簡圖並可嵌入單面板 Format D 量化圖表）
   5. `02_executive_presentation.pptx`（Format C：16:9 原生向量高階主管簡報）
   6. `dashboard/` 或獨立專案目錄（Format E：Git-Ready 零後端互動式 Web 儀表板 `index.html` + `css/style.css` + `js/gephi_palette.js` + `js/dashboard.js` + `data/` + `.nojekyll` + `.gitignore` + `README.md` 及對應靜態全景圖 `.png`）
 - **場景 2：若任務屬於「Medium 每週一圖／輕量數據敘事專欄模式」**，則啟動**單一故事線輕量路由（Single-Hook Lightweight Route）**，於 `02_outputs/` 僅生成：
