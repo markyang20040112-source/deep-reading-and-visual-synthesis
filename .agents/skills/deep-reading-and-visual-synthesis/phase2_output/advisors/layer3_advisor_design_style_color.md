@@ -48,7 +48,7 @@
 ## 四、 第三層定裝提案確認與終端最小葉節點檔案清單鎖定
 
 向使用者提出簡明清晰的第三層定裝建議表（並一併確認任何客製細節或例外覆寫需求）後 **⏸️ 暫停等待使用者最後拍板**。
-使用者拍板後，立即將第 3 節（表達三支柱定裝）、第 4 節（使用者客製細節覆寫）與第 5 節（終端最小葉節點與交付清單）寫入 `02_phase2_generation_blueprint.md` 定稿（**嚴禁回寫入 `01_phase1_socratic_log.md`**），並依據下表**僅開啟被點名的終端最小葉節點規格檔**開始生成：
+使用者拍板後，立即將第 3 節（表達三支柱定裝與取捨理由）、第 4 節（使用者客製細節覆寫）與第 5 節（終端最小葉節點與交付清單）寫入 `02_phase2_generation_blueprint.md` 定稿（**嚴禁回寫入 `01_phase1_socratic_log.md`**），並依據下表**僅開啟被點名的終端最小葉節點規格檔**開始生成：
 - 必讀底盤：[`../visual_cognition_principles.md`](../visual_cognition_principles.md) ＋ 選定之筆風檔
 - 若開啟模式 2 或 3 $\rightarrow$ [`../editorial_and_metaphor_armory_spec.md`](../editorial_and_metaphor_armory_spec.md)
 - 若含圖表（Format D/E）$\rightarrow$ [`../quantitative_chart_spec.md`](../quantitative_chart_spec.md) ＋ 第二層被點名的 1～2 個家族檔（`chart_family1` / `chart_family2` / `chart_family3` / `distribution_and_density_chart_spec` / `chart_family5`）

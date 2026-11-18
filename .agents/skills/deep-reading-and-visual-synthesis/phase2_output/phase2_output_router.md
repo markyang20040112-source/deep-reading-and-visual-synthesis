@@ -73,8 +73,8 @@
 
 ## 2. Layer 2：各格式結構骨架、圖表選型與討論取捨（Layer 2 拍板後寫入）
 - **Format A（知識圖譜）**：<分圖數 `01/02/03+`、各圖承載分支與 T1～T5 拓撲選擇及取捨理由；未選填「無」>
-- **Format B（報告／專欄）**：<文體 1～4 PDF 或文體 5 Medium、章節／七步大綱重點與配圖分工；未選填「無」>
-- **Format C（簡報）**：<總頁數配當、四幕劇焦點與 `S0～S7` 分鏡關鍵決策；未選填「無」>
+- **Format B（報告／專欄）**：<文體 1～4 PDF 或文體 5 Medium、章節／七步大綱重點、配圖分工與體裁取捨理由；未選填「無」>
+- **Format C（簡報）**：<總頁數配當、四幕劇焦點、`S0～S7` 分鏡關鍵決策與版型取捨理由；未選填「無」>
 - **Format D / E（圖表／儀表板）**：
   - **推進節奏與架構**：`batch_generation` / `step_by_step_tutor`（若含 E：呈現模式 A / B / C）
   - **圖表選型與討論取捨**：<逐圖列出 `檔名 -> 選定圖型` ＋ **為何選此圖／為何捨棄備選圖的討論理由**>
@@ -84,6 +84,7 @@
 - **支柱 1（設計光譜武器庫）**：`standard_rigorous` (模式 1) / `editorial_narrative` (模式 2) / `bespoke_metaphor` (模式 3)（若混搭請註明各檔對應模式）
 - **支柱 2（筆風設定檔 `Slot 1～8`）**：`<style_id>.md`（若有跨檔混搭或臨時熱修改請註明）
 - **支柱 3（分層配色與版面主題）**：`chart_palette`（鎖定色票 vs. `derive_thematic_palette` 主題色階）＋ `document_theme` ＋ PDF 字體（`modern_sans` / `clreq_kaiti`）＋ Git 同步偏好
+- **定裝取捨理由**：<簡述為何採此設計模式／筆風／色票配置，或為何捨棄其他選項>
 
 ## 4. 使用者客製細節與例外覆寫（User Special Overrides）
 - **內容／敘事特別要求**：<例如：必須點名某案例、特定比較對象、禁用某類用語或保留特定專有名詞；無則填「無」>
@@ -102,8 +103,8 @@
 
 三層皆拍板後，AI **僅開啟本次明確被點名的最小葉節點規格檔**動工生成：
 
-1. **步驟 1：載入跨格式底線與筆風契約**：
-   - 讀取 [`visual_cognition_principles.md`](visual_cognition_principles.md) ＋ 本次選定之單一筆風設定檔（`config/owner_styles/<style>.md` 或 `config/user_styles/<style>.md`）。
+1. **步驟 1：錨定藍圖客製條款並載入跨格式底線與筆風契約**：
+   - 對照 `02_phase2_generation_blueprint.md` 第 4 節（使用者客製細節覆寫）與第 5 節（按需載入規格檔清單），讀取 [`visual_cognition_principles.md`](visual_cognition_principles.md) ＋ 本次選定之單一筆風設定檔（`config/owner_styles/<style>.md` 或 `config/user_styles/<style>.md`）。
 2. **步驟 2：僅按需載入第二、三層指定的葉節點規格檔（Leaf Micro-Specs）**：
    - **若第三層開啟「模式 2 (`editorial_narrative`)」或「模式 3 (`bespoke_metaphor`)」** $\rightarrow$ 加讀 **[`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)**（模式 1 則略過不讀）。
    - **若含 Format D 或 E** $\rightarrow$ 讀取 [`quantitative_chart_spec.md`](quantitative_chart_spec.md)（圖表共通核心契約 SSOT）＋ **僅開啟第二層選定之對應圖表家族微檔（6 選 1～2）**：
@@ -120,9 +121,9 @@
 3. **步驟 3：底層引擎黑盒呼叫鐵律（Black-Box Engine API Rule）**：
    - 直接 `import` [`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)、[`../scripts/generate_mindmap.py`](../scripts/generate_mindmap.py)、[`../scripts/pdf_report_engine.py`](../scripts/pdf_report_engine.py)、[`../scripts/pptx_slide_engine.py`](../scripts/pptx_slide_engine.py) 或前端 [`../scripts/gephi_palette.js`](../scripts/gephi_palette.js)。**日常執行嚴禁對 `scripts/*.py` 與 `scripts/*.js` 原始碼呼叫 `read_file`（除非除錯）**。
 4. **步驟 4：執行「一次批次生成（`batch_generation`）」或「逐步導學（`step_by_step_tutor`）」**。
-5. **步驟 5：逐張視覺驗證、清理暫存與 Git 同步／交付**：
+5. **步驟 5：逐張視覺驗證、清理暫存、藍圖結案勾稽與 Git 同步／交付**：
    - 凡生成 `.png`、`.pdf`、`.pptx` 或儀表板，必須呼叫 [`../scripts/verify_visual_outputs.py`](../scripts/verify_visual_outputs.py) 轉圖並透過 `view_file` 實地檢查（無重疊、無穿線、無斷框、字級飽滿），隨後執行 `--cleanup` 清理暫存預覽圖。
-   - 若需執行公私雙倉庫 Git 同步、獨立儀表板網站 GitHub Pages 發布或 Medium 課堂繳交連結推送，按需開啟 [`../setup/git_sync_and_evolution_protocol.md`](../setup/git_sync_and_evolution_protocol.md)。
+   - 驗收通過後，將 `02_phase2_generation_blueprint.md` 標頭狀態更新為 **`已交付`** 並於第 5 節勾選完成 `- [x]`；若需執行公私雙倉庫 Git 同步、獨立儀表板網站 GitHub Pages 發布或 Medium 課堂繳交連結推送，按需開啟 [`../setup/git_sync_and_evolution_protocol.md`](../setup/git_sync_and_evolution_protocol.md)。
 
 ---
 
