@@ -34,7 +34,7 @@
 | 工具分級 | 包含項目 | 什麼時候需要？ | 引導處置方式 |
 | :--- | :--- | :--- | :--- |
 | **1. 核心必備** | `Python 3.10+`、`matplotlib`、`numpy`、`pandas` | 幾乎所有模式都會用到（畫知識圖譜、統計圖表、CSV 三層分流） | 若有缺少，主動詢問：**「是否幫您一鍵執行 `pip install` 安裝這幾個核心套件？」** |
-| **2. 格式選配** | • `python-pptx`（Format C 簡報 `.pptx`）<br>• `playwright` ＋ Chromium（Format B `.pdf` 編譯與預覽轉圖） | **僅於輸出 `.pptx` 或 `.pdf` 時需要**（例如僅寫 Medium 專欄或只看 PNG 圖表者免裝 Chromium） | 告知用途與缺少項目，由使用者決定**「現在一併安裝」**或**「先跳過，有需要該格式時再裝」** |
+| **2. 格式與擷取選配** | • `python-pptx`（Format C 簡報 `.pptx`）<br>• `playwright` ＋ Chromium（Format B `.pdf` 編譯與預覽轉圖）<br>• `requests`、`youtube-transcript-api`、`pymupdf4llm`、`python-docx`（Phase 1 網址／YouTube 字幕／PDF／Word 自動擷取） | **僅於輸出 `.pptx`/`.pdf` 或自動擷取外部連結／文件時需要**（未裝時網頁擷取仍可退回內建 `urllib + lxml` 保底） | 告知用途與缺少項目，由使用者決定**「現在一併安裝」**或**「先跳過，有需要該格式時再裝」** |
 | **3. 雲端協作（選用）** | `git`、`gh` (GitHub CLI) | 僅用於「跨電腦同步」或「Format E 發布線上網站」 | **明確告知「完全沒有 Git 或 GitHub 帳號也能 100% 正常使用本技能（本機存檔＋匿名 Webhook 自動回報靈感）」**，不強迫安裝 |
 
 ---

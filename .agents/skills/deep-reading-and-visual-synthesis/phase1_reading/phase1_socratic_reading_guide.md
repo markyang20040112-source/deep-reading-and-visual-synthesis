@@ -9,6 +9,30 @@
 
 ---
 
+## 零、 第一道垂直工序：輸入媒介嗅探與黑盒正規化閘門 (Stage 0: Input Modality Sniffing & Black-Box Normalization)
+
+收到任何外部素材或連結時，必須嚴格執行**兩段式垂直工序**，確保不浪費 LLM Token 人工讀檔，且先完成物理正規化再決定思辨協定：
+
+1. **工序 1（物理媒介正規化 — 先判斷素材型態再決定讀入／轉檔方式）**：
+   - **網頁 URL / YouTube 連結 / 本機 `.pdf` / 本機 `.docx`**：立即呼叫黑盒腳本 [`../scripts/ingest_source_material.py`](../scripts/ingest_source_material.py)（CLI 或 `ingest_to_source_markdown()`）於背景自動清洗並轉存為 `reading_sessions/<YYYYMMDD_主題簡稱>/00_source_article.md`（日常執行嚴禁讀取該 `.py` 原始碼）。若網頁遇 Cloudflare／登入牆回傳 `BLOCKED_OR_TOO_SHORT`，則禮貌告知原因並請使用者直接貼上正文。
+   - **`.csv` / 資料表 ＋《資料說明書》**：原始 CSV **原封不動**存入 `data/<原檔名>.csv`；《資料說明書》存入 `00_source_article.md`。
+   - **對話框直接貼上之文章／逐字稿純文字**：直接原封不動寫入 `00_source_article.md`。
+2. **工序 2（思辨協定路由 — 僅開啟唯一對應子協定檔）**：待 `00_source_article.md`（與 `data/*.csv`）正規化就緒後，始依下方「四大輸入模式自動分流表」按需載入唯一對應子協定檔。
+
+```python
+# === scripts/ingest_source_material.py Black-Box API Signatures ===
+from ingest_source_material import (
+    detect_input_modality,           # (source_input: str) -> "youtube" | "web_url" | "pdf_file" | "docx_file" | "csv_dataset" | "text_or_md"
+    ingest_url_to_markdown,          # (url, output_md_path=None, timeout=20, title_override=None) -> dict
+    ingest_youtube_transcript,       # (url_or_id, output_md_path=None, preferred_langs=(...), title_override=None) -> dict
+    ingest_local_document_to_markdown, # (file_path, output_md_path=None, title_override=None) -> dict (.pdf/.docx/.md/.txt)
+    ingest_to_source_markdown,       # (source_input, output_md_path, title_override=None) -> dict (Unified Stage 0 Dispatcher)
+)
+# CLI: python .agents/skills/deep-reading-and-visual-synthesis/scripts/ingest_source_material.py --input "<URL或檔案>" --output "<00_source_article.md>"
+```
+
+---
+
 ## 一、 四大輸入模式自動分流與按需載入表 (4 Input Modes & Lazy-Loading Dispatch Table)
 
 收到使用者輸入時，先依輸入型態執行對應之歸檔，並**僅開啟對應之子協定檔**：

@@ -27,7 +27,7 @@
    - **Knaflic 80/20 聚光燈配額（Preattentive Spotlight）**：同頁的 2～4 個視覺區塊中，**最多僅允許 1 個核心破局區塊使用高彩度強調色邊框/頂帶**，其餘背景與對照區塊一律退居低飽和結構灰藍（`#64748B` / `#CBD5E1`），避免滿頁五顏六色造成視覺疲勞，確保聽眾於 $200\text{ms}$ 內鎖定焦點。
 3. **【Zone 3：底部行動啟示橫幅（Bottom 10% Height, `y = 6.68"` to `7.22"` — 受筆風檔 `Slot 7` 控制）】**
    - 全寬單行高對比橫幅（**`12.5pt ~ 14.0pt Bold`**），依筆風檔 `Slot 7` 句型規範一句話點出本頁證據對決策者或研究者的具體行動意義／解讀邊界（*So-What Takeaway*）。
-   - **講者備忘稿（Speaker Notes — 受筆風檔 `Slot 7` 控制）雙通道分離**：單頁畫面總字數控制在 **110～160 漢字以內**；完整口語推演、類比解釋與轉場台詞一律依筆風檔 `Slot 7` 口條寫入 `slide.notes_slide.notes_text_frame`（`add_speaker_notes()`）。
+   - **講者備忘稿（Speaker Notes — 受筆風檔 `Slot 7` 控制）雙通道分離與 AST 口語轉場鎖定**：**不設整頁總字數、段落數或框數硬上限（以論點質量與零刪減為最優先；若單一核心容器或同框多段並列為該頁最佳視覺解，完全允許）**，惟每個文字框之實際字級折行總高度不得超出該框自身物理高度（零穿框），並將完整口語推演、類比解釋與轉場台詞一律依筆風檔 `Slot 7` 口條寫入 `slide.notes_slide.notes_text_frame`（`add_speaker_notes()`）。**嚴禁將第二層分鏡之 `AST（Before ➔ After）` 標語直接畫入投影片畫面（Zone 1/2/3）以免畫面雜亂**；撰寫每頁 `Speaker_Notes` 時，**開頭第一句**須自然承接該頁 `Before`（呼應上一頁留下的疑問或痛點），中段推演視覺證據，**結尾最後一句**收斂至 `After` 並替下一頁鋪墊懸念。
 
 ---
 
@@ -68,7 +68,7 @@
    - 中段依序展開 **Act I（現狀診斷與痛點）→ Act II（核心矛盾與理論模型）→ Act III（系統架構、反例邊界與跨域實證）→ Act IV（落地行動路線圖）**。
    - **不設硬性總頁數上限，嚴禁刪減批判延伸分支**：當 Phase 1 Step 5 收斂出 $> 4$ 個分支（含 `(b) 批判延伸與跨域遷移分支`）時，**必須動態加開獨立投影片**（如以 `S1` 呈現正反案例對撞、以 `S5` 呈現假設失效邊界象限、以 `S4` 呈現跨領域同構系統）並附上完整講者備忘稿，確保所有思辨成果 100% 呈現：
      - **功能性聚合（何時合於一頁）**：當多個觀點屬於「正反二元對比（`S1`）」、「三大平行維度比較（`S2`）」、「四步管線/四象限（`S3`/`S5`）」或「系統因果閉環（`S4`）」時，聚合於同一頁方便聽眾同屏橫向比對。
-     - **空間呼吸與序列推進（何時拆頁擴展）**：當塞入同頁會導致組塊 $> 4$、三欄內文字級被迫低於 `11.5pt`（雙欄低於 `13.0pt`）、或留白低於 `35%` 時，**必須拆分為連續多頁並依階段 2 & 3 切換不同版型（`S1`～`S7`）**。
+     - **空間呼吸與序列推進（何時拆頁擴展）**：當塞入同頁會導致文字超出卡片物理高度（穿框）、三欄內文字級被迫低於 `11.5pt`（雙欄低於 `13.0pt`）、或留白低於 `35%` 時，**必須拆分為連續多頁並依階段 2 & 3 切換不同版型（`S1`～`S7`）**。
 
 ---
 
@@ -91,10 +91,11 @@ from pptx_slide_engine import (
 )
 from verify_visual_outputs import (
     render_pptx_to_pngs,            # (pptx_path, out_dir=None, width_px=1920, height_px=1080) -> List[str]
+    verify_pptx_structure,          # (pptx_path) -> dict (Checks physical box capacity overflow, canvas bounds & Speaker Notes)
     cleanup_preview_artifacts,      # (target_dir) -> List[str] (Removes _preview_*.png, slide_*.png)
 )
 ```
 
 1. **獨立段落保護（No `\n` Soft Breaks）**：嚴禁以 `p.text = "...\n●..."` 塞入多行文字；必須使用 `draw_parallel_row_cards()` 或 `tf.add_paragraph()` 逐條建立獨立段落，並明確設定 `tf.word_wrap = True`、行距 `line_spacing = 1.25~1.35` 與段距 `space_after = Pt(4~6)`。
-2. **轉圖強制視覺檢查（Visual Inspection Gate）**：生成 `.pptx` 後，必須調用 `render_pptx_to_pngs(pptx_path)` 轉出每頁預覽圖並呼叫 `view_file` 逐頁檢視，確認 **(1) 零文字重疊或穿框、(2) 相鄰頁版型無重複單調感、(3) 80/20 聚光燈焦點鮮明**，檢驗通過後立即調用 `cleanup_preview_artifacts(out_dir)` 清除暫存圖片檔。
+2. **結構體檢與轉圖強制視覺檢查（Structural & Visual Inspection Gate）**：生成 `.pptx` 後，先調用 `verify_pptx_structure(pptx_path)`（或 `--verify-pptx`）確認每頁講稿齊備、無畫布越界且無文字物理穿框，再調用 `render_pptx_to_pngs(pptx_path)` 轉出每頁預覽圖並呼叫 `view_file` 逐頁檢視，確認 **(1) 零文字重疊或穿框、(2) 相鄰頁版型無重複單調感、(3) 80/20 聚光燈焦點鮮明**，檢驗通過後立即調用 `cleanup_preview_artifacts(out_dir)` 清除暫存圖片檔。
 

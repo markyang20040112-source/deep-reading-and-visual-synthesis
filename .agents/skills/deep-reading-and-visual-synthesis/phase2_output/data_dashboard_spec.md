@@ -54,6 +54,10 @@ const {
   setActivePalette,               // (customPaletteObj) -> PALETTE (Switches active frontend palette in-place)
 } = window.GephiPalette;
 ```
+```python
+# === scripts/verify_visual_outputs.py Black-Box API Signature ===
+from verify_visual_outputs import verify_dashboard_bundle # (dashboard_dir) -> dict (CLI: --verify-dashboard)
+```
 
 ### 2. 前端 `css/style.css` 標準 `:root` 變數與四大色彩工程鐵律
 1. **CSS `:root` 集中變數映射**（數值須與當前啟用 `PALETTE.categories` 與 `PALETTE.badgeTints` 100% 同步）：
@@ -73,6 +77,32 @@ const {
 4. **正確數值正規化公式、`>4` 類別展開防呆與原表 `df_other` 雙重語義消歧**：
    - **純明細 `df_detail` 正規化公式**：連續循序圖表必須先剔除合計／小計列（`df_subtotal`），傳入純明細 `df_detail` 之真實 `vMin` 與 `vMax` 調用 `getSequentialColor(val, vMin, vMax, scale)`（依 $(v - v_{\min}) / (v_{\max} - v_{\min})$ 正規化，**嚴禁簡化為 $v / v_{\max}$ 或混入合計列極值**）。
    - **超過 4 個無序類別之展開規範與原表 `df_other` 消歧**：預設啟用「**智慧 4+1 聚焦視角**」（前四大綁定四色，其餘聚合為 `#CBD5E1`）。**嚴禁讓原表自帶的 `其他` 列（`df_other`）混入前四大彩色主色柱，亦嚴禁同屏出現兩個「其他」**！若原表存在 `df_other`，須依與使用者拍板之策略選用：**選項 1（純明細聚焦＋註腳揭露原表其他項）** 或 **選項 2（長尾透明整併，傳入 `otherLabel: '其餘明細與原表其他項合計'`）**。若提供「展開全部細項」切換開關，展開時**必須維持前四大為固定四色、其餘細項採用典雅結構灰階（`#CBD5E1` / `#94A3B8`）搭配滑鼠懸停高亮（`emphasis: { focus: 'series' }`），或自動切換為單一循序色階之橫向排行圖，絕對禁止將 5 階循序色階拿去模除循環（`seqOrange[idx % 5]`）塗抹 30 個無序類別**！
+
+### 3. 前端排版三要素與標準 CSS 基準骨架（Baseline Typography & 3-Tier Surface CSS Template）
+撰寫本地 `./css/style.css` 時，必須同時落實以下三項排版工程紀律，並直接以基準 CSS 骨架為出發點（色彩由 `gephi_palette.js` 與 `:root` 動態驅動，嚴禁過度花俏之深重陰影）：
+1. **等寬數值對齊（`tabular-nums`）**：所有 KPI 大數字（`.kpi-value`）、基準線差距膠囊（`.delta-pill`）與明細表數值欄（`td.num`, `th.num`）強制設定 `font-variant-numeric: tabular-nums; font-feature-settings: "tnum";`，確保跨列數字小數點與千分位垂直 100% 對齊。
+2. **三層表面高度與留白階梯（3-Tier Surface Hierarchy）**：
+   - **Tier 1 全局控制列（`.control-bar` & `.segmented-control`）**：低對比 `#F1F5F9` 膠囊槽、無陰影，視覺退居幕後，避免按鈕縮放亂跳。
+   - **Tier 2 主角卡片（`.kpi-card` & `.chart-panel`）**：純白 `#FFFFFF` 底、`1px solid #E2E8F0` 細框、克制微陰影 `0 1px 3px rgba(15, 23, 42, 0.04)`，主圖表區保持寬裕內距 `24px 28px`。
+   - **Tier 3 明細資料表（`.data-table-wrap` & `.data-table`）**：黏性表頭（`position: sticky; top: 0;`）、緊湊行高、數值右對齊。
+3. **開箱即用標準 CSS 基準範本（複製進 `./css/style.css` 並補齊 `:root` 變數）**：
+   ```css
+   body { background: #F8FAFC; color: #0F172A; font-family: "Microsoft JhengHei", "Noto Sans TC", system-ui, -apple-system, sans-serif; line-height: 1.55; }
+   .control-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: #F1F5F9; border-radius: 10px; border: 1px solid #E2E8F0; }
+   .segmented-control { display: inline-flex; flex-wrap: wrap; gap: 4px; background: #E2E8F0; padding: 3px; border-radius: 8px; }
+   .segmented-control button { border: 0; background: transparent; color: #475569; padding: 6px 12px; border-radius: 6px; font-size: 0.875rem; font-weight: 600; cursor: pointer; }
+   .segmented-control button.active { background: #FFFFFF; color: #0F172A; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06); }
+   .kpi-card { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 16px 20px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04); }
+   .kpi-label { font-size: 0.8125rem; font-weight: 600; color: #64748B; letter-spacing: 0.02em; margin-bottom: 6px; }
+   .kpi-value { font-size: 1.875rem; font-weight: 700; color: #0F172A; line-height: 1.2; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+   .delta-pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+   .chart-panel { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 24px 28px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04); }
+   .data-table-wrap { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; overflow: auto; }
+   .data-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+   .data-table th { position: sticky; top: 0; background: #F8FAFC; color: #475569; font-weight: 600; text-align: left; padding: 10px 14px; border-bottom: 1px solid #E2E8F0; }
+   .data-table td { padding: 9px 14px; border-bottom: 1px solid #F1F5F9; color: #1E293B; }
+   .data-table th.num, .data-table td.num { text-align: right; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+   ```
 
 ---
 
@@ -100,9 +130,9 @@ const {
 - `README.md`：**【網站專案與 Git 部署指南】** 每個儀表板必須自動生成專屬 `README.md`，內容須包含：(1) 儀表板核心特色與視角說明、(2) 專案檔案結構樹（含 `.nojekyll` 與 `.gitignore`）、(3) 本機雙擊與 HTTP Server 預覽方式、(4) **一鍵綁定獨立 Git 儲存庫並發布至 GitHub Pages（含 `gh` CLI 自動建庫、`main` 或 `gh-pages` 分支推送、防外層倉庫嵌套 `.git` 清理指令與 `git subtree` 方案）**、(5) 鎖定版 CIELAB 配色速查表與資料來源聲明。
 
 
-### 2. 強制視覺驗收與交付清理（Mandatory Visual Inspection Gate）
+### 2. 強制視覺與結構驗收（Mandatory Visual & Bundle Inspection Gate）
 - 若包含靜態全景儀表板圖（`.png`），生成後必須透過 `view_file` 實際檢視渲染成品，確認無文字重疊、無穿線、無溢界、圖例與標題對齊完美。
-- 若為互動式 Web 儀表板，必須確認所有篩選控制項、視角切換、Tooltip 單位顯示與 CSV 匯出（含 `\uFEFF` UTF-8 BOM 防 Excel 中文亂碼）運作正常，並清除任何臨時測試腳本或廢棄預覽檔。
+- 若為互動式 Web 儀表板，必須執行 `python .agents/skills/deep-reading-and-visual-synthesis/scripts/verify_visual_outputs.py --verify-dashboard "<儀表板目錄>"`（或呼叫 `verify_dashboard_bundle()`）確認基礎檔案齊備、零 Tailwind CDN、純 `./` 相對路徑、`data/*_data.js` + `.json` 雙檔齊全、`css/style.css` 含 `:root` 與 `tabular-nums` 且無殘留嵌套 `.git`；同時確認所有篩選控制項、視角切換、Tooltip 單位顯示與 CSV 匯出（含 `\uFEFF` UTF-8 BOM 防 Excel 中文亂碼）運作正常，並清除任何臨時測試腳本或廢棄預覽檔。
 
 ### 3. 獨立 Git 儲存庫綁定與網站發布標準流程（Git Repository Binding & Live Website Deployment Workflow）
 由於每個數據儀表板生成完成後，皆預期綁定一個獨立 Git 儲存庫並架設為網站，AI 於完成儀表板渲染與驗收後，**必須執行以下「Git 網站綁定與部署閉環」**：
