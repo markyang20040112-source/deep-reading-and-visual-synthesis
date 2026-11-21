@@ -70,6 +70,9 @@ from generate_mindmap import (
     draw_a4_arrow,                 # (ax, p0, p1, label=None, theme=None, accent_key="primary", rad=0.0, label_dy=8.5, font_pt=8.0) -> None
     save_a4_portrait_figure,       # (fig, output_path, theme=None, dpi=300) -> None
 )
+from verify_visual_outputs import (
+    check_matplotlib_text_collisions, # (fig, shrink_pt=1.5, print_report=True) -> dict (Zero-token text-on-text & canvas bounds pre-check before view_file)
+)
 ```
 
 1. **緊湊高可讀畫布與自適應高度（Compact High-Legibility Canvas & Snug Zone Wrapping）**：

@@ -143,6 +143,9 @@ from hcl_color_engine import (
     plot_masked_texture_wedge,          # (ax, pct_value, texture_img_path=None, title="", subtitle="", base_disc_color="#E2E8F0", wedge_edge_color="#FFFFFF", start_angle=90.0, clockwise=True, value_fmt=None, **kwargs) -> Dict
     plot_sprite_scatter,                # (ax, x_vals, y_vals, sprite_img_path=None, labels=None, zoom=0.18, auto_remove_white_bg=True, white_threshold=242, **kwargs) -> Dict
 )
+from verify_visual_outputs import (
+    check_matplotlib_text_collisions,   # (fig, shrink_pt=1.5, print_report=True) -> dict (Zero-token text-on-text & canvas bounds pre-check before view_file)
+)
 ```
 
 1. **強制三層互斥分流 `assert` 與兩段式安全轉型**：

@@ -13,6 +13,7 @@ Provides:
 - verify_medium_article_words(md_path_or_text, max_body_words=1600) -> dict
 - verify_pptx_structure(pptx_path) -> dict
 - verify_dashboard_bundle(dashboard_dir) -> dict
+- check_matplotlib_text_collisions(fig, shrink_pt=1.5, print_report=True) -> dict
 - CLI:
   python verify_visual_outputs.py --input <file.pdf|file.pptx> [--out-dir <dir>]
   python verify_visual_outputs.py --verify-medium <02_medium_article.md>
@@ -587,6 +588,126 @@ def verify_dashboard_bundle(dashboard_dir: str) -> dict:
     return {
         "passed": len(issues) == 0,
         "dashboard_dir": str(d),
+        "issues": issues,
+        "stats_line": stats_line,
+    }
+
+
+def check_matplotlib_text_collisions(
+    fig,
+    shrink_pt: float = 1.5,
+    print_report: bool = True,
+) -> dict:
+    """
+    Zero-visual-token pre-check for Matplotlib figures (Format A / D / E static PNGs) before `view_file`:
+    - Checks ONLY visible text-on-text collisions (each text bbox shrunk by `shrink_pt` pt on all 4 sides)
+      and text-vs-canvas out-of-bounds.
+    - Ignores gridlines/patches, hidden axes (`ax.axis("off")`), and `Annotation` arrow tips
+      by querying `Text.get_window_extent()` directly.
+    Returns dict with `passed`, `text_count`, `overlaps`, `out_of_bounds`, `issues`, `stats_line`.
+    """
+    from matplotlib.text import Text  # type: ignore
+
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    fig_w, fig_h = fig.canvas.get_width_height()
+    shrink_px = float(shrink_pt) * (float(fig.dpi) / 72.0)
+
+    seen: set[int] = set()
+    artists: list[tuple[str, Text]] = []
+
+    def _add(t) -> None:
+        if t is None or id(t) in seen:
+            return
+        seen.add(id(t))
+        txt = (t.get_text() or "").strip()
+        if not txt or not t.get_visible() or t.get_alpha() == 0:
+            return
+        artists.append((txt.replace("\n", " ")[:24], t))
+
+    for t in fig.texts:
+        _add(t)
+    for ax in fig.axes:
+        if not ax.get_visible():
+            continue
+        for t in ax.texts:
+            _add(t)
+        for t in (ax.title, getattr(ax, "_left_title", None), getattr(ax, "_right_title", None)):
+            _add(t)
+        leg = ax.get_legend()
+        if leg is not None and leg.get_visible():
+            for t in leg.get_texts():
+                _add(t)
+            _add(leg.get_title())
+        if ax.axison:
+            if ax.xaxis.get_visible():
+                _add(ax.xaxis.label)
+                for t in ax.get_xticklabels():
+                    _add(t)
+            if ax.yaxis.get_visible():
+                _add(ax.yaxis.label)
+                for t in ax.get_yticklabels():
+                    _add(t)
+
+    boxes = []
+    for label, t in artists:
+        bb = Text.get_window_extent(t, renderer=renderer)
+        if bb.width <= 0 or bb.height <= 0:
+            continue
+        boxes.append((label, bb))
+
+    overlaps: list[dict] = []
+    out_of_bounds: list[dict] = []
+    for i, (label, bb) in enumerate(boxes):
+        if bb.x0 < -shrink_px or bb.y0 < -shrink_px or bb.x1 > fig_w + shrink_px or bb.y1 > fig_h + shrink_px:
+            out_of_bounds.append(
+                {
+                    "text": label,
+                    "bbox_px": (round(float(bb.x0)), round(float(bb.y0)), round(float(bb.x1)), round(float(bb.y1))),
+                    "canvas_px": (int(fig_w), int(fig_h)),
+                }
+            )
+        sx0, sy0, sx1, sy1 = bb.x0 + shrink_px, bb.y0 + shrink_px, bb.x1 - shrink_px, bb.y1 - shrink_px
+        if sx0 >= sx1 or sy0 >= sy1:
+            continue
+        for j in range(i + 1, len(boxes)):
+            label2, bb2 = boxes[j]
+            tx0, ty0, tx1, ty1 = bb2.x0 + shrink_px, bb2.y0 + shrink_px, bb2.x1 - shrink_px, bb2.y1 - shrink_px
+            if tx0 >= tx1 or ty0 >= ty1:
+                continue
+            ix = min(sx1, tx1) - max(sx0, tx0)
+            iy = min(sy1, ty1) - max(sy0, ty0)
+            if ix > 0 and iy > 0:
+                overlaps.append(
+                    {
+                        "text_a": label,
+                        "text_b": label2,
+                        "overlap_px": (round(float(ix), 1), round(float(iy), 1)),
+                    }
+                )
+
+    issues: list[str] = []
+    if overlaps:
+        detail = "; ".join(f"「{o['text_a']}」×「{o['text_b']}」({o['overlap_px'][0]}×{o['overlap_px'][1]}px)" for o in overlaps)
+        issues.append(f"偵測到文字重疊：{detail}")
+    if out_of_bounds:
+        detail = ", ".join(f"「{o['text']}」" for o in out_of_bounds)
+        issues.append(f"偵測到文字超出畫布邊界：{detail}")
+
+    stats_line = (
+        f"🔍 Matplotlib 文字快篩：檢查 {len(boxes)} 個文字元件，"
+        f"重疊 {len(overlaps)} 處，出界 {len(out_of_bounds)} 處。"
+    )
+    if print_report and issues:
+        print(stats_line)
+        for iss in issues:
+            print(f"[TEXT_WARN] {iss}")
+
+    return {
+        "passed": len(issues) == 0,
+        "text_count": len(boxes),
+        "overlaps": overlaps,
+        "out_of_bounds": out_of_bounds,
         "issues": issues,
         "stats_line": stats_line,
     }

@@ -41,7 +41,7 @@ deep-reading-and-visual-synthesis/
     │   │   ├── layer2_advisor_c_slide.md                     # Format C 顧問：全簡報北極星主線、四幕劇、AST 認知轉折與 S0~S7 防撞車分鏡表
     │   │   ├── layer2_advisor_de_chart.md                    # Format D/E 顧問：4D 資料快篩 × 8 溝通意圖 × 30+ 圖表決策樹
     │   │   └── layer3_advisor_design_style_color.md          # [Layer 3 定裝] 設計光譜武器庫 (模式 1/2/3) × 筆風 × 分層色票全域定裝
-    │   ├── visual_cognition_principles.md                    # [共通底盤] 單畫布 4→2→3 組塊、表達三支柱、跨格式字級階梯與 75-20-5 配額
+    │   ├── visual_cognition_principles.md                    # [共通底盤] 單畫布 4→2→3 組塊、表達三支柱、事實與因果保真底線、字級階梯與 75-20-5 配額
     │   ├── editorial_and_metaphor_armory_spec.md             # [設計武器庫] 模式 2 (資料八編輯室技法) & 模式 3 (RE:LAB IDE 跨工具空間隱喻)
     │   ├── quantitative_chart_spec.md                        # [Format D⇄E SSOT] 編碼誠實三鐵律、圖表 8 元件檢核、配色 SSOT 與三層 CSV 分流
     │   ├── chart_family1_ranking_and_deviation.md            # [家族 1] 克里夫蘭點陣圖、棒棒糖、啞鈴、斜坡、子彈、蝴蝶金字塔、柏拉圖
@@ -61,7 +61,7 @@ deep-reading-and-visual-synthesis/
         ├── generate_mindmap.py                               # Format A 出版級繁體中文知識圖譜引擎（避頭尾保護與 T1~T5 拓撲組件）
         ├── pdf_report_engine.py                              # Format B A4 自適應分頁 CSS 生成器與 Playwright PDF 編譯引擎
         ├── pptx_slide_engine.py                              # Format C 16:9 原生向量投影片與防撞驗證引擎
-        ├── verify_visual_outputs.py                          # PDF/PPTX 轉圖驗收、物理穿框/Medium 計字/網站結構驗收與暫存檔一鍵清理工具
+        ├── verify_visual_outputs.py                          # PDF/PPTX 轉圖驗收、Matplotlib 文字碰撞快篩、PPTX 物理穿框/Medium 計字/網站結構驗收與清理工具
         ├── report_skill_feedback.py                          # 技能優化靈感三通道自動化 GitHub Issues 回報工具
         └── check_skill_updates.py                            # 30 天節流之無損技能更新檢查工具
 ```
@@ -75,5 +75,5 @@ deep-reading-and-visual-synthesis/
 | **0. Gate 0 啟動門神** | `SKILL.md` | 身分驗證與公私雙倉庫隔離（作者還原私人設定／新用戶導向 `onboarding_wizard.md`）、30 天更新節流與靈感暫存規則。 | 不存放具體提問話術或視覺排版參數；私人設定與 `reading_sessions/` 嚴格受 `.gitignore` 隔離。 |
 | **1. 第一階段 (Phase 1)**<br>*(深度閱讀／數據探索)* | `phase1_socratic_reading_guide.md`<br>$\rightarrow$ `mode1_*` 或 `mode2_*` | 先執行 **Stage 0 垂直工序**（調用 `ingest_source_material.py` 自動將 URL / YouTube 字幕 / PDF / DOCX 轉為 `00_source_article.md`），再二擇一載入子協定執行 5 步蘇格拉底思辨或 CSV 三迴路分析，即時寫入 `01_phase1_socratic_log.md`。 | **嚴禁提前讀取 `phase2_output/` 任何檔案**；嚴禁將大型 CSV 直接讀入 LLM 上下文消耗 Token。 |
 | **2. 第二階段 (Phase 2)**<br>*(三層漸進決策漏斗)* | **L1**: `phase2_output_router.md`<br>**L2**: `advisors/layer2_*.md`<br>**L3**: `advisors/layer3_*.md` | 逐層討論拍板：**L1** 決定 Format A~E 範圍 $\rightarrow$ **L2** 僅開選定格式顧問定骨架 $\rightarrow$ **L3** 統一或混搭定裝「設計武器庫 × 筆風 × 配色」，並依時機 A 逐層寫入 `02_phase2_generation_blueprint.md`（含取捨理由與客製細節）。 | 未選中之格式與顧問檔 **100% 零讀取**；預設分步停下來確認，不擅自代選；`01` 與 `02` 紀錄檔互不跨鏈附掛。 |
-| **3. 終端執行與驗收**<br>*(Terminal Execution & QA)* | `visual_cognition_principles.md`<br>+ 選定之單一筆風檔<br>+ 按需之最小葉節點 `*_spec.md` | 僅載入拍板之最小葉節點規格檔，直接 `import` `scripts/` 九大黑盒引擎渲染，並強制呼叫 `verify_visual_outputs.py`（轉圖＋`--verify-medium` / `--verify-pptx` / `--verify-dashboard`）與 `read_file` 實地檢查。 | **日常執行嚴禁讀取 `scripts/*.py` 原始碼**；驗收後立即 `--cleanup` 清除暫存檔；格式 D/E 配色或編碼規則變動須同步更新對應 SSOT。 |
+| **3. 終端執行與驗收**<br>*(Terminal Execution & QA)* | `visual_cognition_principles.md`<br>+ 選定之單一筆風檔<br>+ 按需之最小葉節點 `*_spec.md` | 僅載入拍板之最小葉節點規格檔，直接 `import` `scripts/` 九大黑盒引擎渲染，並強制呼叫 `verify_visual_outputs.py`（Matplotlib 文字碰撞快篩＋轉圖＋`--verify-medium` / `--verify-pptx` / `--verify-dashboard`）與 `read_file` 實地檢查。 | **日常執行嚴禁讀取 `scripts/*.py` 原始碼**；驗收後立即 `--cleanup` 清除暫存檔；格式 D/E 配色或編碼規則變動須同步更新對應 SSOT。 |
 | **4. 結案進化閉環**<br>*(Step E1～E3 & Sync)* | `git_sync_and_evolution_protocol.md`<br>+ `THEORY_ARCHIVE.md` | 查證實證文獻（T01~T24）、一鍵透過 `report_skill_feedback.py` 回報 GitHub Issues、完成更新後刪除 `_pending_skill_inspirations.md` 歸零。 | **日常閱讀與製圖階段不開啟**，僅於 Git 同步、開站或 Step E1~E3 結案進化時按需載入。 |
