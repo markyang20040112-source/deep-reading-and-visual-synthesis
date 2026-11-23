@@ -2,7 +2,7 @@
 
 > **單一職責定位（Single Responsibility）**：本檔為 Format D ⇄ E **圖表家族 4 終端細分規範**，**僅當第二層（[`advisors/layer2_advisor_de_chart.md`](advisors/layer2_advisor_de_chart.md)）選定連續分布／密度圖形或「分配圖形逐步導學互動模式（`step_by_step_tutor`）」時按需載入**。專責規範 **10 大分配與密度圖形決策矩陣、幾何與視覺防呆鐵律、直方圖 vs. KDE vs. 次數多邊圖取捨、背景基準疊加與分面比較（Context Overlay / Shadow Distribution）8 大鐵律、四大實證案例設計，以及三層指標消歧與資料血統護欄**。
 >
-> 🔗 **跨檔雙向連動**：須搭配核心契約 [`quantitative_chart_spec.md`](quantitative_chart_spec.md)（Format D）使用，並與 [`data_dashboard_spec.md`](data_dashboard_spec.md)（Format E）及 [`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py) 緊密連動；若第三層開啟模式 2 或 3 則加讀 [`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)。圖表內外微文案與導學解說口吻受當前啟用筆風設定檔（預設推薦 [`../config/owner_styles/rigorous_empirical_stat.md`](../config/owner_styles/rigorous_empirical_stat.md) 之 `Slot 2`、`Slot 6` 與 `Slot 8`）100% 控制。
+> 🔗 **跨檔雙向連動**：須搭配核心契約 [`quantitative_chart_spec.md`](quantitative_chart_spec.md)（Format D）使用，並與 [`data_dashboard_spec.md`](data_dashboard_spec.md)（Format E）及 [`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py) 緊密連動；若第三層開啟模式 2 則加讀 [`editorial_narrative_spec.md`](editorial_narrative_spec.md)，若開啟模式 3 則加讀 [`creative_armory/INDEX.md`](creative_armory/INDEX.md)。圖表內外微文案與導學解說口吻受當前啟用筆風設定檔（預設推薦 [`../config/owner_styles/rigorous_empirical_stat.md`](../config/owner_styles/rigorous_empirical_stat.md) 之 `Slot 2`、`Slot 6` 與 `Slot 8`）100% 控制。
 
 ---
 

@@ -21,7 +21,7 @@ deep-reading-and-visual-synthesis/
 │   └── skill_architecture_overview.png                       # [架構圖] 全系統架構全景圖（給人類閱覽之 PNG 導覽）
 └── .agents/skills/deep-reading-and-visual-synthesis/         # 【核心技能定義區 — 採 O(1) 按需載入 (Lazy Routing)】
     ├── SKILL.md                                              # [總控台] Gate 0 身分驗證門神、五大運作鐵律、檔案路由地圖與歸檔規範
-    ├── THEORY_ARCHIVE.md                                     # [文獻庫] 認知心理學、視覺感知與排版工學實證文獻封存庫 (T01~T24)
+    ├── THEORY_ARCHIVE.md                                     # [文獻庫] 認知心理學、視覺感知與排版工學實證文獻封存庫 (T01~T25)
     ├── config/                                               # [設定範本] 公開範本與 8 插槽筆風契約（私人色票/筆風由 .gitignore 隔離）
     │   ├── user_preferences.template.json                    # 個人化設定公開範本（含確認關卡、分層色票、筆風映射與 Git 同步設定）
     │   ├── styles/_style_schema_template.md                  # 8 大全場景筆風控制契約（Slots 1～8）標準範本
@@ -39,16 +39,22 @@ deep-reading-and-visual-synthesis/
     │   │   ├── layer2_advisor_a_diagram.md                   # Format A 顧問：無損分圖 (01/02/03+) 與 T1~T5 拓撲推薦
     │   │   ├── layer2_advisor_b_report.md                    # Format B 顧問：文體 1~4 (A4 PDF ＋ 直向簡圖切點) vs. 文體 5 (Medium 專欄)
     │   │   ├── layer2_advisor_c_slide.md                     # Format C 顧問：全簡報北極星主線、四幕劇、AST 認知轉折與 S0~S7 防撞車分鏡表
-    │   │   ├── layer2_advisor_de_chart.md                    # Format D/E 顧問：4D 資料快篩 × 8 溝通意圖 × 30+ 圖表決策樹
-    │   │   └── layer3_advisor_design_style_color.md          # [Layer 3 定裝] 設計光譜武器庫 (模式 1/2/3) × 筆風 × 分層色票全域定裝
+    │   │   ├── layer2_advisor_de_chart.md                    # Format D/E 顧問：4D 資料快篩 × 8 溝通意圖 × 30+ 圖表決策樹與 T25 實證選型法則
+    │   │   └── layer3_advisor_design_style_color.md          # [Layer 3 定裝] 解耦式設計光譜 (模式 1 / 模式 2 編輯室 / 模式 3 開放創意武器庫) × 筆風 × 分層色票全域定裝
     │   ├── visual_cognition_principles.md                    # [共通底盤] 單畫布 4→2→3 組塊、表達三支柱、事實與因果保真底線、字級階梯與 75-20-5 配額
-    │   ├── editorial_and_metaphor_armory_spec.md             # [設計武器庫] 模式 2 (資料八編輯室技法) & 模式 3 (RE:LAB IDE 跨工具空間隱喻)
-    │   ├── quantitative_chart_spec.md                        # [Format D⇄E SSOT] 編碼誠實三鐵律、圖表 8 元件檢核、配色 SSOT 與三層 CSV 分流
-    │   ├── chart_family1_ranking_and_deviation.md            # [家族 1] 克里夫蘭點陣圖、棒棒糖、啞鈴、斜坡、子彈、蝴蝶金字塔、柏拉圖
-    │   ├── chart_family2_trend_and_comparison.md             # [家族 2] 空間重力斷崖複合、時期色帶折線、配對雙柱剪刀差、面積、範圍甘特
+    │   ├── editorial_narrative_spec.md                       # [模式 2 專檔] 資料八編輯室 5 大技法、Format B 社論組件與 A/C/E 敘事延伸（與模式 3 徹底解耦）
+    │   ├── creative_armory/                                  # [模式 3 開放式創意隱喻武器庫 — O(1) 單行索引＋按需原子案例卡]
+    │   │   ├── INDEX.md                                      # 模式 3 唯一輕量入口：開放式 Form-as-Metaphor 四大底線 ＋ 單行案例索引表
+    │   │   └── cases/                                        # 依視覺編碼分類之原子案例卡（按需單開，成功案例可持續回饋入庫）
+    │   │       ├── 01_texture_and_container/                 # 材質、容器與精靈圖標：glass_liquid_bars.md、masked_texture_wedges.md、sprite_coord_scatter.md
+    │   │       ├── 02_structural_geometry/                   # 純向量幾何結構隱喻開放成長目錄（Form-as-Metaphor 預留庫）
+    │   │       └── 03_spatial_and_thematic/                  # 空間與主題裝幀：thematic_palette_frame.md、diagram_spatial_metaphors.md
+    │   ├── quantitative_chart_spec.md                        # [Format D⇄E SSOT] 編碼誠實三鐵律、圖表 8 元件檢核、配色 SSOT、零斷裂箭頭與三層 CSV 分流
+    │   ├── chart_family1_ranking_and_deviation.md            # [家族 1] 克里夫蘭點陣圖、棒棒糖、啞鈴＆雙向動量向量箭頭 (directed=True)、斜坡、子彈、垂直對稱蝴蝶金字塔、柏拉圖
+    │   ├── chart_family2_trend_and_comparison.md             # [家族 2] 共用基線剪刀差折線＋面積帶、空間重力斷崖複合、時期色帶折線、配對雙柱剪刀差、面積、範圍甘特
     │   ├── chart_family3_composition_and_flow.md             # [家族 3] 4+1 堆疊、中心 KPI 環形、馬賽克雙維圖、瀑布、樹圖、旭日、桑基/弦圖
     │   ├── distribution_and_density_chart_spec.md            # [家族 4] 10 大分配與密度圖形 ＋ 背景基準分面 (Context Overlay) 8 鐵律
-    │   ├── chart_family5_multivariate_and_spatial.md         # [家族 5] 波士頓四象限氣泡矩陣、突出顯示熱力表、雷達圖、主圖＋角落排行副卡
+    │   ├── chart_family5_multivariate_and_spatial.md         # [家族 5] 全樣本波士頓四象限氣泡矩陣（類別深色實心箭頭指引線）、突出顯示熱力表、雷達圖、主圖＋角落排行副卡
     │   ├── visual_diagram_matplotlib_spec.md                 # [Format A] 23.8"×15.4" 知識圖譜 (T1~T5) ＋ Format B 7.44" 直向簡圖 API
     │   ├── document_report_spec.md                           # [Format B1~4] A4 自適應分頁印刷 PDF 報告與現代黑體 / 標楷體雙字體主題
     │   ├── medium_column_spec.md                             # [Format B5] <=1,600 字純淨原生 Markdown 專欄（免編譯 PDF）
@@ -56,7 +62,7 @@ deep-reading-and-visual-synthesis/
     │   └── data_dashboard_spec.md                            # [Format E] 零後端互動式數據儀表板、標準 CSS 骨架與獨立 Git 網站發布規範
     └── scripts/                                              # 【九大底層黑盒擷取、渲染、色彩、驗收與進化引擎 — 免讀原始碼直接呼叫】
         ├── ingest_source_material.py                         # Stage 0 四合一素材黑盒擷取引擎（網頁 URL / YouTube 字幕 / PDF / DOCX → 00_source_article.md）
-        ├── hcl_color_engine.py                               # 身分雙倉同步 + CIELAB 色階 + 三層 CSV 分流 + 10 分配/15 編輯室&RE:LAB 繪圖 API
+        ├── hcl_color_engine.py                               # 身分雙倉同步 + CIELAB 色階 + 三層 CSV 分流 + 10 分配/啞鈴＆雙向動量箭頭/編輯室&RE:LAB 繪圖 API
         ├── gephi_palette.js                                  # 前端 JS 色彩 SSOT、CIELAB 插值與 deriveThematicPalette (UMD/Browser/Node)
         ├── generate_mindmap.py                               # Format A 出版級繁體中文知識圖譜引擎（避頭尾保護與 T1~T5 拓撲組件）
         ├── pdf_report_engine.py                              # Format B A4 自適應分頁 CSS 生成器與 Playwright PDF 編譯引擎
@@ -76,4 +82,4 @@ deep-reading-and-visual-synthesis/
 | **1. 第一階段 (Phase 1)**<br>*(深度閱讀／數據探索)* | `phase1_socratic_reading_guide.md`<br>$\rightarrow$ `mode1_*` 或 `mode2_*` | 先執行 **Stage 0 垂直工序**（調用 `ingest_source_material.py` 自動將 URL / YouTube 字幕 / PDF / DOCX 轉為 `00_source_article.md`），再二擇一載入子協定執行 5 步蘇格拉底思辨或 CSV 三迴路分析，即時寫入 `01_phase1_socratic_log.md`。 | **嚴禁提前讀取 `phase2_output/` 任何檔案**；嚴禁將大型 CSV 直接讀入 LLM 上下文消耗 Token。 |
 | **2. 第二階段 (Phase 2)**<br>*(三層漸進決策漏斗)* | **L1**: `phase2_output_router.md`<br>**L2**: `advisors/layer2_*.md`<br>**L3**: `advisors/layer3_*.md` | 逐層討論拍板：**L1** 決定 Format A~E 範圍 $\rightarrow$ **L2** 僅開選定格式顧問定骨架 $\rightarrow$ **L3** 統一或混搭定裝「設計武器庫 × 筆風 × 配色」，並依時機 A 逐層寫入 `02_phase2_generation_blueprint.md`（含取捨理由與客製細節）。 | 未選中之格式與顧問檔 **100% 零讀取**；預設分步停下來確認，不擅自代選；`01` 與 `02` 紀錄檔互不跨鏈附掛。 |
 | **3. 終端執行與驗收**<br>*(Terminal Execution & QA)* | `visual_cognition_principles.md`<br>+ 選定之單一筆風檔<br>+ 按需之最小葉節點 `*_spec.md` | 僅載入拍板之最小葉節點規格檔，直接 `import` `scripts/` 九大黑盒引擎渲染，並強制呼叫 `verify_visual_outputs.py`（Matplotlib 文字碰撞快篩＋轉圖＋`--verify-medium` / `--verify-pptx` / `--verify-dashboard`）與 `read_file` 實地檢查。 | **日常執行嚴禁讀取 `scripts/*.py` 原始碼**；驗收後立即 `--cleanup` 清除暫存檔；格式 D/E 配色或編碼規則變動須同步更新對應 SSOT。 |
-| **4. 結案進化閉環**<br>*(Step E1～E3 & Sync)* | `git_sync_and_evolution_protocol.md`<br>+ `THEORY_ARCHIVE.md` | 查證實證文獻（T01~T24）、一鍵透過 `report_skill_feedback.py` 回報 GitHub Issues、完成更新後刪除 `_pending_skill_inspirations.md` 歸零。 | **日常閱讀與製圖階段不開啟**，僅於 Git 同步、開站或 Step E1~E3 結案進化時按需載入。 |
+| **4. 結案進化閉環**<br>*(Step E1～E3 & Sync)* | `git_sync_and_evolution_protocol.md`<br>+ `THEORY_ARCHIVE.md` | 查證實證文獻（T01~T25）、一鍵透過 `report_skill_feedback.py` 回報 GitHub Issues、將模式 3 勝出創意沉澱入 `creative_armory/cases/`（單行寫入 `INDEX.md`）、清理已結案靈感。 | **日常閱讀與製圖階段不開啟**，僅於 Git 同步、開站或 Step E1~E3 結案進化時按需載入。 |

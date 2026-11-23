@@ -54,5 +54,9 @@
    - **Step E1（提議本機升級 ＋ 一鍵回報原作者 GitHub Issues）**：
      列出暫存靈感，詢問使用者：(1) 是否同意檢索文獻評估升級本機技能庫？(2) 是否呼叫 [`../scripts/report_skill_feedback.py`](../scripts/report_skill_feedback.py) 以固定代號格式（`[FR-FLOW]` / `[FR-VIS]` / `[FR-STYLE]` / `[FR-CODE]` / `[FR-DOC]` / `[FR-BUG]`）回報至原作者公開倉庫（**`https://github.com/markyang20040112-source/deep-reading-and-visual-synthesis/issues`**）？（支援通道 A `gh issue create`、通道 B Google Apps Script Webhook、通道 C 預填網址）。
    - **Step E2（查證文獻與修改方案確認）**：檢索實證研究或工程標準，回報「(1) 實證依據、(2) 預計修改檔案與具體條文」待使用者拍板。
-   - **Step E3（無損寫入 ＋ 跨檔連動同步）**：將理論補入 [`../THEORY_ARCHIVE.md`](../THEORY_ARCHIVE.md)，將精煉規則寫入對應單一職責檔。**【格式 D ⇄ 格式 E ⇄ 分配圖形 ⇄ 顧問大腦強制連動條款】**：若更新涉及圖表配色、編碼鐵律或選型邏輯，必須同步更新 `quantitative_chart_spec.md`、`data_dashboard_spec.md`、`advisors/layer2_advisor_de_chart.md`、對應之 `chart_family*.md`、`scripts/hcl_color_engine.py` 與 `scripts/gephi_palette.js`！
-3. **🗑️ 暫存檔歸零刪除時機**：於 Step E1/E2 遭使用者否決時當下移除該條；於 Step E3 寫入完成後**當下立即刪除 `reading_sessions/_pending_skill_inspirations.md`**，確保暫存區 100% 歸零！
+   - **Step E3（無損寫入 ＋ 跨檔連動同步 ＋ 模式 3 成功創意案例回饋入庫閉環）**：將理論補入 [`../THEORY_ARCHIVE.md`](../THEORY_ARCHIVE.md)，將精煉規則寫入對應單一職責檔。
+     - **【格式 D ⇄ 格式 E ⇄ 分配圖形 ⇄ 顧問大腦強制連動條款】**：若更新涉及圖表配色、編碼鐵律或選型邏輯，必須同步更新 `quantitative_chart_spec.md`、`data_dashboard_spec.md`、`advisors/layer2_advisor_de_chart.md`、對應之 `chart_family*.md`、`scripts/hcl_color_engine.py` 與 `scripts/gephi_palette.js`！
+     - **【模式 3 成功創意案例回饋入庫閉環（Creative Armory Case Feedback-to-Library Loop）】**：當某次 **模式 3 (`bespoke_metaphor`)** 專案原創出全新的具象材質、純幾何物理結構（Form-as-Metaphor）或空間隱喻視覺方案，並經使用者實戰驗收勝出後，於 Step E3 依下列兩步沉澱入庫：
+       1. **建立單一原子案例卡**：將去專案化之適用時機、防誤導邊界、核心 API／原生實作骨架寫成 1 份獨立 `.md` 檔案，放入 [`../phase2_output/creative_armory/cases/`](../phase2_output/creative_armory/cases/) 下對應之視覺編碼分類目錄（`01_texture_and_container/`、`02_structural_geometry/` 或 `03_spatial_and_thematic/`）。
+       2. **僅追加 1 行單行索引**：於 [`../phase2_output/creative_armory/INDEX.md`](../phase2_output/creative_armory/INDEX.md) 索引表追加**恰好 1 行摘要與連結**，嚴禁將長篇實作細節複製進 `INDEX.md`、`SKILL.md` 或 `layer3_advisor_design_style_color.md`，確保案例庫隨實戰持續擴充時仍維持 $O(1)$ 注意力與極低 Token 負擔。
+3. **🗑️ 暫存檔清理與歸零刪除時機**：於 Step E1/E2 遭使用者否決或於 Step E3 寫入完成後，**當下立即從 `reading_sessions/_pending_skill_inspirations.md` 移除該筆已完成／已否決之靈感**；若清單中僅剩 `[LOCKED / DEFERRED]` 封存靈感則保留檔案供日後解鎖，若已無任何剩餘條目則**當下立即刪除 `reading_sessions/_pending_skill_inspirations.md`** 確保暫存區歸零！

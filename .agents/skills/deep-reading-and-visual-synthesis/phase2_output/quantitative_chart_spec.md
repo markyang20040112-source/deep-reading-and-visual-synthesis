@@ -17,7 +17,8 @@
 | **[`chart_family3_composition_and_flow.md`](chart_family3_composition_and_flow.md)** | **家族 3（結構佔比、雙維馬賽克、瀑布與流向）**：`4+1` 堆疊與環形圖、**馬賽克雙維佔比圖（Marimekko）**、**增減瀑布圖（Waterfall）**、矩形樹圖、**巢狀環／旭日／圓堆圖**、**桑基流向與弦圖** | 第二層選定此家族圖型時 |
 | **[`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)** | **家族 4（10 大分配與密度圖形 ＋ 背景基準疊加分面）**：直方圖（`add_halo_vline`＋`annotate_floor_extreme`）、非負截斷 KDE、ECDF、Q-Q、箱形、小提琴、山脊、2D 直方、2D 等高線、**Context Overlay 8 大鐵律**與三層指標消歧 | 第二層選定分配圖形或逐步導學時 |
 | **[`chart_family5_multivariate_and_spatial.md`](chart_family5_multivariate_and_spatial.md)** | **家族 5（多維關聯、矩陣與空間複合）**：**波士頓四象限散點／氣泡矩陣**、**突出顯示熱力表**、雷達圖（$\le 3$ 組）、**主圖＋角落微型排行副卡複合構圖** | 第二層選定此家族圖型時 |
-| **[`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)** | **跨格式設計武器庫專檔**：模式 2（資料八／數據百閱編輯室 5 大技法與報告 CSS）＆ 模式 3（RE:LAB 六大編碼具象材質與 IDE 跨工具合成管線） | **僅當第三層開啟模式 2 或模式 3 時加載** |
+| **[`editorial_narrative_spec.md`](editorial_narrative_spec.md)** | **模式 2 編輯室敘事專檔**：資料八／數據百閱編輯室 5 大技法（聚光燈、雙基準膠囊、時期色帶、角落排行卡、四層底註）與 Format B PDF 社論組件 | **僅當第三層開啟模式 2 時加載** |
+| **[`creative_armory/INDEX.md`](creative_armory/INDEX.md)** | **模式 3 開放式創意武器庫總索引**：開放式 Form-as-Metaphor 創意原則 ＋ 單行原子案例索引表（按需單開 `creative_armory/cases/` 下對應之單一案例卡） | **僅當第三層開啟模式 3 時加載** |
 
 ---
 
@@ -40,7 +41,7 @@
 4. **主繪圖核心區**：單面板佔畫布總高約 **`62%–65%`**。
 5. **極簡去邊框座標軸與零旋轉標籤**：隱藏頂部與右側軸線（`despine_axes`），**中文標籤 100% 水平零旋轉（禁止斜放 45°/90°）**。
 6. **背景極淡輔助基準格線**：`#CBD5E1` 細虛線（`alpha=0.45~0.65`），絕不搶奪主視覺。
-7. **資料數列與直接數據標註**：主角極值聚光燈高亮，節點或長條末端直接標註數值並採白色外框避讓。
+7. **資料數列與直接數據標註**：主角極值聚光燈高亮，節點或長條末端直接標註數值並採白色外框避讓；**雙序列差距比較必守共用基線**，多條折線右側末端直接標籤應在 X 軸右側預留乾淨留白對齊排列（嚴防與線段或邊界相撞）。
 8. **底部官方來源與方法論圖註**：預設採雙行精簡官方來源（1. 官方資料集網址、2. 資料涵蓋期間）；若開啟編輯室模式則呼叫 `add_editorial_footer` 繪製四層結構化底註（`資料補充 / 註 / 來源 / 提醒`）。
 
 ---
@@ -123,7 +124,7 @@ from hcl_color_engine import (
     despine_axes,                       # (ax, grid_axis="y", grid_color="#CBD5E1", grid_linestyle="--", grid_alpha=0.65, spine_color="#CBD5E1") -> None
     # --- Chart Families & Distribution Helpers ---
     plot_cleveland_dot,                 # (ax, labels, values, top_n=1, bottom_n=1, highlight_indices=None, highlight_color=None, context_color="#94A3B8", stem_color="#CBD5E1", stem_linestyle="--", stem_linewidth=1.0, value_fmt="{:.1f}", value_offset_pts=7.0, sort_values=True, ascending=True, x_padding_ratio=0.14, **kwargs) -> Dict
-    plot_dumbbell,                      # (ax, labels, val_start, val_end, label_start="期初 / 基準", label_end="期末 / 現況", color_start=None, color_end=None, bar_color="#CBD5E1", bar_linewidth=3.2, dot_size=90.0, show_delta=True, delta_fmt="{:+.1f}", sort_by="end", **kwargs) -> Dict
+    plot_dumbbell,                      # (ax, labels, val_start, val_end, label_start="期初 / 基準", label_end="期末 / 現況", color_start=None, color_end=None, bar_color="#CBD5E1", bar_linewidth=3.2, dot_size=90.0, show_delta=True, delta_fmt="{:+.1f}", sort_by="end", directed=False, **kwargs) -> Dict
     plot_slope_chart,                   # (ax, labels, val_t1, val_t2, t1_label="期初 (T1)", t2_label="期末 (T2)", up_color=None, down_color=None, neutral_color="#94A3B8", value_fmt="{:.1f}", linewidth=2.4, dot_size=75.0, **kwargs) -> Dict
     plot_bullet,                        # (ax, labels, actuals, targets, bands=None, band_colors=None, actual_color=None, target_color="#0F172A", bar_height=0.6, actual_height=0.28, value_fmt="{:.1f}", **kwargs) -> Dict
     plot_marimekko,                     # (ax, categories, weights, sub_matrix_pct, sub_labels, colors=None, edgecolor="#FFFFFF", linewidth=1.6, show_cell_labels=True, min_pct_for_label=7.5, show_weight_header=True, weight_fmt="{:.0f}", **kwargs) -> Dict
@@ -168,6 +169,7 @@ from verify_visual_outputs import (
      fig.text(0.055, 0.058, footnote_line1, fontsize=9.2, ha="left", va="top")  # Or add_editorial_footer()
      fig.text(0.055, 0.030, footnote_line2, fontsize=9.0, ha="left", va="top")
      ```
-3. **零 Emoji 鐵律（Zero-Emoji Rule）與精簡官方資料來源**：
+3. **零 Emoji、零斷裂拼接箭頭鐵律（Zero-Emoji & Zero Broken-Glyph Arrow Rule）與精簡官方資料來源**：
    - Windows `Microsoft JhengHei` 遇彩色 Emoji 必現缺字方框（`□`），圖表內一律禁止 Emoji，僅用原生幾何符號（`▲`、`●`、`■`、`★`）。
+   - **嚴禁拼接字元長箭頭（如 `──→`、`━━→`）**：在 `Microsoft JhengHei` 中全形破折號與箭頭字元基線與筆寬不齊，必生視覺斷裂缺口；圖內有向指引一律採 Matplotlib 原生向量箭頭（`arrowstyle="-|>"`），文字軸籤或圖例僅用單一標準箭頭符號 `→`。
    - 底部資料來源**必須寫原始官方發布機關與資料集正式名稱**（嚴禁寫成「資料來源：資料說明書」），精簡版只需附 **1. 官方資料集網址、2. 資料涵蓋期間**。

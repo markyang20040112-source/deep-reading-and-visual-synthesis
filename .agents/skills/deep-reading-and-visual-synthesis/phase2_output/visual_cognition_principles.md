@@ -22,7 +22,7 @@
 - **設計哲學與徹底解耦原則（Full Decoupling of Visual Geometry vs. Writing Style vs. Design Spectrum）**：
   - 底層視覺規範僅定義「空間幾何、字級、留白與色彩對比」，**絕對不寫死任何單一行文語氣或單一裝飾風格**。
   - 在 Phase 2 **第三層（最後決策層）**，透過「表達三支柱」統御所有選定之產出格式（Format A / B / C / D / E，詳細實作流程見 [`advisors/layer3_advisor_design_style_color.md`](advisors/layer3_advisor_design_style_color.md)）：
-    1. **支柱 1：設計光譜與轉譯武器庫開／關**：依任務特性於 `standard_rigorous`（模式 1：標準嚴謹）、`editorial_narrative`（模式 2：資料八／經濟學人編輯室敘事）與 `bespoke_metaphor`（模式 3：資料七 RE:LAB 具象材質與空間隱喻，見 [`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)）間切換，可統一或分檔混搭。
+    1. **支柱 1：設計光譜與轉譯武器庫開／關**：依任務特性於 `standard_rigorous`（模式 1：標準嚴謹）、`editorial_narrative`（模式 2：資料八／經濟學人編輯室敘事，見 [`editorial_narrative_spec.md`](editorial_narrative_spec.md)）與 `bespoke_metaphor`（模式 3：開放式創意材質與幾何空間隱喻武器庫，見 [`creative_armory/INDEX.md`](creative_armory/INDEX.md)）間切換，可統一或分檔混搭。
     2. **支柱 2：筆風設定檔（`Slot 1～8` 100% 全域穿透）**：控制所有生成內容的語氣、資訊展開順序、標題句型、卡片錨點、圖譜箭頭謂詞、統計圖表微文案、簡報講稿與禁用詞。
     3. **支柱 3：分層顏色設定集（`chart_palettes` ＋ `document_themes` ＋ `derive_thematic_palette`）**：統籌數值色彩科學與文件視覺佈景主題。
 - **作者私人筆風庫 vs. 外部使用者隔離（Owner-Only Style Isolation）**：

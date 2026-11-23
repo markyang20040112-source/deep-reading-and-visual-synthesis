@@ -1,12 +1,12 @@
 # 圖表家族 1：比較、排名、跨距與目標偏差（Chart Family 1: Ranking, Span & Deviation Spec）
 
-> **單一職責定位（Single Responsibility）**：本檔為 Format D ⇄ E **圖表家族 1 終端細分規範**，**僅當第二層選定比較排名、非零區間點陣、雙態跨距、兩期洗牌或目標偏差圖型時按需載入**（須搭配核心契約 [`quantitative_chart_spec.md`](quantitative_chart_spec.md) 使用；若第三層開啟模式 2 或 3，同步加載 [`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)）。
+> **單一職責定位（Single Responsibility）**：本檔為 Format D ⇄ E **圖表家族 1 終端細分規範**，**僅當第二層選定比較排名、非零區間點陣、雙態跨距／雙向動量向量箭頭、兩期洗牌、垂直對稱蝴蝶金字塔或目標偏差圖型時按需載入**（須搭配核心契約 [`quantitative_chart_spec.md`](quantitative_chart_spec.md) 使用；若第三層開啟模式 2 同步加載 [`editorial_narrative_spec.md`](editorial_narrative_spec.md)，若開啟模式 3 同步加載 [`creative_armory/INDEX.md`](creative_armory/INDEX.md)）。
 
 ```python
 # === Family 1 Black-Box API Signatures (scripts/hcl_color_engine.py) ===
 from hcl_color_engine import (
     plot_cleveland_dot,     # (ax, labels, values, top_n=1, bottom_n=1, highlight_indices=None, highlight_color=None, context_color="#94A3B8", stem_color="#CBD5E1", stem_linestyle="--", stem_linewidth=1.0, value_fmt="{:.1f}", value_offset_pts=7.0, sort_values=True, ascending=True, x_padding_ratio=0.14, **kwargs) -> Dict
-    plot_dumbbell,          # (ax, labels, val_start, val_end, label_start="期初 / 基準", label_end="期末 / 現況", color_start=None, color_end=None, bar_color="#CBD5E1", bar_linewidth=3.2, dot_size=90.0, show_delta=True, delta_fmt="{:+.1f}", sort_by="end", **kwargs) -> Dict
+    plot_dumbbell,          # (ax, labels, val_start, val_end, label_start="期初 / 基準", label_end="期末 / 現況", color_start=None, color_end=None, bar_color="#CBD5E1", bar_linewidth=3.2, dot_size=90.0, show_delta=True, delta_fmt="{:+.1f}", sort_by="end", directed=False, **kwargs) -> Dict
     plot_slope_chart,       # (ax, labels, val_t1, val_t2, t1_label="期初 (T1)", t2_label="期末 (T2)", up_color=None, down_color=None, neutral_color="#94A3B8", value_fmt="{:.1f}", linewidth=2.4, dot_size=75.0, **kwargs) -> Dict
     plot_bullet,            # (ax, labels, actuals, targets, bands=None, band_colors=None, actual_color=None, target_color="#0F172A", bar_height=0.6, actual_height=0.28, value_fmt="{:.1f}", **kwargs) -> Dict
     add_badge_vline,        # (ax, x, badge_text, color=None, linestyle="--", linewidth=2.0, badge_y_axes=1.03, x_offset_pts=0.0, zorder=6, **kwargs) -> _BadgeVLineResult
@@ -48,12 +48,18 @@ from hcl_color_engine import (
 
 ---
 
-## 三、 啞鈴跨距圖（Dumbbell Span Plot — 資料七）
+## 三、 啞鈴跨距圖 ＆ 雙向動量向量箭頭圖（Dumbbell Span & Directional Momentum Vector Arrows — 資料七、`T25`）
 
-1. **適用時機**：展示同一組實體在「兩個時間點（如 2015 vs. 2025）」或「兩組條件（如男 vs. 女、預算 vs. 實支）」之間的**起訖差距跨度**。
-2. **規範與呼叫**：呼叫 `plot_dumbbell(ax, labels, val_start, val_end, label_start=..., label_end=..., delta_fmt="{:+.1f}")`：
-   - 嚴格綁定色序 2 次色（起點／基準）與色序 1 主色（終點／現況），中央以粗灰桿（`#CBD5E1`, `lw=3.2`）連接，右側自動加上正負方向色標註之差值 `Δ`。
-   - 依現況或差值大小排序（`sort_by="end" | "start" | "delta"`），禁止散亂無序排列。
+1. **情境選型判準（中性跨距 vs. 有向轉化動量）**：
+   - **標準靜態啞鈴圖（`directed=False`，預設）**：適合對比**不具單向因果先後、純粹對等條件的兩組數值**（如「男 vs. 女」、「城 vs. 鄉」、「組 A vs. 組 B」）。
+   - **雙向動量向量箭頭圖（`directed=True`，優先推薦於起迄／轉化情境）**：當兩組數值具備明確的**「起點 → 結果／轉化方向」**（如「實際到訪率 → 造訪後最喜歡比率」、「期初 → 期末」、「認知印象 → 實際行為」）且同批實體中同時出現「向右正向衝刺」與「向左負向回縮」時，優先呼叫 `plot_dumbbell(..., directed=True)` 賦予強烈視覺動線，遠勝靜態雙圓點。
+2. **黑盒呼叫與核心設計規範**：
+   - **標準模式**：`plot_dumbbell(ax, labels, val_start, val_end, label_start=..., label_end=..., delta_fmt="{:+.1f}")`
+     - 嚴格綁定色序 2 次色（起點／基準）與色序 1 主色（終點／現況），中央以粗灰桿（`#CBD5E1`, `lw=3.2`）連接，右側自動加上正負方向色標註之差值 `Δ`。
+   - **雙向動量模式**：`plot_dumbbell(ax, labels, val_start, val_end, directed=True, delta_fmt="{:+.1f} pp", delta_header="轉化落差", show_values=True, value_fmt="{:.1f}%", ...)`
+     - **空心圓起點 → 實心向量箭頭終點**：起點繪製白底彩框空心圓（`facecolor="#FFFFFF", lw=2.0`），以 Matplotlib 原生向量箭頭（`arrowstyle="-|>,head_length=0.55,head_width=0.32"`）指向終點；**嚴禁在 `Microsoft JhengHei` 文字中以 `──→` 拼接字元冒充長箭頭（必生斷裂缺口）**。
+     - **依方向分色 ＋ 淡色列底導引 ＋ 右側獨立對齊落差欄**：正向推進（`delta > 0`）採主色深階（如 `#CA6F35`）與極淺橘底行（`#FFF3EA`），負向回縮（`delta < 0`）採次色深階（如 `#2C8B9F`）與冷白底行（`#F8FAFC`），並於圖表右側預留獨立對齊之 `Δ`／`pp` 差值欄（`ha="right"`）方便縱向掃描。
+   - 兩種模式皆強制依現況、起點或差值排序（`sort_by="end" | "start" | "delta"`），禁止散亂無序排列。
 
 ---
 
@@ -74,9 +80,13 @@ from hcl_color_engine import (
 
 ---
 
-## 六、 雙向對稱蝴蝶金字塔圖（Butterfly Pyramid）與 80/20 柏拉圖（Pareto Chart）
+## 六、 垂直雙向對稱蝴蝶金字塔圖（Butterfly Pyramid — `T25`）與 80/20 柏拉圖（Pareto Chart）
 
-1. **雙向對稱蝴蝶／人口金字塔圖（資料五、七）**：
-   - 使用共中心點（或雙子圖緊貼中央共享 Y 軸類別標籤），左側群體往左延伸（以負座標繪製但將 X 軸刻度格式化為正數絕對值 `abs(x)`，綁定次色系藍）、右側群體往右延伸（綁定主色系橘），左右 X 軸上下限必須嚴格對稱（`[-M, +M]`）以防視覺傾斜詐欺。
+1. **垂直雙向對稱蝴蝶／人口金字塔圖（資料五、七、`T25`）**：
+   - **何時優先勝過 100% 堆疊橫條**：當兩個對比群體在有序級距上呈現**結構形狀完全相反（如「一次客正金字塔：底寬頂窄」vs.「重度鐵粉倒金字塔：底窄頂寬」）**時，優先使用垂直雙向對稱蝴蝶金字塔圖！將有序級距由下而上排列於中央／左側 Y 軸（例如底層為「第 1 次初訪」、頂層為「5 次以上熟客」），藉人類前注意全域輪廓知覺立即放大正倒金字塔對撞反差。
+   - **幾何誠實與細節分層規範**：
+     - 左翼群體往左延伸（以負座標繪製但將 X 軸刻度格式化為正數絕對值 `abs(x)`，綁定次色系藍漸層）、右翼群體往右延伸（綁定主色系橘漸層），中央繪製醒目 `x=0` 實線軸；
+     - **左右 X 軸上下限必須嚴格對稱（`[-M, +M]`）**，嚴禁單側壓縮製造視覺傾斜詐欺；
+     - 若某側頂層長條占比龐大且含細部子級距（如「5 次以上」內含 `5–9 次`、`10–19 次`、`20+ 次`），可於該條內部以純白垂直分隔線（`lw=1.8`）與白字直接切割標註，在不破壞對稱輪廓下補齊深度細節。
 2. **80/20 柏拉圖（Pareto Chart — 資料五）**：
    - 步驟：① 僅在純明細 `df_detail` 上按數值由大到小降冪排序繪製左 Y 軸長條（強制從 0 起算）；② 計算累積百分比 $C_k = \sum_{i=1}^k v_i / \sum v$，於右副軸（`ax2 = ax.twinx()`, `ylim(0, 105)`）繪製累積折線；③ 在 `80%` 處加上水平虛線與交叉垂直截斷虛線，醒目標示「前 $K$ 項貢獻 `80%` 核心總量」。

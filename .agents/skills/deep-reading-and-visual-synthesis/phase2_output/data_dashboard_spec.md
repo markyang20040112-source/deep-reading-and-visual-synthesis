@@ -1,7 +1,7 @@
 # 數據儀表板設計與互動／靜態雙模態實作規範（Format E: Data Dashboard Spec）
 
 > **單一職責定位（Single Responsibility）**：本檔專責 **Format E（數據儀表板：互動式 Web 數據儀表板 `.html`/`.css`/`.js` ＋ 出版級靜態全景儀表板圖 `.png`）** 的**動態呈現架構選型（工作台 / Bento 網格 / 雙模態交付，嚴禁寫死圖表類型與呈現格式）**、**前端 CSS `:root` 變數與 `scripts/gephi_palette.js` 色彩工程實作**、第三層設計武器庫前端延伸，以及**零後端自包含前端工程、獨立 Git 儲存庫綁定與網站發布驗收守則**。
-> - **圖表選型、色彩 SSOT 與家族規格連動**：本檔已去除與 Format D 重複之選型長表與靜態圖細則！內部圖表動態選型請見 **[`advisors/layer2_advisor_de_chart.md`](advisors/layer2_advisor_de_chart.md)**；配色設定集與編碼誠實三鐵律請見 **[`quantitative_chart_spec.md`](quantitative_chart_spec.md)**；各家族繪圖細則依需求按需開啟 **[`chart_family1_ranking_and_deviation.md`](chart_family1_ranking_and_deviation.md)**、**[`chart_family2_trend_and_comparison.md`](chart_family2_trend_and_comparison.md)**、**[`chart_family3_composition_and_flow.md`](chart_family3_composition_and_flow.md)**、**[`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)** 或 **[`chart_family5_multivariate_and_spatial.md`](chart_family5_multivariate_and_spatial.md)**；若第三層開啟模式 2 或 3 則加讀 **[`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)**。
+> - **圖表選型、色彩 SSOT 與家族規格連動**：本檔已去除與 Format D 重複之選型長表與靜態圖細則！內部圖表動態選型請見 **[`advisors/layer2_advisor_de_chart.md`](advisors/layer2_advisor_de_chart.md)**；配色設定集與編碼誠實三鐵律請見 **[`quantitative_chart_spec.md`](quantitative_chart_spec.md)**；各家族繪圖細則依需求按需開啟 **[`chart_family1_ranking_and_deviation.md`](chart_family1_ranking_and_deviation.md)**、**[`chart_family2_trend_and_comparison.md`](chart_family2_trend_and_comparison.md)**、**[`chart_family3_composition_and_flow.md`](chart_family3_composition_and_flow.md)**、**[`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)** 或 **[`chart_family5_multivariate_and_spatial.md`](chart_family5_multivariate_and_spatial.md)**；若第三層開啟模式 2 則加讀 **[`editorial_narrative_spec.md`](editorial_narrative_spec.md)**，若開啟模式 3 則加讀 **[`creative_armory/INDEX.md`](creative_armory/INDEX.md)**。
 > - **筆風設定檔 100% 穿透綁定**：儀表板標題、KPI 卡、頁籤、座標軸籤與 Tooltip 解說微文案受 **`Slot 6`** 與 **`Slot 8`** 控制（[`visual_cognition_principles.md`](visual_cognition_principles.md)）。
 
 ---
@@ -27,7 +27,7 @@
 
 ### 2. 第三層設計武器庫連動（模式 2 編輯室工作台 & 模式 3 主題沉浸式策展網頁）
 - 若第三層開啟 **模式 2 (`editorial_narrative`)**：頂部 KPI 卡增設「與基準線正負差距膠囊」，圖表區提供「統計基準線切換開關（未加權平均／官方加權／中位數）」與「首尾極值聚光燈高亮」控制項。
-- 若第三層開啟 **模式 3 (`bespoke_metaphor`)**：直接調用 `window.GephiPalette.deriveThematicPalette(presetOrHex, { activate: true })` 將主題語義色階動態注入 CSS `:root`，並可於卡片中嵌入容器式液面進度條或 $10 \times 10$ 象形陣列佔比卡（詳見 [`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)）。
+- 若第三層開啟 **模式 3 (`bespoke_metaphor`)**：直接調用 `window.GephiPalette.deriveThematicPalette(presetOrHex, { activate: true })` 將主題語義色階動態注入 CSS `:root`，並可於卡片中嵌入容器式液面進度條或 $10 \times 10$ 象形陣列佔比卡（詳見 [`creative_armory/INDEX.md`](creative_armory/INDEX.md) 與 [`creative_armory/cases/03_spatial_and_thematic/thematic_palette_frame.md`](creative_armory/cases/03_spatial_and_thematic/thematic_palette_frame.md)）。
 
 ---
 

@@ -2,7 +2,7 @@
 
 > **單一職責定位（Single Responsibility）**：本檔專責 **Format B 文體 1～4（結構化深度分析報告 `.md` + 高解析印刷級 `.pdf`）** 的文體選擇、注意力節律排版、Playwright/Chromium A4 印刷 CSS 規格與防斷框工程守則。
 > - **文體 5（Medium 每週一圖數據敘事專欄 `.md`，`<= 1,600` 字）已獨立拆出**：請改讀 **[`medium_column_spec.md`](medium_column_spec.md)**（與本檔 100% 隔離，互不干擾）。
-> - **筆風與第三層設計武器庫連動**：正文散文、表格/卡片錨點、公式導讀與圖說受當前筆風 `Slot 1`、`Slot 3`、`Slot 4` & `Slot 8` 控制（[`visual_cognition_principles.md`](visual_cognition_principles.md)）；若第三層開啟模式 2/3，同步載入 **[`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)** 以使用編輯室社論組件（`.editorial-masthead`、`.big-stat-callout`、`.myth-reality-split`、`.methodology-traffic-light`）。
+> - **筆風與第三層設計武器庫連動**：正文散文、表格/卡片錨點、公式導讀與圖說受當前筆風 `Slot 1`、`Slot 3`、`Slot 4` & `Slot 8` 控制（[`visual_cognition_principles.md`](visual_cognition_principles.md)）；若第三層開啟模式 2，同步載入 **[`editorial_narrative_spec.md`](editorial_narrative_spec.md)** 以使用編輯室社論組件（`.editorial-masthead`、`.big-stat-callout`、`.myth-reality-split`、`.methodology-traffic-light`）；若開啟模式 3 主題裝幀則按需加載 **[`creative_armory/INDEX.md`](creative_armory/INDEX.md)**。
 
 ---
 
@@ -106,7 +106,7 @@ from verify_visual_outputs import (
 
 ## 四、 第三層編輯室社論組件（Layer 3 Armory Print-CSS Components）
 
-當第三層（[`advisors/layer3_advisor_design_style_color.md`](advisors/layer3_advisor_design_style_color.md)）開啟 **模式 2 (`editorial_narrative`)** 或 **模式 3 (`bespoke_metaphor`)** 時，`scripts/pdf_report_engine.py` 內建以下 4 組經 Chromium A4 實測防斷框（`break-inside: avoid`、零固定高度）之編輯室社論組件可供呼叫（完整 HTML 範本見 [`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md) 第一部）：
+當第三層（[`advisors/layer3_advisor_design_style_color.md`](advisors/layer3_advisor_design_style_color.md)）開啟 **模式 2 (`editorial_narrative`)**（或模式 3 併同選用編輯室社論排版）時，`scripts/pdf_report_engine.py` 內建以下 4 組經 Chromium A4 實測防斷框（`break-inside: avoid`、零固定高度）之編輯室社論組件可供呼叫（完整 HTML 範本見 [`editorial_narrative_spec.md`](editorial_narrative_spec.md) 第二節）：
 - **`.editorial-masthead`**（搭配 `.masthead-kicker`、`<h1>`、`.masthead-deck`）：報刊頭條頂部粗橫線開篇區。
 - **`.big-stat-callout`**（搭配 `.big-stat-number`、`.big-stat-label`）：巨型黃金數字衝擊盒。
 - **`.myth-reality-split`**（搭配 `.myth-box` 左紅 vs. `.reality-box` 右綠）：常見直覺迷思 vs. 實證真相雙欄對撞解剖台。

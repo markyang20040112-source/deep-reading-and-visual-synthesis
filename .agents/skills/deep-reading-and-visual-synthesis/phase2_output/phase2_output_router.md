@@ -47,7 +47,7 @@
 1. **全格式設計光譜與轉譯武器庫開／關（套用至所有選定的 A/B/C/D/E）**：
    - 🔘 **模式 1：`standard_rigorous`**（標準嚴謹模式 — 武器庫關閉）
    - 🔘 **模式 2：`editorial_narrative`**（資料八／經濟學人／數據百閱：編輯室權威敘事設計開啟）
-   - 🔘 **模式 3：`bespoke_metaphor`**（資料七 RE:LAB：六大編碼具象材質與空間隱喻武器庫開啟，啟動 IDE 跨工具渲染管線）
+   - 🔘 **模式 3：`bespoke_metaphor`**（開放式創意隱喻武器庫開啟：不限縮固定模板之純幾何 Form-as-Metaphor ＆ RE:LAB IDE 跨工具材質管線，按需單開 `creative_armory/INDEX.md`）
 2. **筆風設定檔（Writing Style Profile）**：`Slot 1～8` 100% 全域穿透控制（支援跨檔混搭）。
 3. **分層顏色設定集與版面細節（Layered Color Sets & Layout Details）**：鎖定色票 vs. CIELAB 主題語義微調色階（`derive_thematic_palette`）、PDF 字體（`modern_sans` vs. `clreq_kaiti`）。
 
@@ -106,7 +106,7 @@
 1. **步驟 1：錨定藍圖客製條款並載入跨格式底線與筆風契約**：
    - 對照 `02_phase2_generation_blueprint.md` 第 4 節（使用者客製細節覆寫）與第 5 節（按需載入規格檔清單），讀取 [`visual_cognition_principles.md`](visual_cognition_principles.md) ＋ 本次選定之單一筆風設定檔（`config/owner_styles/<style>.md` 或 `config/user_styles/<style>.md`）。
 2. **步驟 2：僅按需載入第二、三層指定的葉節點規格檔（Leaf Micro-Specs）**：
-   - **若第三層開啟「模式 2 (`editorial_narrative`)」或「模式 3 (`bespoke_metaphor`)」** $\rightarrow$ 加讀 **[`editorial_and_metaphor_armory_spec.md`](editorial_and_metaphor_armory_spec.md)**（模式 1 則略過不讀）。
+   - **若第三層開啟「模式 2 (`editorial_narrative`)」** $\rightarrow$ 加讀 **[`editorial_narrative_spec.md`](editorial_narrative_spec.md)**；**若開啟「模式 3 (`bespoke_metaphor`)」** $\rightarrow$ 先讀 **[`creative_armory/INDEX.md`](creative_armory/INDEX.md)** 並按需單開對應之原子案例卡（模式 1 則兩者皆略過不讀）。
    - **若含 Format D 或 E** $\rightarrow$ 讀取 [`quantitative_chart_spec.md`](quantitative_chart_spec.md)（圖表共通核心契約 SSOT）＋ **僅開啟第二層選定之對應圖表家族微檔（6 選 1～2）**：
      - 家族 1（排行、跨距與目標偏差：克里夫蘭點陣圖、棒棒糖、啞鈴、斜坡、子彈、蝴蝶金字塔、柏拉圖）$\rightarrow$ [`chart_family1_ranking_and_deviation.md`](chart_family1_ranking_and_deviation.md)
      - 家族 2（時序趨勢、斷崖與同案反差：斷崖複合、時期色帶＋事件折線、配對雙柱剪刀差、面積、範圍甘特）$\rightarrow$ [`chart_family2_trend_and_comparison.md`](chart_family2_trend_and_comparison.md)

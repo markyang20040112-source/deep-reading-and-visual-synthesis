@@ -2889,25 +2889,43 @@ def plot_dumbbell(
     show_delta: bool = True,
     delta_fmt: str = "{:+.1f}",
     sort_by: Optional[str] = "end",
+    directed: bool = False,
     **kwargs,
 ) -> Dict[str, object]:
     """
-    Data 7 Dumbbell Span Plot with connecting bars and signed delta callouts.
+    Dumbbell Span Plot & Directional Momentum Vector Arrow Plot.
+
+    - ``directed=False`` (default): Neutral dual-state dumbbell span plot
+      (solid start/end dots connected by a neutral bar + inline delta label).
+    - ``directed=True``: Directional origin-to-outcome momentum arrow plot
+      (hollow circle origin -> solid directional arrowhead, direction-coded
+      positive/negative colors, optional subtle row shading, and a cleanly
+      right-aligned delta column; uses native Matplotlib vector arrowheads to
+      avoid Microsoft JhengHei broken-glyph arrow concatenation).
     """
     _ensure_cjk_font()
     import numpy as np
+    import matplotlib.patches as mpatches
+    import matplotlib.patheffects as pe
 
     c_start = color_start if color_start is not None else GEPHI_QUALITATIVE_HEX[1]
     c_end = color_end if color_end is not None else GEPHI_QUALITATIVE_HEX[0]
 
     rows = []
     for lbl, vs, ve in zip(labels, val_start, val_end):
-        ps, pe = _parse_numeric_or_na(vs), _parse_numeric_or_na(ve)
-        if ps is not None and pe is not None:
-            rows.append((str(lbl), float(ps), float(pe), float(pe - ps)))
+        ps, pe_val = _parse_numeric_or_na(vs), _parse_numeric_or_na(ve)
+        if ps is not None and pe_val is not None:
+            rows.append((str(lbl), float(ps), float(pe_val), float(pe_val - ps)))
 
     if not rows:
-        return {"scatter_start": None, "scatter_end": None, "bars": None, "annotations": [], "ax": ax}
+        return {
+            "scatter_start": None,
+            "scatter_end": None,
+            "bars": None,
+            "arrows": [],
+            "annotations": [],
+            "ax": ax,
+        }
 
     if sort_by == "end":
         rows.sort(key=lambda r: r[2])
@@ -2923,75 +2941,295 @@ def plot_dumbbell(
     r_end = [r[2] for r in rows]
     r_delta = [r[3] for r in rows]
 
-    bars = ax.hlines(
-        y=y_pos,
-        xmin=[min(a, b) for a, b in zip(r_start, r_end)],
-        xmax=[max(a, b) for a, b in zip(r_start, r_end)],
-        color=bar_color,
-        linewidth=bar_linewidth,
-        zorder=2,
-    )
+    all_vals = r_start + r_end
+    v_min, v_max = min(all_vals), max(all_vals)
+    raw_span = v_max - v_min
+    span = raw_span if raw_span > 1e-6 else max(1.0, abs(v_max) * 0.25)
+
+    pos_ink = GEPHI_SEQUENTIAL_SCALES.get("orange", ["#FFF3EA", "#FBD8C0", "#ECA072", "#CA6F35", "#97481B"])[3]
+    neg_ink = GEPHI_SEQUENTIAL_SCALES.get("blue", ["#EBF7F9", "#BCE2EB", "#5DBACD", "#2C8B9F", "#0E5B6B"])[3]
+
+    arrows = []
+    anns = []
+
+    if not directed:
+        bars = ax.hlines(
+            y=y_pos,
+            xmin=[min(a, b) for a, b in zip(r_start, r_end)],
+            xmax=[max(a, b) for a, b in zip(r_start, r_end)],
+            color=bar_color,
+            linewidth=bar_linewidth,
+            zorder=2,
+        )
+        sc_start = ax.scatter(
+            r_start,
+            y_pos,
+            s=dot_size,
+            color=c_start,
+            edgecolors="#FFFFFF",
+            linewidths=1.5,
+            label=label_start,
+            zorder=4,
+        )
+        sc_end = ax.scatter(
+            r_end,
+            y_pos,
+            s=dot_size,
+            color=c_end,
+            edgecolors="#FFFFFF",
+            linewidths=1.5,
+            label=label_end,
+            zorder=5,
+        )
+
+        ax.set_yticks(y_pos)
+        ax.set_yticklabels(r_labels, fontsize=10.5, fontweight="bold", color="#1E293B")
+        ax.tick_params(axis="y", length=0, pad=6)
+
+        ax.set_xlim(v_min - span * 0.10, v_max + span * 0.16)
+        ax.set_ylim(-0.65, n - 0.30)
+
+        if show_delta:
+            for y_i, vs, ve, d_val in zip(y_pos, r_start, r_end, r_delta):
+                x_right_dot = max(vs, ve)
+                d_txt = delta_fmt.format(d_val)
+                d_col = pos_ink if d_val >= 0 else neg_ink
+                ann = ax.annotate(
+                    d_txt,
+                    xy=(x_right_dot, float(y_i)),
+                    xytext=(8.0, 0.0),
+                    textcoords="offset points",
+                    va="center",
+                    ha="left",
+                    fontsize=9.5,
+                    fontweight="bold",
+                    color=d_col,
+                    zorder=6,
+                )
+                anns.append(ann)
+
+        despine_axes(ax, grid_axis="x", grid_alpha=0.45)
+        if kwargs.get("show_legend", True):
+            ax.legend(frameon=False, loc="upper right", fontsize=9.5)
+
+        return {
+            "scatter_start": sc_start,
+            "scatter_end": sc_end,
+            "bars": bars,
+            "arrows": arrows,
+            "annotations": anns,
+            "ax": ax,
+        }
+
+    # --- Directed Momentum Vector Arrow Mode (directed=True) ---
+    pos_col = kwargs.get("pos_color") or (color_end if color_end is not None else pos_ink)
+    neg_col = kwargs.get("neg_color") or (color_start if color_start is not None else neg_ink)
+    zero_col = kwargs.get("zero_color", "#64748B")
+    pos_shade = kwargs.get("pos_row_shade") or GEPHI_SEQUENTIAL_SCALES.get(
+        "orange", ["#FFF3EA", "#FBD8C0", "#ECA072", "#CA6F35", "#97481B"]
+    )[0]
+    neg_shade = kwargs.get("neg_row_shade", "#F8FAFC")
+    row_shading = bool(kwargs.get("row_shading", True))
+    arrow_lw = float(kwargs.get("arrow_linewidth", bar_linewidth))
+    head_length = float(kwargs.get("head_length", 0.55))
+    head_width = float(kwargs.get("head_width", 0.32))
+    show_values = bool(kwargs.get("show_values", False))
+    value_fmt = str(kwargs.get("value_fmt", "{:.1f}"))
+    start_prefix = str(kwargs.get("start_prefix", ""))
+    end_prefix = str(kwargs.get("end_prefix", ""))
+    delta_header = kwargs.get("delta_header", None)
+    stroke_halo = [pe.withStroke(linewidth=3.0, foreground="#FFFFFF")]
+
+    row_colors = [pos_col if d > 0 else (neg_col if d < 0 else zero_col) for d in r_delta]
+    bars = []
+
+    for y_i, vs, ve, d_val, col in zip(y_pos, r_start, r_end, r_delta, row_colors):
+        if row_shading:
+            span_patch = ax.axhspan(
+                float(y_i) - 0.36,
+                float(y_i) + 0.36,
+                color=pos_shade if d_val > 0 else neg_shade,
+                zorder=1,
+            )
+            bars.append(span_patch)
+
+        if abs(d_val) > 1e-9:
+            arr = ax.annotate(
+                "",
+                xy=(ve, float(y_i)),
+                xytext=(vs, float(y_i)),
+                arrowprops=dict(
+                    arrowstyle=f"-|>,head_length={head_length},head_width={head_width}",
+                    color=col,
+                    lw=arrow_lw,
+                    shrinkA=4,
+                    shrinkB=0,
+                ),
+                zorder=4,
+            )
+            arrows.append(arr)
+
     sc_start = ax.scatter(
         r_start,
         y_pos,
         s=dot_size,
-        color=c_start,
-        edgecolors="#FFFFFF",
-        linewidths=1.5,
-        label=label_start,
-        zorder=4,
-    )
-    sc_end = ax.scatter(
-        r_end,
-        y_pos,
-        s=dot_size,
-        color=c_end,
-        edgecolors="#FFFFFF",
-        linewidths=1.5,
-        label=label_end,
+        facecolors="#FFFFFF",
+        edgecolors=row_colors,
+        linewidths=2.0,
         zorder=5,
     )
+    sc_end = None
 
     ax.set_yticks(y_pos)
     ax.set_yticklabels(r_labels, fontsize=10.5, fontweight="bold", color="#1E293B")
     ax.tick_params(axis="y", length=0, pad=6)
 
-    all_vals = r_start + r_end
-    v_min, v_max = min(all_vals), max(all_vals)
-    span = max(1e-6, v_max - v_min)
-    ax.set_xlim(v_min - span * 0.10, v_max + span * 0.16)
-    ax.set_ylim(-0.65, n - 0.30)
+    x_pad_left = float(kwargs.get("x_pad_left_ratio", 0.16 if show_values else 0.10))
+    default_right_pad = (0.38 if show_values else 0.28) if show_delta else (0.18 if show_values else 0.14)
+    x_pad_right = float(kwargs.get("x_pad_right_ratio", default_right_pad))
+    if kwargs.get("force_zero", False):
+        x_lo = min(0.0, v_min - span * x_pad_left)
+    else:
+        x_lo = v_min - span * x_pad_left
+    x_hi = v_max + span * x_pad_right
+    ax.set_xlim(x_lo, x_hi)
+    ax.set_ylim(-0.65, (n - 0.05) if delta_header else (n - 0.30))
 
-    anns = []
+    if show_values:
+        for y_i, vs, ve, d_val, col in zip(y_pos, r_start, r_end, r_delta, row_colors):
+            s_txt = f"{start_prefix}{value_fmt.format(vs)}"
+            e_txt = f"{end_prefix}{value_fmt.format(ve)}"
+            if abs(d_val) <= 1e-9:
+                anns.append(
+                    ax.annotate(
+                        e_txt,
+                        xy=(ve, float(y_i)),
+                        xytext=(8.0, 0.0),
+                        textcoords="offset points",
+                        va="center",
+                        ha="left",
+                        fontsize=8.8,
+                        fontweight="bold",
+                        color=col,
+                        path_effects=stroke_halo,
+                        zorder=6,
+                    )
+                )
+            elif d_val > 0:
+                anns.append(
+                    ax.annotate(
+                        s_txt,
+                        xy=(vs, float(y_i)),
+                        xytext=(-8.0, 0.0),
+                        textcoords="offset points",
+                        va="center",
+                        ha="right",
+                        fontsize=8.8,
+                        color="#475569",
+                        path_effects=stroke_halo,
+                        zorder=6,
+                    )
+                )
+                anns.append(
+                    ax.annotate(
+                        e_txt,
+                        xy=(ve, float(y_i)),
+                        xytext=(8.0, 0.0),
+                        textcoords="offset points",
+                        va="center",
+                        ha="left",
+                        fontsize=9.0,
+                        fontweight="bold",
+                        color=col,
+                        path_effects=stroke_halo,
+                        zorder=6,
+                    )
+                )
+            else:
+                anns.append(
+                    ax.annotate(
+                        e_txt,
+                        xy=(ve, float(y_i)),
+                        xytext=(-8.0, 0.0),
+                        textcoords="offset points",
+                        va="center",
+                        ha="right",
+                        fontsize=9.0,
+                        fontweight="bold",
+                        color=col,
+                        path_effects=stroke_halo,
+                        zorder=6,
+                    )
+                )
+                anns.append(
+                    ax.annotate(
+                        s_txt,
+                        xy=(vs, float(y_i)),
+                        xytext=(8.0, 0.0),
+                        textcoords="offset points",
+                        va="center",
+                        ha="left",
+                        fontsize=8.8,
+                        color="#475569",
+                        path_effects=stroke_halo,
+                        zorder=6,
+                    )
+                )
+
     if show_delta:
-        pos_ink = GEPHI_SEQUENTIAL_SCALES.get("orange", ["#FFF3EA", "#FBD8C0", "#ECA072", "#CA6F35", "#97481B"])[3]
-        neg_ink = GEPHI_SEQUENTIAL_SCALES.get("blue", ["#EBF7F9", "#BCE2EB", "#5DBACD", "#2C8B9F", "#0E5B6B"])[3]
-        for y_i, vs, ve, d_val in zip(y_pos, r_start, r_end, r_delta):
-            x_right_dot = max(vs, ve)
-            d_txt = delta_fmt.format(d_val)
-            d_col = pos_ink if d_val >= 0 else neg_ink
-            ann = ax.annotate(
-                d_txt,
-                xy=(x_right_dot, float(y_i)),
-                xytext=(8.0, 0.0),
-                textcoords="offset points",
+        x_delta_col = v_max + span * (x_pad_right - 0.025)
+        for y_i, d_val, col in zip(y_pos, r_delta, row_colors):
+            ann = ax.text(
+                x_delta_col,
+                float(y_i),
+                delta_fmt.format(d_val),
                 va="center",
-                ha="left",
-                fontsize=9.5,
+                ha="right",
+                fontsize=9.4,
                 fontweight="bold",
-                color=d_col,
+                color=col,
                 zorder=6,
             )
             anns.append(ann)
+        if delta_header:
+            anns.append(
+                ax.text(
+                    x_delta_col,
+                    n - 0.42,
+                    str(delta_header),
+                    va="bottom",
+                    ha="right",
+                    fontsize=9.2,
+                    fontweight="bold",
+                    color="#475569",
+                    zorder=6,
+                )
+            )
 
     despine_axes(ax, grid_axis="x", grid_alpha=0.45)
     if kwargs.get("show_legend", True):
-        ax.legend(frameon=False, loc="upper right", fontsize=9.5)
+        pos_label = kwargs.get("pos_label", f"正向推進（{label_end} > {label_start}）")
+        neg_label = kwargs.get("neg_label", f"負向回縮（{label_end} < {label_start}）")
+        handles = [
+            mpatches.Patch(facecolor=pos_col, label=pos_label),
+            mpatches.Patch(facecolor=neg_col, label=neg_label),
+        ]
+        leg_kwargs = dict(
+            loc="lower left",
+            bbox_to_anchor=(-0.01, 1.015),
+            ncol=2,
+            frameon=False,
+            fontsize=9.4,
+        )
+        if isinstance(kwargs.get("legend_kwargs"), dict):
+            leg_kwargs.update(kwargs["legend_kwargs"])
+        ax.legend(handles=handles, **leg_kwargs)
 
     return {
         "scatter_start": sc_start,
         "scatter_end": sc_end,
         "bars": bars,
+        "arrows": arrows,
         "annotations": anns,
         "ax": ax,
     }
