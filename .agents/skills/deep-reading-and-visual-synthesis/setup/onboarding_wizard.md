@@ -4,7 +4,7 @@
 > **【單一職責與永久退場機制（One-Time Gatekeeper & Zero Daily Token Overhead）】**
 > 1. **作者雙電腦 100% 免觸發保護**：當本機 Git 身分驗證為技能作者本人（`"markyang20040112-source"`）或 `check_user_identity_and_load_prefs()` 判定 `is_owner == True` 時，`onboarding_completed` 永遠為 `true`，**日常執行嚴禁讀取本檔案，實現零額外 Token 消耗**！
 > 2. **外部新使用者強制攔截與私人資產隔離（Strict Owner Asset Isolation）**：當外部使用者從 GitHub Clone 本技能首次執行時，因本機 Git 身分非 `markyang20040112-source`，系統**嚴格隱藏並隔離作者本人的私人色票（`Gephi · pastel`）與私人筆風庫（`config/owner_styles/*`）**，絕不提供給外部使用者直接選用，並強制進入本精靈完成專屬設定！
-> 3. **一次設定、永久生效**：一旦新使用者完成以下 4 步初始化並寫入 [`../config/user_preferences.json`](../config/user_preferences.json)（將 `"onboarding_completed"` 設為 `true` 且綁定其本機 `"bound_git_user"`），往後每次啟動皆直接放行，不再載入本檔。
+> 3. **一次設定、永久生效**：一旦新使用者完成以下 4 步初始化並寫入本機 `config/user_preferences.json`（公開範本見 [`../config/user_preferences.template.json`](../config/user_preferences.template.json)，將 `"onboarding_completed"` 設為 `true` 且綁定其本機 `"bound_git_user"`），往後每次啟動皆直接放行，不再載入本檔。
 
 ---
 
@@ -89,5 +89,5 @@
 ## ✅ 二、 完成寫入與無縫接回主任務
 
 完成上述設定後：
-1. 將新使用者的專屬色票、筆風路徑、Phase 2 決策確認偏好、本機識別（有 Git 者寫入 `"bound_git_user"`；無 Git 者寫入 `"bound_local_user"` 與 `"bound_git_user": null`）與 **`"onboarding_completed": true`** 完整寫入 [`../config/user_preferences.json`](../config/user_preferences.json)（並確保移除任何 `owner_only: true` 條目）。
+1. 將新使用者的專屬色票、筆風路徑、Phase 2 決策確認偏好、本機識別（有 Git 者寫入 `"bound_git_user"`；無 Git 者寫入 `"bound_local_user"` 與 `"bound_git_user": null`）與 **`"onboarding_completed": true`** 完整寫入本機 `config/user_preferences.json`（並確保移除任何 `owner_only: true` 條目）。
 2. 立即關閉本精靈，無縫接回使用者原本上傳的文章或資料集任務（依 [`../SKILL.md`](../SKILL.md) 進入 Phase 1 或 Phase 2）！

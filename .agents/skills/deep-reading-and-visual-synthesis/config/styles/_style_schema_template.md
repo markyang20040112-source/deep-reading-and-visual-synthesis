@@ -14,7 +14,7 @@ linked_defaults:
 
 > **單一職責與 100% 全域穿透原則**：
 > 本檔案為 `deep-reading-and-visual-synthesis` 的**公開空白筆風結構規範模板**。
-> 筆風設定檔不只控制 Format B 報告正文，而是 **100% 穿透控制所有生成場景的每一個字詞與微文案**（含 Phase 1 對談導學、Format A 知識圖譜卡片與箭頭謂詞、Format B 報告散文與表格錨點、Format C 簡報斷言與講稿、Format D 統計圖表軸籤与標註氣泡、Format E 儀表板 UI 微文案與禁用詞護欄）。
+> 筆風設定檔不只控制 Format B 報告正文，而是 **100% 穿透控制所有生成場景的每一個字詞與微文案**（含 Phase 1 對談導學、Format A 知識圖譜卡片與箭頭謂詞、Format B 報告散文與表格錨點、Format C 簡報斷言與講稿、Format D 統計圖表軸籤與標註氣泡、Format E 儀表板 UI 微文案與禁用詞護欄）。
 >
 > ### 三態參數機制（Tri-State Parameter Resolution）
 > 每個插槽內的細項皆必須標記以下三種狀態之一：

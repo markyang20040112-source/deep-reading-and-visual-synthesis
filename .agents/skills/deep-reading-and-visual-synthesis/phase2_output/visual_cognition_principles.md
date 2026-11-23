@@ -73,7 +73,7 @@
   - **5% 焦點強調色（Focal Callout）**：高對比焦點強調色，**全圖僅限用於 1～2 個最關鍵的破局轉折或核心異常值**。
 - **分層式顏色設定集架構（Two-Tier Layered Color Configuration in `config/user_preferences.json`）**：
   1. **第一層：`chart_palettes`（數據圖表色票集 — 控制 Format D 量化圖表 ⇄ Format E 數據儀表板）**：
-     - 支援於 [`../config/user_preferences.json`](../config/user_preferences.json) 中儲存並切換多組色票設定集（擁有者 `markyang20040112-source` 預設啟用專屬 `gephi_pastel_locked` 色票；外部使用者透過 `hcl_color_engine.build_palette_from_primary_hexes(hex_list)` 從任意 2～4 個主色經由 CIELAB 插值自動推導全套色階）。
+     - 支援於本機 `config/user_preferences.json`（範本見 [`../config/user_preferences.template.json`](../config/user_preferences.template.json)）中儲存並切換多組色票設定集（擁有者 `markyang20040112-source` 預設啟用專屬 `gephi_pastel_locked` 色票；外部使用者透過 `hcl_color_engine.build_palette_from_primary_hexes(hex_list)` 從任意 2～4 個主色經由 CIELAB 插值自動推導全套色階）。
      - 每組 `chart_palette` 包含：**無序類別固定 4 色（`qualitative_4`）**、**零透明度 `0.00` 極淺徽章底色（`light_badge_tints_4`）**、**4 組 5 階 CIELAB 循序色階（`sequential_scales`）**、**9 階對稱發散色階（`diverging_9`，中心冷灰 `#F5F6F7`）** 與 **特殊語義中性色（`discrete_neutrals`：長尾/背景基準灰 `#CBD5E1`、缺失值 `#D9D9D9`）**。
      - Python 端透過 [`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)（`activate_chart_palette()`、`get_sequential_color()`、`get_diverging_color()`、`bind_qualitative_colors()`）動態取色，並可一鍵同步匯出至前端 [`../scripts/gephi_palette.js`](../scripts/gephi_palette.js)。
      - **嚴禁使用 Alpha 透明度（如 `rgba(...)` 或 `#RRGGBB20`）冒充深淺明度或徽章底色**！

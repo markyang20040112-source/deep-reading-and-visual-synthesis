@@ -51,7 +51,7 @@
      - **軌道 B（使用者僅有初步了解與興趣，想一起從資料找故事）**：啟動 **「廣角數據雷達（EDA Story Menu）」**，由 AI 根據 Python 掃描結果主動端出 **3～4 個最具新聞感與故事張力的「候選切角選單」**（如：① **極端倍數落差與右偏平均幻覺型**、② **反直覺背離／剪刀差型**、③ **長尾資源集中型**、④ **結構拆解／背景基準分面比較型**），每個候選切角皆附上真實數據亮點供使用者挑選，再透過互動問答逐步深挖、篩選收束。
      - **軌道 C（使用者要求逐步導學分配與密度圖形 `step_by_step_tutor`）**：直接銜接 [`../phase2_output/distribution_and_density_chart_spec.md`](../phase2_output/distribution_and_density_chart_spec.md)，依序每次生成 1 張圖（直方圖 $\rightarrow$ KDE $\rightarrow$ ECDF $\rightarrow$ Q-Q $\rightarrow$ 箱形 $\rightarrow$ 小提琴 $\rightarrow$ 山脊 $\rightarrow$ 2D 直方圖 $\rightarrow$ 2D KDE 等高線 $\rightarrow$ 背景基準疊加分面比較四大案例），每張圖提供五步完整解說並停下來等待使用者回應。
 2. **製圖前確認條件「全預填確認表」＋ 原表 `df_other`（「其他」列）與 `4+1` 灰色長尾（`#CBD5E1`）之雙重語義消歧**：
-   - **製圖條件全預填表**：向使用者展示由《資料說明書》與 `df_detail` 自動帶入的預填表（含：① 欄位 Schema 與枚舉映射、② 單位、③ **純明細 `df_detail` `Min/Max` vs. 全檔 `Min/Max`**、④ 指標極性同質化檢核、⑤ 缺失值 `NA` `#D9D9D9` 筆數、⑥ 超界值／Winsorization 狀態），僅需使用者與 AI 討論拍板 **「故事切角与圖表模式（`editorial_storytelling` vs. `pure_dataviz`）」、「發散色階中心基準（`#F5F6F7`）」與「`4+1` 長尾聚焦策略」**。
+   - **製圖條件全預填表**：向使用者展示由《資料說明書》與 `df_detail` 自動帶入的預填表（含：① 欄位 Schema 與枚舉映射、② 單位、③ **純明細 `df_detail` `Min/Max` vs. 全檔 `Min/Max`**、④ 指標極性同質化檢核、⑤ 缺失值 `NA` `#D9D9D9` 筆數、⑥ 超界值／Winsorization 狀態），僅需使用者與 AI 討論拍板 **「故事切角與圖表模式（`editorial_storytelling` vs. `pure_dataviz`）」、「發散色階中心基準（`#F5F6F7`）」與「`4+1` 長尾聚焦策略」**。
    - **原表 `df_other` vs. `4+1` 長尾灰柱（`#CBD5E1`）消歧鐵律**：
      - **嚴禁讓原表自帶的 `其他` 列（`df_other`）混入前四大彩色主色柱，也嚴禁在同一張圖上產生兩個都叫「其他」的柱子！**
      - 當 `df_detail` 類別數 $>4$ 且原表存在 `df_other` 時，提供兩個清晰選項供使用者拍板：

@@ -12,7 +12,7 @@ description: >-
 > [!IMPORTANT]
 > **【第零關：公私雙倉庫架構、身分驗證、雙電腦自動還原、外部初始化與每月無損檢查更新】**
 > 本技能採**「公開範本倉庫（Public）＋ 作者私人資產倉庫（Private）」雙倉庫徹底隔離架構**：公開倉庫僅含核心規範、引擎與空白範本（[`config/user_preferences.template.json`](./config/user_preferences.template.json)、[`config/styles/_style_schema_template.md`](./config/styles/_style_schema_template.md)），不含任何作者私人色票、私人筆風（`config/owner_styles/`）與 `reading_sessions/`（皆由 `.gitignore` 隔離）。
-> 啟動時檢查 [`config/user_preferences.json`](./config/user_preferences.json)（或呼叫 `hcl_color_engine.check_user_identity_and_load_prefs()`）：
+> 啟動時檢查本機 `config/user_preferences.json`（公開範本見 [`config/user_preferences.template.json`](./config/user_preferences.template.json)，或呼叫 `hcl_color_engine.check_user_identity_and_load_prefs()`）：
 > 1. **作者本人（`markyang20040112-source`）無縫還原與直通**：若本機尚未還原私人資產，自動從 `deep-reading-and-visual-synthesis-Private-` 還原至 `config/user_preferences.json` 與 `config/owner_styles/`，`"onboarding_completed"` 鎖定 `true`，**日常嚴禁讀取 [`setup/onboarding_wizard.md`](./setup/onboarding_wizard.md)**！
 > 2. **外部新使用者強制初始化**：非擁有者且無個人化 `user_preferences.json` 時，從空白範本啟動並**強制開啟 [`setup/onboarding_wizard.md`](./setup/onboarding_wizard.md)** 引導建置專屬色票與筆風（存於 `config/user_styles/`）。
 > 3. **每月一次官方技能無損檢查更新**：依 `update_check.interval_days: 30` 節流，呼叫 `check_skill_updates.py` 檢查更新並保護個人 `config/` 與 `reading_sessions/*` 絕不被覆蓋。
