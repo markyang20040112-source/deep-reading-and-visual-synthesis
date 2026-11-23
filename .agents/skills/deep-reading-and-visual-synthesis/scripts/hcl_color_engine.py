@@ -2904,9 +2904,9 @@ def plot_dumbbell(
       avoid Microsoft JhengHei broken-glyph arrow concatenation).
     """
     _ensure_cjk_font()
-    import numpy as np
     import matplotlib.patches as mpatches
     import matplotlib.patheffects as pe
+    import numpy as np
 
     c_start = color_start if color_start is not None else GEPHI_QUALITATIVE_HEX[1]
     c_end = color_end if color_end is not None else GEPHI_QUALITATIVE_HEX[0]
@@ -2946,8 +2946,10 @@ def plot_dumbbell(
     raw_span = v_max - v_min
     span = raw_span if raw_span > 1e-6 else max(1.0, abs(v_max) * 0.25)
 
-    pos_ink = GEPHI_SEQUENTIAL_SCALES.get("orange", ["#FFF3EA", "#FBD8C0", "#ECA072", "#CA6F35", "#97481B"])[3]
-    neg_ink = GEPHI_SEQUENTIAL_SCALES.get("blue", ["#EBF7F9", "#BCE2EB", "#5DBACD", "#2C8B9F", "#0E5B6B"])[3]
+    default_orange = ["#FFF3EA", "#FBD8C0", "#ECA072", "#CA6F35", "#97481B"]
+    default_blue = ["#EBF7F9", "#BCE2EB", "#5DBACD", "#2C8B9F", "#0E5B6B"]
+    pos_ink = GEPHI_SEQUENTIAL_SCALES.get("orange", default_orange)[3]
+    neg_ink = GEPHI_SEQUENTIAL_SCALES.get("blue", default_blue)[3]
 
     arrows = []
     anns = []
@@ -3022,11 +3024,15 @@ def plot_dumbbell(
         }
 
     # --- Directed Momentum Vector Arrow Mode (directed=True) ---
-    pos_col = kwargs.get("pos_color") or (color_end if color_end is not None else pos_ink)
-    neg_col = kwargs.get("neg_color") or (color_start if color_start is not None else neg_ink)
+    pos_col = kwargs.get("pos_color") or (
+        color_end if color_end is not None else pos_ink
+    )
+    neg_col = kwargs.get("neg_color") or (
+        color_start if color_start is not None else neg_ink
+    )
     zero_col = kwargs.get("zero_color", "#64748B")
     pos_shade = kwargs.get("pos_row_shade") or GEPHI_SEQUENTIAL_SCALES.get(
-        "orange", ["#FFF3EA", "#FBD8C0", "#ECA072", "#CA6F35", "#97481B"]
+        "orange", default_orange
     )[0]
     neg_shade = kwargs.get("neg_row_shade", "#F8FAFC")
     row_shading = bool(kwargs.get("row_shading", True))
@@ -3037,12 +3043,122 @@ def plot_dumbbell(
     value_fmt = str(kwargs.get("value_fmt", "{:.1f}"))
     start_prefix = str(kwargs.get("start_prefix", ""))
     end_prefix = str(kwargs.get("end_prefix", ""))
-    delta_header = kwargs.get("delta_header", None)
+    delta_header = kwargs.get("delta_header")
+    force_zero = bool(kwargs.get("force_zero", False))
     stroke_halo = [pe.withStroke(linewidth=3.0, foreground="#FFFFFF")]
 
-    row_colors = [pos_col if d > 0 else (neg_col if d < 0 else zero_col) for d in r_delta]
-    bars = []
+    row_colors = [
+        pos_col if d > 0 else (neg_col if d < 0 else zero_col) for d in r_delta
+    ]
 
+    def _est_text_pts(text: str, fontsize: float) -> float:
+        """Estimate horizontal display width in points for mixed CJK/ASCII text."""
+        width_units = 0.0
+        for ch in str(text):
+            width_units += 1.02 if ord(ch) > 127 else 0.58
+        return width_units * fontsize
+
+    fig_obj = ax.figure
+    ax_bbox_frac = ax.get_position()
+    ax_width_pts = max(
+        180.0, float(fig_obj.get_figwidth()) * float(ax_bbox_frac.width) * 72.0
+    )
+
+    # Pre-format strings so horizontal padding adapts dynamically to label widths
+    start_texts = [f"{start_prefix}{value_fmt.format(vs)}" for vs in r_start]
+    end_texts = [f"{end_prefix}{value_fmt.format(ve)}" for ve in r_end]
+    delta_texts = [delta_fmt.format(d_val) for d_val in r_delta]
+
+    delta_col_pts = 0.0
+    if show_delta:
+        delta_col_pts = max((_est_text_pts(t, 9.6) for t in delta_texts), default=0.0)
+        if delta_header:
+            delta_col_pts = max(delta_col_pts, _est_text_pts(str(delta_header), 9.4))
+        delta_col_pts += 12.0  # right margin + column separation
+
+    # Estimate dynamic left/right padding in data units (iterated to converge)
+    x_pad_left_override = kwargs.get("x_pad_left_ratio")
+    x_pad_right_override = kwargs.get("x_pad_right_ratio")
+    base_left_ratio = (
+        float(x_pad_left_override)
+        if x_pad_left_override is not None
+        else (0.16 if show_values else 0.10)
+    )
+    default_right_pad = (
+        (0.38 if show_values else 0.28)
+        if show_delta
+        else (0.18 if show_values else 0.14)
+    )
+    base_right_ratio = (
+        float(x_pad_right_override)
+        if x_pad_right_override is not None
+        else default_right_pad
+    )
+
+    x_lo = (min(0.0, v_min) if force_zero else v_min) - span * base_left_ratio
+    if force_zero and v_min >= 0.0 and x_pad_left_override is None:
+        # Start from 0.0 for non-negative data; expand left only if a label needs room
+        x_lo = 0.0
+    x_hi = v_max + span * base_right_ratio
+
+    for _ in range(3):
+        curr_data_span = max(1e-6, x_hi - x_lo)
+        pts_to_data = curr_data_span / ax_width_pts
+
+        if x_pad_left_override is None:
+            needed_lo = (
+                0.0 if (force_zero and v_min >= 0.0) else v_min - span * base_left_ratio
+            )
+            if show_values:
+                for vs, ve, d_val, s_txt, e_txt in zip(
+                    r_start, r_end, r_delta, start_texts, end_texts
+                ):
+                    if abs(d_val) <= 1e-9:
+                        continue
+                    left_val = vs if d_val > 0 else ve
+                    left_txt = s_txt if d_val > 0 else e_txt
+                    left_fs = 8.8 if d_val > 0 else 9.0
+                    left_need_pts = _est_text_pts(left_txt, left_fs) + 14.0
+                    needed_lo = min(needed_lo, left_val - left_need_pts * pts_to_data)
+            else:
+                needed_lo = min(needed_lo, v_min - 14.0 * pts_to_data)
+            if force_zero and v_min >= 0.0:
+                x_lo = min(0.0, needed_lo)
+            else:
+                x_lo = min(x_lo, needed_lo)
+
+        if x_pad_right_override is None:
+            needed_hi = v_max + span * base_right_ratio
+            right_label_max_x = v_max + 12.0 * pts_to_data
+            if show_values:
+                for vs, ve, d_val, s_txt, e_txt in zip(
+                    r_start, r_end, r_delta, start_texts, end_texts
+                ):
+                    if abs(d_val) <= 1e-9:
+                        right_val, right_txt, right_fs = ve, e_txt, 8.8
+                    elif d_val > 0:
+                        right_val, right_txt, right_fs = ve, e_txt, 9.0
+                    else:
+                        right_val, right_txt, right_fs = vs, s_txt, 8.8
+                    right_need_pts = _est_text_pts(right_txt, right_fs) + 14.0
+                    right_label_max_x = max(
+                        right_label_max_x, right_val + right_need_pts * pts_to_data
+                    )
+            if show_delta:
+                # Keep clean separation between rightmost value label and delta column
+                gap_pts = 14.0
+                needed_hi = max(
+                    needed_hi,
+                    right_label_max_x + (gap_pts + delta_col_pts) * pts_to_data,
+                )
+            else:
+                needed_hi = max(needed_hi, right_label_max_x + 6.0 * pts_to_data)
+            x_hi = max(x_hi, needed_hi)
+
+    total_x_span = max(1e-6, x_hi - x_lo)
+    pts_per_data = ax_width_pts / total_x_span
+
+    bars = []
     for y_i, vs, ve, d_val, col in zip(y_pos, r_start, r_end, r_delta, row_colors):
         if row_shading:
             span_patch = ax.axhspan(
@@ -3054,20 +3170,43 @@ def plot_dumbbell(
             bars.append(span_patch)
 
         if abs(d_val) > 1e-9:
-            arr = ax.annotate(
-                "",
-                xy=(ve, float(y_i)),
-                xytext=(vs, float(y_i)),
-                arrowprops=dict(
-                    arrowstyle=f"-|>,head_length={head_length},head_width={head_width}",
+            dx_pts = abs(d_val) * pts_per_data
+            # Prevent FancyArrowPatch shrinkA > segment length from inverting arrows
+            if dx_pts >= 9.0:
+                eff_shrink_a = min(4.0, dx_pts * 0.30)
+                eff_hl = min(head_length, max(0.32, dx_pts / 24.0))
+                eff_hw = min(head_width, max(0.22, eff_hl * 0.60))
+                arr = ax.annotate(
+                    "",
+                    xy=(ve, float(y_i)),
+                    xytext=(vs, float(y_i)),
+                    arrowprops=dict(
+                        arrowstyle=(
+                            f"-|>,head_length={eff_hl:.2f},head_width={eff_hw:.2f}"
+                        ),
+                        color=col,
+                        lw=arrow_lw,
+                        shrinkA=eff_shrink_a,
+                        shrinkB=0,
+                    ),
+                    zorder=4,
+                )
+                arrows.append(arr)
+            else:
+                # Ultra-short delta: place solid directional triangle beside origin
+                direction = 1.0 if d_val > 0 else -1.0
+                tip_x = vs + direction * (max(dx_pts, 6.2) / pts_per_data)
+                tri_marker = ">" if d_val > 0 else "<"
+                tri_pts = ax.scatter(
+                    [tip_x],
+                    [float(y_i)],
+                    marker=tri_marker,
+                    s=max(32.0, dot_size * 0.42),
                     color=col,
-                    lw=arrow_lw,
-                    shrinkA=4,
-                    shrinkB=0,
-                ),
-                zorder=4,
-            )
-            arrows.append(arr)
+                    edgecolors="none",
+                    zorder=4,
+                )
+                arrows.append(tri_pts)
 
     sc_start = ax.scatter(
         r_start,
@@ -3084,21 +3223,33 @@ def plot_dumbbell(
     ax.set_yticklabels(r_labels, fontsize=10.5, fontweight="bold", color="#1E293B")
     ax.tick_params(axis="y", length=0, pad=6)
 
-    x_pad_left = float(kwargs.get("x_pad_left_ratio", 0.16 if show_values else 0.10))
-    default_right_pad = (0.38 if show_values else 0.28) if show_delta else (0.18 if show_values else 0.14)
-    x_pad_right = float(kwargs.get("x_pad_right_ratio", default_right_pad))
-    if kwargs.get("force_zero", False):
-        x_lo = min(0.0, v_min - span * x_pad_left)
-    else:
-        x_lo = v_min - span * x_pad_left
-    x_hi = v_max + span * x_pad_right
     ax.set_xlim(x_lo, x_hi)
     ax.set_ylim(-0.65, (n - 0.05) if delta_header else (n - 0.30))
 
+    # Keep x-ticks strictly inside valid data bounds (no negative ticks for non-negative
+    # force_zero data, and no ticks extending under/past the right-hand delta column).
+    x_delta_col = x_hi - max(6.0 / pts_per_data, span * 0.020)
+    tick_lo_bound = 0.0 if (force_zero and v_min >= 0.0) else x_lo + 4.0 / pts_per_data
+    if show_delta:
+        delta_left_edge = x_delta_col - (delta_col_pts + 4.0) / pts_per_data
+        tick_hi_bound = min(delta_left_edge, x_hi - 8.0 / pts_per_data)
+        if tick_hi_bound < v_max:
+            tick_hi_bound = min(v_max, x_delta_col - delta_col_pts / pts_per_data)
+    else:
+        tick_hi_bound = x_hi - 8.0 / pts_per_data
+
+    raw_ticks = list(ax.get_xticks())
+    valid_ticks = [
+        t for t in raw_ticks if (tick_lo_bound - 1e-9) <= t <= (tick_hi_bound + 1e-9)
+    ]
+    if len(valid_ticks) >= 2:
+        ax.set_xticks(valid_ticks)
+    ax.set_xlim(x_lo, x_hi)
+
     if show_values:
-        for y_i, vs, ve, d_val, col in zip(y_pos, r_start, r_end, r_delta, row_colors):
-            s_txt = f"{start_prefix}{value_fmt.format(vs)}"
-            e_txt = f"{end_prefix}{value_fmt.format(ve)}"
+        for y_i, vs, ve, d_val, col, s_txt, e_txt in zip(
+            y_pos, r_start, r_end, r_delta, row_colors, start_texts, end_texts
+        ):
             if abs(d_val) <= 1e-9:
                 anns.append(
                     ax.annotate(
@@ -3177,12 +3328,11 @@ def plot_dumbbell(
                 )
 
     if show_delta:
-        x_delta_col = v_max + span * (x_pad_right - 0.025)
-        for y_i, d_val, col in zip(y_pos, r_delta, row_colors):
+        for y_i, d_txt, col in zip(y_pos, delta_texts, row_colors):
             ann = ax.text(
                 x_delta_col,
                 float(y_i),
-                delta_fmt.format(d_val),
+                d_txt,
                 va="center",
                 ha="right",
                 fontsize=9.4,
@@ -3208,8 +3358,12 @@ def plot_dumbbell(
 
     despine_axes(ax, grid_axis="x", grid_alpha=0.45)
     if kwargs.get("show_legend", True):
-        pos_label = kwargs.get("pos_label", f"正向推進（{label_end} > {label_start}）")
-        neg_label = kwargs.get("neg_label", f"負向回縮（{label_end} < {label_start}）")
+        pos_label = kwargs.get(
+            "pos_label", f"正向推進（{label_end} > {label_start}）"
+        )
+        neg_label = kwargs.get(
+            "neg_label", f"負向回縮（{label_end} < {label_start}）"
+        )
         handles = [
             mpatches.Patch(facecolor=pos_col, label=pos_label),
             mpatches.Patch(facecolor=neg_col, label=neg_label),

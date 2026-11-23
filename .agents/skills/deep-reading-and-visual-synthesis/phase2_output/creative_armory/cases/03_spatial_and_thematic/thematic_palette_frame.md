@@ -13,7 +13,7 @@
 
 ---
 
-## 二、 跨端黑盒 API 與內建 6 大主題色階鍵值
+## 二、 跨端黑盒 API 與內建 5 大主題語義色階（9 組鍵值別名）
 
 ```python
 # === Python (scripts/hcl_color_engine.py) ===
