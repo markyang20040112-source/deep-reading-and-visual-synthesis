@@ -949,16 +949,36 @@ def _find_chromium_binary() -> Optional[str]:
     return None
 
 
+def _render_html_file_with_playwright_page(
+    page: Any,
+    html_file: Path,
+    out_pdf: Path,
+    wait_ms: int = 400,
+) -> bool:
+    """Render an already-written HTML file to PDF using an existing Playwright Page."""
+    page.goto(html_file.as_uri(), wait_until="networkidle")
+    if wait_ms > 0:
+        page.wait_for_timeout(wait_ms)
+    page.pdf(
+        path=str(out_pdf),
+        print_background=True,
+        prefer_css_page_size=True,
+    )
+    return out_pdf.exists() and out_pdf.stat().st_size > 500
+
+
 def compile_html_to_pdf(
     html_content_or_path: str,
     output_pdf_path: str,
     cleanup_temp_html: bool = True,
     wait_ms: int = 400,
+    playwright_page: Any = None,
 ) -> str:
     """
     Compile an HTML string or existing .html file path to an A4 print-grade PDF via Playwright Chromium
     or local headless Chrome/Edge CLI.
     Automatically removes temporary .html files when `cleanup_temp_html=True` so `02_outputs/` stays clean.
+    Optionally accepts an existing `playwright_page` so multi-pass callers reuse a single browser instance.
     """
     import shutil
     import subprocess
@@ -980,24 +1000,27 @@ def compile_html_to_pdf(
 
     try:
         compiled = False
-        try:
-            from playwright.sync_api import sync_playwright
-
-            with sync_playwright() as p:
-                browser = p.chromium.launch(headless=True)
-                page = browser.new_page()
-                page.goto(html_file.as_uri(), wait_until="networkidle")
-                if wait_ms > 0:
-                    page.wait_for_timeout(wait_ms)
-                page.pdf(
-                    path=str(out_pdf),
-                    print_background=True,
-                    prefer_css_page_size=True,
+        if playwright_page is not None:
+            try:
+                compiled = _render_html_file_with_playwright_page(
+                    playwright_page, html_file, out_pdf, wait_ms=wait_ms
                 )
-                browser.close()
-                compiled = out_pdf.exists() and out_pdf.stat().st_size > 500
-        except Exception:
-            compiled = False
+            except Exception:
+                compiled = False
+
+        if not compiled:
+            try:
+                from playwright.sync_api import sync_playwright
+
+                with sync_playwright() as p:
+                    browser = p.chromium.launch(headless=True)
+                    page = browser.new_page()
+                    compiled = _render_html_file_with_playwright_page(
+                        page, html_file, out_pdf, wait_ms=wait_ms
+                    )
+                    browser.close()
+            except Exception:
+                compiled = False
 
         if not compiled:
             browser_bin = _find_chromium_binary()
@@ -1118,58 +1141,84 @@ def compile_adaptive_report_pdf(
     total_pages = 0
     passes = 0
 
-    if h2_list:
-        with tempfile.TemporaryDirectory(prefix="adaptive_pdf_") as tmp_dir:
-            tmp_pdf = Path(tmp_dir) / "_adaptive_draft.pdf"
-            max_passes = len(h2_list) + 2
-            for it in range(1, max_passes + 1):
-                passes = it
-                iter_body = inject_h2_page_breaks(prepared_body, break_indices)
-                full_html = wrap_report_html(
-                    title=title,
-                    body_html=iter_body,
-                    theme=theme,
-                    body_pt=body_pt,
-                    extra_css=extra_css,
-                    doc_theme_id=doc_theme_id,
-                    adaptive_layout=False,
-                )
-                compile_html_to_pdf(full_html, str(tmp_pdf), cleanup_temp_html=True, wait_ms=wait_ms)
-                positions, total_pages = measure_h2_positions_in_pdf(
-                    str(tmp_pdf), h2_list, exclude_texts=h1_texts
-                )
-                if not positions:
-                    break
+    from contextlib import ExitStack
 
-                added_idx = None
-                for h in h2_list:
-                    idx = h["index"]
-                    if idx in break_indices or idx not in positions:
-                        continue
-                    if skip_first_h2 and idx == 0:
-                        continue
-                    if "first-chapter" in h["classes"] or "no-auto-break" in h["classes"]:
-                        continue
-                    rem = positions[idx]["rem_ratio"]
-                    if rem < threshold and rem < 0.93:
-                        break_indices.add(idx)
-                        added_idx = idx
+    with ExitStack() as stack:
+        shared_page: Any = None
+        try:
+            from playwright.sync_api import sync_playwright
+
+            pw = stack.enter_context(sync_playwright())
+            browser = pw.chromium.launch(headless=True)
+            stack.callback(browser.close)
+            shared_page = browser.new_page()
+        except Exception:
+            shared_page = None
+
+        if h2_list:
+            with tempfile.TemporaryDirectory(prefix="adaptive_pdf_") as tmp_dir:
+                tmp_pdf = Path(tmp_dir) / "_adaptive_draft.pdf"
+                max_passes = len(h2_list) + 2
+                for it in range(1, max_passes + 1):
+                    passes = it
+                    iter_body = inject_h2_page_breaks(prepared_body, break_indices)
+                    full_html = wrap_report_html(
+                        title=title,
+                        body_html=iter_body,
+                        theme=theme,
+                        body_pt=body_pt,
+                        extra_css=extra_css,
+                        doc_theme_id=doc_theme_id,
+                        adaptive_layout=False,
+                    )
+                    compile_html_to_pdf(
+                        full_html,
+                        str(tmp_pdf),
+                        cleanup_temp_html=True,
+                        wait_ms=wait_ms,
+                        playwright_page=shared_page,
+                    )
+                    positions, total_pages = measure_h2_positions_in_pdf(
+                        str(tmp_pdf), h2_list, exclude_texts=h1_texts
+                    )
+                    if not positions:
                         break
 
-                if added_idx is None:
-                    break
+                    added_idx = None
+                    for h in h2_list:
+                        idx = h["index"]
+                        if idx in break_indices or idx not in positions:
+                            continue
+                        if skip_first_h2 and idx == 0:
+                            continue
+                        if "first-chapter" in h["classes"] or "no-auto-break" in h["classes"]:
+                            continue
+                        rem = positions[idx]["rem_ratio"]
+                        if rem < threshold and rem < 0.93:
+                            break_indices.add(idx)
+                            added_idx = idx
+                            break
 
-    final_body = inject_h2_page_breaks(prepared_body, break_indices)
-    final_html = wrap_report_html(
-        title=title,
-        body_html=final_body,
-        theme=theme,
-        body_pt=body_pt,
-        extra_css=extra_css,
-        doc_theme_id=doc_theme_id,
-        adaptive_layout=False,
-    )
-    out_path = compile_html_to_pdf(final_html, output_pdf_path, cleanup_temp_html=cleanup_temp_html, wait_ms=wait_ms)
+                    if added_idx is None:
+                        break
+
+        final_body = inject_h2_page_breaks(prepared_body, break_indices)
+        final_html = wrap_report_html(
+            title=title,
+            body_html=final_body,
+            theme=theme,
+            body_pt=body_pt,
+            extra_css=extra_css,
+            doc_theme_id=doc_theme_id,
+            adaptive_layout=False,
+        )
+        out_path = compile_html_to_pdf(
+            final_html,
+            output_pdf_path,
+            cleanup_temp_html=cleanup_temp_html,
+            wait_ms=wait_ms,
+            playwright_page=shared_page,
+        )
     if h2_list:
         positions, total_pages = measure_h2_positions_in_pdf(
             out_path, h2_list, exclude_texts=h1_texts

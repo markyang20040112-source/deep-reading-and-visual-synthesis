@@ -47,8 +47,13 @@
 ## 四、 共用基線剪刀差折線圖 ＆ 時期背景色帶＋歷史事件引線標註折線圖（Shared-Baseline Scissors & Regime-Shaded Line Chart — 資料一、七、`T25`）
 
 ```python
-# === Black-Box API (scripts/hcl_color_engine.py) ===
-from hcl_color_engine import add_regime_shading_and_events # (ax, regimes=None, events=None, **kwargs) -> Dict[str, List[Any]]
+# === Family 2 Black-Box API (scripts/hcl_color_engine.py) ===
+from hcl_color_engine import (
+    setup_chart_canvas,            # (orientation="vertical", dpi=300, figsize=None, wide_left=False, slide_mode=False, grid_axis=None, **subplots_kwargs) -> (fig, ax)
+    plot_scissors_line,            # (ax, x_vals, y_series_a, y_series_b, label_a="序列 A", label_b="序列 B", color_a=None, color_b=None, fill_gap=True, gap_color=None, gap_alpha=0.55, value_fmt="{:.1f}", show_end_labels=True, right_pad_ratio=0.22, category_color_map=None, **kwargs) -> Dict
+    plot_paired_dual_bar,          # (ax, labels, vals_a, vals_b, label_a="基準 / 預期", label_b="實際 / 對照", color_a=None, color_b=None, bar_width=0.34, show_delta=True, delta_fmt="{:+.1f}", value_fmt="{:.1f}", category_color_map=None, **kwargs) -> Dict
+    add_regime_shading_and_events, # (ax, regimes=None, events=None, **kwargs) -> Dict[str, List[Any]]
+)
 ```
 
 1. **時間座標等距誠實原則（資料一）**：X 軸必須忠實對應真實時間間隔（如遇到 `2015, 2016, 2019, 2024` 等不等距年份，**必須以真實數值年份作為 X 座標繪製**，嚴禁直接用等距索引 `[0, 1, 2, 3]` 扭曲時間斜率；若有結構性缺漏年份須留白斷線，嚴禁補 0）。

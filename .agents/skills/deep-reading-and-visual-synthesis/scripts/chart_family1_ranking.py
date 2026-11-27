@@ -163,165 +163,134 @@ def plot_cleveland_dot(
     }
 
 
-def plot_dumbbell(
+def _render_undirected_dumbbell(
     ax: object,
-    labels: Sequence[str],
-    val_start: Sequence[float],
-    val_end: Sequence[float],
-    label_start: str = "期初 / 基準",
-    label_end: str = "期末 / 現況",
-    color_start: Optional[str] = None,
-    color_end: Optional[str] = None,
-    bar_color: str = "#CBD5E1",
-    bar_linewidth: float = 3.2,
-    dot_size: float = 90.0,
-    show_delta: bool = True,
-    delta_fmt: str = "{:+.1f}",
-    sort_by: Optional[str] = "end",
-    directed: bool = False,
-    category_color_map: Optional[Dict[str, str]] = None,
-    **kwargs,
+    y_pos,
+    r_labels: List[str],
+    r_start: List[float],
+    r_end: List[float],
+    r_delta: List[float],
+    *,
+    n: int,
+    v_min: float,
+    v_max: float,
+    span: float,
+    c_start: str,
+    c_end: str,
+    label_start: str,
+    label_end: str,
+    bar_color: str,
+    bar_linewidth: float,
+    dot_size: float,
+    show_delta: bool,
+    delta_fmt: str,
+    pos_ink: str,
+    neg_ink: str,
+    show_legend: bool,
 ) -> Dict[str, object]:
-    """
-    Dumbbell Span Plot & Directional Momentum Vector Arrow Plot.
+    """Render neutral dual-state dumbbell span plot (`directed=False`)."""
+    arrows = []
+    anns = []
+    bars = ax.hlines(
+        y=y_pos,
+        xmin=[min(a, b) for a, b in zip(r_start, r_end)],
+        xmax=[max(a, b) for a, b in zip(r_start, r_end)],
+        color=bar_color,
+        linewidth=bar_linewidth,
+        zorder=2,
+    )
+    sc_start = ax.scatter(
+        r_start,
+        y_pos,
+        s=dot_size,
+        color=c_start,
+        edgecolors="#FFFFFF",
+        linewidths=1.5,
+        label=label_start,
+        zorder=4,
+    )
+    sc_end = ax.scatter(
+        r_end,
+        y_pos,
+        s=dot_size,
+        color=c_end,
+        edgecolors="#FFFFFF",
+        linewidths=1.5,
+        label=label_end,
+        zorder=5,
+    )
 
-    - ``directed=False`` (default): Neutral dual-state dumbbell span plot
-      (solid start/end dots connected by a neutral bar + inline delta label).
-    - ``directed=True``: Directional origin-to-outcome momentum arrow plot
-      (hollow circle origin -> solid directional arrowhead, direction-coded
-      positive/negative colors, optional subtle row shading, and a cleanly
-      right-aligned delta column; uses native Matplotlib vector arrowheads to
-      avoid Microsoft JhengHei broken-glyph arrow concatenation).
-    """
-    _ensure_cjk_font()
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(r_labels, fontsize=10.5, fontweight="bold", color="#1E293B")
+    ax.tick_params(axis="y", length=0, pad=6)
+
+    ax.set_xlim(v_min - span * 0.10, v_max + span * 0.16)
+    ax.set_ylim(-0.65, n - 0.30)
+
+    if show_delta:
+        for y_i, vs, ve, d_val in zip(y_pos, r_start, r_end, r_delta):
+            x_right_dot = max(vs, ve)
+            d_txt = delta_fmt.format(d_val)
+            d_col = pos_ink if d_val >= 0 else neg_ink
+            ann = ax.annotate(
+                d_txt,
+                xy=(x_right_dot, float(y_i)),
+                xytext=(8.0, 0.0),
+                textcoords="offset points",
+                va="center",
+                ha="left",
+                fontsize=9.5,
+                fontweight="bold",
+                color=d_col,
+                zorder=6,
+            )
+            anns.append(ann)
+
+    despine_axes(ax, grid_axis="x", grid_alpha=0.45)
+    if show_legend:
+        ax.legend(frameon=False, loc="upper right", fontsize=9.5)
+
+    return {
+        "scatter_start": sc_start,
+        "scatter_end": sc_end,
+        "bars": bars,
+        "arrows": arrows,
+        "annotations": anns,
+        "ax": ax,
+    }
+
+
+def _render_directed_momentum_arrows(
+    ax: object,
+    y_pos,
+    r_labels: List[str],
+    r_start: List[float],
+    r_end: List[float],
+    r_delta: List[float],
+    *,
+    n: int,
+    v_min: float,
+    v_max: float,
+    span: float,
+    color_start: Optional[str],
+    color_end: Optional[str],
+    label_start: str,
+    label_end: str,
+    bar_linewidth: float,
+    dot_size: float,
+    show_delta: bool,
+    delta_fmt: str,
+    pos_ink: str,
+    neg_ink: str,
+    default_orange: List[str],
+    kwargs: Dict[str, object],
+) -> Dict[str, object]:
+    """Render directional origin-to-outcome momentum vector arrow plot (`directed=True`)."""
     import matplotlib.patches as mpatches
     import matplotlib.patheffects as pe
-    import numpy as np
-
-    c_start = (
-        color_start
-        if color_start is not None
-        else (_resolve_lookup_color(label_start, category_color_map) or GEPHI_QUALITATIVE_HEX[1])
-    )
-    c_end = (
-        color_end
-        if color_end is not None
-        else (_resolve_lookup_color(label_end, category_color_map) or GEPHI_QUALITATIVE_HEX[0])
-    )
-
-    rows = []
-    for lbl, vs, ve in zip(labels, val_start, val_end):
-        ps, pe_val = _parse_numeric_or_na(vs), _parse_numeric_or_na(ve)
-        if ps is not None and pe_val is not None:
-            rows.append((str(lbl), float(ps), float(pe_val), float(pe_val - ps)))
-
-    if not rows:
-        return {
-            "scatter_start": None,
-            "scatter_end": None,
-            "bars": None,
-            "arrows": [],
-            "annotations": [],
-            "ax": ax,
-        }
-
-    if sort_by == "end":
-        rows.sort(key=lambda r: r[2])
-    elif sort_by == "start":
-        rows.sort(key=lambda r: r[1])
-    elif sort_by == "delta":
-        rows.sort(key=lambda r: r[3])
-
-    n = len(rows)
-    y_pos = np.arange(n)
-    r_labels = [r[0] for r in rows]
-    r_start = [r[1] for r in rows]
-    r_end = [r[2] for r in rows]
-    r_delta = [r[3] for r in rows]
-
-    all_vals = r_start + r_end
-    v_min, v_max = min(all_vals), max(all_vals)
-    raw_span = v_max - v_min
-    span = raw_span if raw_span > 1e-6 else max(1.0, abs(v_max) * 0.25)
-
-    default_orange = ["#FFF3EA", "#FBD8C0", "#ECA072", "#CA6F35", "#97481B"]
-    default_blue = ["#EBF7F9", "#BCE2EB", "#5DBACD", "#2C8B9F", "#0E5B6B"]
-    pos_ink = GEPHI_SEQUENTIAL_SCALES.get("orange", default_orange)[3]
-    neg_ink = GEPHI_SEQUENTIAL_SCALES.get("blue", default_blue)[3]
 
     arrows = []
     anns = []
-
-    if not directed:
-        bars = ax.hlines(
-            y=y_pos,
-            xmin=[min(a, b) for a, b in zip(r_start, r_end)],
-            xmax=[max(a, b) for a, b in zip(r_start, r_end)],
-            color=bar_color,
-            linewidth=bar_linewidth,
-            zorder=2,
-        )
-        sc_start = ax.scatter(
-            r_start,
-            y_pos,
-            s=dot_size,
-            color=c_start,
-            edgecolors="#FFFFFF",
-            linewidths=1.5,
-            label=label_start,
-            zorder=4,
-        )
-        sc_end = ax.scatter(
-            r_end,
-            y_pos,
-            s=dot_size,
-            color=c_end,
-            edgecolors="#FFFFFF",
-            linewidths=1.5,
-            label=label_end,
-            zorder=5,
-        )
-
-        ax.set_yticks(y_pos)
-        ax.set_yticklabels(r_labels, fontsize=10.5, fontweight="bold", color="#1E293B")
-        ax.tick_params(axis="y", length=0, pad=6)
-
-        ax.set_xlim(v_min - span * 0.10, v_max + span * 0.16)
-        ax.set_ylim(-0.65, n - 0.30)
-
-        if show_delta:
-            for y_i, vs, ve, d_val in zip(y_pos, r_start, r_end, r_delta):
-                x_right_dot = max(vs, ve)
-                d_txt = delta_fmt.format(d_val)
-                d_col = pos_ink if d_val >= 0 else neg_ink
-                ann = ax.annotate(
-                    d_txt,
-                    xy=(x_right_dot, float(y_i)),
-                    xytext=(8.0, 0.0),
-                    textcoords="offset points",
-                    va="center",
-                    ha="left",
-                    fontsize=9.5,
-                    fontweight="bold",
-                    color=d_col,
-                    zorder=6,
-                )
-                anns.append(ann)
-
-        despine_axes(ax, grid_axis="x", grid_alpha=0.45)
-        if kwargs.get("show_legend", True):
-            ax.legend(frameon=False, loc="upper right", fontsize=9.5)
-
-        return {
-            "scatter_start": sc_start,
-            "scatter_end": sc_end,
-            "bars": bars,
-            "arrows": arrows,
-            "annotations": anns,
-            "ax": ax,
-        }
-
-    # --- Directed Momentum Vector Arrow Mode (directed=True) ---
     pos_col = kwargs.get("pos_color") or (
         color_end if color_end is not None else pos_ink
     )
@@ -362,7 +331,6 @@ def plot_dumbbell(
         180.0, float(fig_obj.get_figwidth()) * float(ax_bbox_frac.width) * 72.0
     )
 
-    # Pre-format strings so horizontal padding adapts dynamically to label widths
     start_texts = [f"{start_prefix}{value_fmt.format(vs)}" for vs in r_start]
     end_texts = [f"{end_prefix}{value_fmt.format(ve)}" for ve in r_end]
     delta_texts = [delta_fmt.format(d_val) for d_val in r_delta]
@@ -372,9 +340,8 @@ def plot_dumbbell(
         delta_col_pts = max((_est_text_pts(t, 9.6) for t in delta_texts), default=0.0)
         if delta_header:
             delta_col_pts = max(delta_col_pts, _est_text_pts(str(delta_header), 9.4))
-        delta_col_pts += 12.0  # right margin + column separation
+        delta_col_pts += 12.0
 
-    # Estimate dynamic left/right padding in data units (iterated to converge)
     x_pad_left_override = kwargs.get("x_pad_left_ratio")
     x_pad_right_override = kwargs.get("x_pad_right_ratio")
     base_left_ratio = (
@@ -395,7 +362,6 @@ def plot_dumbbell(
 
     x_lo = (min(0.0, v_min) if force_zero else v_min) - span * base_left_ratio
     if force_zero and v_min >= 0.0 and x_pad_left_override is None:
-        # Start from 0.0 for non-negative data; expand left only if a label needs room
         x_lo = 0.0
     x_hi = v_max + span * base_right_ratio
 
@@ -443,7 +409,6 @@ def plot_dumbbell(
                         right_label_max_x, right_val + right_need_pts * pts_to_data
                     )
             if show_delta:
-                # Keep clean separation between rightmost value label and delta column
                 gap_pts = 14.0
                 needed_hi = max(
                     needed_hi,
@@ -469,7 +434,6 @@ def plot_dumbbell(
 
         if abs(d_val) > 1e-9:
             dx_pts = abs(d_val) * pts_per_data
-            # Prevent FancyArrowPatch shrinkA > segment length from inverting arrows
             if dx_pts >= 9.0:
                 eff_shrink_a = min(4.0, dx_pts * 0.30)
                 eff_hl = min(head_length, max(0.32, dx_pts / 24.0))
@@ -491,7 +455,6 @@ def plot_dumbbell(
                 )
                 arrows.append(arr)
             else:
-                # Ultra-short delta: place solid directional triangle beside origin
                 direction = 1.0 if d_val > 0 else -1.0
                 tip_x = vs + direction * (max(dx_pts, 6.2) / pts_per_data)
                 tri_marker = ">" if d_val > 0 else "<"
@@ -524,8 +487,6 @@ def plot_dumbbell(
     ax.set_xlim(x_lo, x_hi)
     ax.set_ylim(-0.65, (n - 0.05) if delta_header else (n - 0.30))
 
-    # Keep x-ticks strictly inside valid data bounds (no negative ticks for non-negative
-    # force_zero data, and no ticks extending under/past the right-hand delta column).
     x_delta_col = x_hi - max(6.0 / pts_per_data, span * 0.020)
     tick_lo_bound = 0.0 if (force_zero and v_min >= 0.0) else x_lo + 4.0 / pts_per_data
     if show_delta:
@@ -685,6 +646,142 @@ def plot_dumbbell(
         "annotations": anns,
         "ax": ax,
     }
+
+
+def plot_dumbbell(
+    ax: object,
+    labels: Sequence[str],
+    val_start: Sequence[float],
+    val_end: Sequence[float],
+    label_start: str = "期初 / 基準",
+    label_end: str = "期末 / 現況",
+    color_start: Optional[str] = None,
+    color_end: Optional[str] = None,
+    bar_color: str = "#CBD5E1",
+    bar_linewidth: float = 3.2,
+    dot_size: float = 90.0,
+    show_delta: bool = True,
+    delta_fmt: str = "{:+.1f}",
+    sort_by: Optional[str] = "end",
+    directed: bool = False,
+    category_color_map: Optional[Dict[str, str]] = None,
+    **kwargs,
+) -> Dict[str, object]:
+    """
+    Dumbbell Span Plot & Directional Momentum Vector Arrow Plot.
+
+    - ``directed=False`` (default): Neutral dual-state dumbbell span plot
+      (solid start/end dots connected by a neutral bar + inline delta label).
+    - ``directed=True``: Directional origin-to-outcome momentum arrow plot
+      (hollow circle origin -> solid directional arrowhead, direction-coded
+      positive/negative colors, optional subtle row shading, and a cleanly
+      right-aligned delta column; uses native Matplotlib vector arrowheads to
+      avoid Microsoft JhengHei broken-glyph arrow concatenation).
+    """
+    _ensure_cjk_font()
+    import numpy as np
+
+    c_start = (
+        color_start
+        if color_start is not None
+        else (_resolve_lookup_color(label_start, category_color_map) or GEPHI_QUALITATIVE_HEX[1])
+    )
+    c_end = (
+        color_end
+        if color_end is not None
+        else (_resolve_lookup_color(label_end, category_color_map) or GEPHI_QUALITATIVE_HEX[0])
+    )
+
+    rows = []
+    for lbl, vs, ve in zip(labels, val_start, val_end):
+        ps, pe_val = _parse_numeric_or_na(vs), _parse_numeric_or_na(ve)
+        if ps is not None and pe_val is not None:
+            rows.append((str(lbl), float(ps), float(pe_val), float(pe_val - ps)))
+
+    if not rows:
+        return {
+            "scatter_start": None,
+            "scatter_end": None,
+            "bars": None,
+            "arrows": [],
+            "annotations": [],
+            "ax": ax,
+        }
+
+    if sort_by == "end":
+        rows.sort(key=lambda r: r[2])
+    elif sort_by == "start":
+        rows.sort(key=lambda r: r[1])
+    elif sort_by == "delta":
+        rows.sort(key=lambda r: r[3])
+
+    n = len(rows)
+    y_pos = np.arange(n)
+    r_labels = [r[0] for r in rows]
+    r_start = [r[1] for r in rows]
+    r_end = [r[2] for r in rows]
+    r_delta = [r[3] for r in rows]
+
+    all_vals = r_start + r_end
+    v_min, v_max = min(all_vals), max(all_vals)
+    raw_span = v_max - v_min
+    span = raw_span if raw_span > 1e-6 else max(1.0, abs(v_max) * 0.25)
+
+    default_orange = ["#FFF3EA", "#FBD8C0", "#ECA072", "#CA6F35", "#97481B"]
+    default_blue = ["#EBF7F9", "#BCE2EB", "#5DBACD", "#2C8B9F", "#0E5B6B"]
+    pos_ink = GEPHI_SEQUENTIAL_SCALES.get("orange", default_orange)[3]
+    neg_ink = GEPHI_SEQUENTIAL_SCALES.get("blue", default_blue)[3]
+
+    if not directed:
+        return _render_undirected_dumbbell(
+            ax,
+            y_pos,
+            r_labels,
+            r_start,
+            r_end,
+            r_delta,
+            n=n,
+            v_min=v_min,
+            v_max=v_max,
+            span=span,
+            c_start=c_start,
+            c_end=c_end,
+            label_start=label_start,
+            label_end=label_end,
+            bar_color=bar_color,
+            bar_linewidth=bar_linewidth,
+            dot_size=dot_size,
+            show_delta=show_delta,
+            delta_fmt=delta_fmt,
+            pos_ink=pos_ink,
+            neg_ink=neg_ink,
+            show_legend=bool(kwargs.get("show_legend", True)),
+        )
+
+    return _render_directed_momentum_arrows(
+        ax,
+        y_pos,
+        r_labels,
+        r_start,
+        r_end,
+        r_delta,
+        n=n,
+        v_min=v_min,
+        v_max=v_max,
+        span=span,
+        color_start=color_start,
+        color_end=color_end,
+        label_start=label_start,
+        label_end=label_end,
+        bar_linewidth=bar_linewidth,
+        dot_size=dot_size,
+        show_delta=show_delta,
+        delta_fmt=delta_fmt,
+        pos_ink=pos_ink,
+        neg_ink=neg_ink,
+        default_orange=default_orange,
+        kwargs=kwargs,
+    )
 
 
 def plot_slope_chart(

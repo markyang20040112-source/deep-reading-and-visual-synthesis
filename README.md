@@ -67,21 +67,37 @@ deep-reading-and-visual-synthesis/
     │   ├── color_registry.py                                 # 跨圖工作階段類別色彩登記表（02_color_registry.json 持久化鎖色）
     │   ├── owner_sync.py                                     # 使用者身分識別與公私雙倉庫同步 CLI
     │   ├── chart_data.py                                     # 輕量 DataFrame、數值/NA 解析與三層 CSV 分流引擎
-    │   ├── chart_common.py                                   # CJK 字型設定、despine_axes、聚光燈配色與 1D 防撞共用工具
+    │   ├── chart_common.py                                   # CJK 字型設定、黃金畫布工廠 setup_chart_canvas、despine_axes、聚光燈配色與 1D 防撞共用工具
     │   ├── chart_editorial.py                                # 資料八編輯室敘事組件（膠囊基準線、時期色帶、角落排行卡、四層底註）
     │   ├── chart_family1_ranking.py                          # 圖表家族 1 引擎（克里夫蘭點陣圖、啞鈴/雙向動量箭頭圖、斜坡圖、子彈圖）
+    │   ├── chart_family2_trend.py                            # 圖表家族 2 引擎（共用基線剪刀差折線＋面積帶、配對雙柱＋差距標註）
     │   ├── chart_family3_composition.py                      # 圖表家族 3 引擎（Marimekko 雙維佔比圖、瀑布圖）
     │   ├── chart_family4_distribution.py                     # 圖表家族 4 引擎（裁切 KDE、背景基準分面與分布輔助函式）
+    │   ├── chart_family5_multivariate.py                     # 圖表家族 5 引擎（全樣本波士頓四象限氣泡矩陣＋指引線）
     │   ├── chart_creative_armory.py                          # 模式 3 創意隱喻圖（液體容器柱、遮罩紋理扇形、圖示散佈）
     │   ├── gephi_palette.js                                  # 前端 JS 色彩 SSOT、CIELAB 插值、entityColors 查詢與 deriveThematicPalette (UMD/Browser/Node)
     │   ├── generate_mindmap.py                               # Format A 出版級繁體中文知識圖譜引擎（避頭尾保護與 T1~T5 拓撲組件）
     │   ├── pdf_report_engine.py                              # Format B A4 自適應分頁 CSS 生成器與 Playwright PDF 編譯引擎
-    │   ├── pptx_slide_engine.py                              # Format C 16:9 五大家族 13 版型原生引擎（Pillow 繁中字寬、DISCAS Token、OMML 公式、Playwright 300 DPI 與規格驅動確定性渲染）
-    │   ├── verify_visual_outputs.py                          # PDF/PPTX 轉圖（含 slide_indices 單頁重繪）、方案 C 接觸表/2×2 四宮格、碰撞/孤兒/保真體檢、色彩登記表與自動清理工具
+    │   ├── pptx_slide_engine.py                              # Format C 16:9 統一相容入口門面（底層模組位於 pptx_engine/）
+    │   ├── verify_visual_outputs.py                          # PDF/PPTX 轉圖、Medium/網站/色彩登記表驗收與清理門面（Format C QA 位於 pptx_engine/qa.py）
+    │   ├── pptx_engine/                                      # Format C 16:9 五大家族 13 版型與方案 C QA 套件
+    │   │   ├── tokens.py                                     # 主題載入、DISCAS 字級階梯、Design Tokens 與 OOXML 底層
+    │   │   ├── text_layout.py                                # Pillow 微軟正黑體實寬量測、Kinsoku 避頭尾與幾何優先縮放
+    │   │   ├── media_omml.py                                 # Playwright/Chrome 300 DPI SVG 轉圖與原生 <m:oMath> 公式
+    │   │   ├── primitives.py                                 # Zone 1/3、全域光學垂直平衡、三層表頭與封面/過場
+    │   │   ├── layouts_data.py                               # F4-A/B、F5-A/B/C 與 Mode 3 Tier 1 幾何原語
+    │   │   ├── layouts_narrative.py                          # F1-C、F2-A/B/C 與 F3-A/B
+    │   │   ├── spec_pipeline.py                              # 版型推薦、序列驗證、Step 4A 預覽、確定性渲染與保真檢查
+    │   │   └── qa.py                                         # 方案 C 接觸表/2×2 四宮格、單頁重繪與結構/碰撞體檢
     │   ├── report_skill_feedback.py                          # 技能優化靈感三通道自動化 GitHub Issues 回報工具
     │   └── check_skill_updates.py                            # 30 天節流之無損技能更新檢查工具
     └── tests/
-        └── test_color_registry.py                            # 跨圖類別色彩登記表與繪圖模組回歸測試套件
+        ├── run_all.py                                        # 一鍵執行全部 5 套安全網測試之總入口
+        ├── test_color_registry.py                            # 跨圖類別色彩登記表與繪圖模組回歸測試套件
+        ├── test_charts_regression.py                         # 全圖表渲染、零文字碰撞與家族 2/5 鎖色回歸測試
+        ├── test_pdf_pipeline.py                              # Format B PDF 自適應分頁與單瀏覽器重用測試
+        ├── test_mindmap_and_ingest.py                        # Format A 延遲載入出圖與素材擷取離線測試
+        └── test_pptx_pipeline.py                             # Format C 五大家族 13 版型端到端渲染與方案 C QA 測試
 ```
 
 ---
@@ -93,5 +109,5 @@ deep-reading-and-visual-synthesis/
 | **0. Gate 0 啟動門神** | `SKILL.md` | 身分驗證與公私雙倉庫隔離（作者還原私人設定／新用戶導向 `onboarding_wizard.md`）、30 天更新節流與靈感暫存規則。 | 不存放具體提問話術或視覺排版參數；私人設定與 `reading_sessions/` 嚴格受 `.gitignore` 隔離。 |
 | **1. 第一階段 (Phase 1)**<br>*(深度閱讀／數據探索)* | `phase1_socratic_reading_guide.md`<br>$\rightarrow$ `mode1_*` 或 `mode2_*` | 先執行 **Stage 0 垂直工序**（調用 `ingest_source_material.py` 自動將 URL / YouTube 字幕 / PDF / DOCX 轉為 `00_source_article.md`），再二擇一載入子協定執行 5 步蘇格拉底思辨或 CSV 三迴路分析，即時寫入 `01_phase1_socratic_log.md`。 | **嚴禁提前讀取 `phase2_output/` 任何檔案**；嚴禁將大型 CSV 直接讀入 LLM 上下文消耗 Token。 |
 | **2. 第二階段 (Phase 2)**<br>*(三層漸進決策漏斗)* | **L1**: `phase2_output_router.md`<br>**L2**: `advisors/layer2_*.md`<br>**L3**: `advisors/layer3_*.md` | 逐層討論拍板：**L1** 決定 Format A~E 範圍 $\rightarrow$ **L2** 僅開選定格式顧問定骨架 $\rightarrow$ **L3** 統一或混搭定裝「設計武器庫 × 筆風 × 配色」，並依時機 A 逐層寫入 `02_phase2_generation_blueprint.md`（含取捨理由與客製細節）。 | 未選中之格式與顧問檔 **100% 零讀取**；預設分步停下來確認，不擅自代選；`01` 與 `02` 紀錄檔互不跨鏈附掛。 |
-| **3. 終端執行與驗收**<br>*(Terminal Execution & QA)* | `visual_cognition_principles.md`<br>+ 選定之單一筆風檔<br>+ 按需之最小葉節點 `*_spec.md` | 依 `D➔A➔B➔C➔E` 逐格式接力生成與確認：僅載入拍板之最小葉節點規格檔，直接 `import` `scripts/` 底層黑盒引擎渲染（Format C 採 `02c_slide_spec_lock.json` ➔ `Step 4A` ➔ `render_deck_from_spec()`），並強制執行 `verify_visual_outputs.py`（含 Format C 方案 C 三階內部品管：`verify_pptx_structure`＋`4×4` 接觸表＋`2×2` 四宮格＋高風險頁滿版精檢與 `slide_indices` 單頁重繪）與 `read_file` 實地檢查。 | **日常執行嚴禁讀取 `scripts/*.py` 原始碼**；驗收後立即 `--cleanup` 清除所有暫存預覽與網格圖；格式 D/E 配色或編碼規則變動須同步更新對應 SSOT。 |
+| **3. 終端執行與驗收**<br>*(Terminal Execution & QA)* | `visual_cognition_principles.md`<br>+ 選定之單一筆風檔<br>+ 按需之最小葉節點 `*_spec.md` | 依 `D➔A➔B➔C➔E` 逐格式接力生成與確認：僅載入拍板之最小葉節點規格檔，直接 `import` `scripts/` 底層黑盒引擎渲染（Format C 採 `02c_slide_spec_lock.json` ➔ `Step 4A` ➔ `render_deck_from_spec()`），並強制執行 `verify_visual_outputs.py`（`--verify-medium` / `--verify-dashboard` / `--verify-colors`，含 Format C 方案 C 三階內部品管：`verify_pptx_structure`＋`4×4` 接觸表＋`2×2` 四宮格＋高風險頁滿版精檢與 `slide_indices` 單頁重繪）與 `read_file` 實地檢查。 | **日常執行嚴禁讀取 `scripts/*.py` 原始碼**；驗收後立即 `--cleanup` 清除所有暫存預覽與網格圖；格式 D/E 配色或編碼規則變動須同步更新對應 SSOT。 |
 | **4. 結案進化閉環**<br>*(Step E1～E3 & Sync)* | `git_sync_and_evolution_protocol.md`<br>+ `THEORY_ARCHIVE.md` | 查證實證文獻（T01~T26）、一鍵透過 `report_skill_feedback.py` 回報 GitHub Issues、將模式 3 勝出創意沉澱入 `creative_armory/cases/`（單行寫入 `INDEX.md`）、清理已結案靈感。 | **日常閱讀與製圖階段不開啟**，僅於 Git 同步、開站或 Step E1~E3 結案進化時按需載入。 |

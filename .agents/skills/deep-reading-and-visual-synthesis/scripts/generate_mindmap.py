@@ -19,10 +19,21 @@ import re
 import sys
 import unicodedata
 from pathlib import Path
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
-from matplotlib.path import Path as MplPath
+
+_MPL_CACHE = None
+
+
+def _get_mpl():
+    """Lazy-load heavy Matplotlib modules only when drawing/configuring figures."""
+    global _MPL_CACHE
+    if _MPL_CACHE is None:
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as patches
+        from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+        from matplotlib.path import Path as MplPath
+
+        _MPL_CACHE = (plt, patches, FancyBboxPatch, FancyArrowPatch, MplPath)
+    return _MPL_CACHE
 
 _SCRIPT_DIR = str(Path(__file__).resolve().parent)
 if _SCRIPT_DIR not in sys.path:
@@ -320,16 +331,23 @@ def get_canvas_metrics(ax=None, fig_width_in=None, fig_height_in=None):
 
 def configure_cjk_fonts():
     """Configures cross-platform Traditional Chinese (CJK) font fallbacks."""
-    cjk_fonts = [
-        "Microsoft JhengHei",
-        "PingFang TC",
-        "Noto Sans CJK TC",
-        "Source Han Sans TC",
-        "Heiti TC",
-        "WenQuanYi Micro Hei",
-        "Arial Unicode MS",
-        "sans-serif"
-    ]
+    plt, _, _, _, _ = _get_mpl()
+    try:
+        from chart_common import CJK_FONT_FALLBACKS
+
+        cjk_fonts = list(CJK_FONT_FALLBACKS)
+    except ImportError:
+        cjk_fonts = [
+            "Microsoft JhengHei",
+            "PingFang TC",
+            "Noto Sans CJK TC",
+            "Source Han Sans TC",
+            "Heiti TC",
+            "WenQuanYi Micro Hei",
+            "SimHei",
+            "Arial Unicode MS",
+            "sans-serif",
+        ]
     plt.rcParams["font.sans-serif"] = cjk_fonts
     plt.rcParams["axes.unicode_minus"] = False
 
@@ -450,6 +468,7 @@ def measure_card_height(
     fig_w, fig_h, pt_per_x, pt_per_y, _sx, scale_y = get_canvas_metrics(
         ax=ax, fig_width_in=fig_width_in, fig_height_in=fig_height_in
     )
+    _, _, FancyBboxPatch, _, _ = _get_mpl()
     title = sanitize_cjk_glyphs(title)
     badge_text = sanitize_cjk_glyphs(badge_text)
     strip_w = 0.60
@@ -574,6 +593,7 @@ def draw_macro_zone(ax, x, y, width, height, zone_title, theme, accent_key=None,
     Z-Order 1: Draws a Palmer (1992) 'Common Region' macro container box
     to group related sub-cards and keep top-level chunks within Cowan's 4±1 limit.
     """
+    _, _, FancyBboxPatch, _, _ = _get_mpl()
     _, _, _, pt_per_y, _, _ = get_canvas_metrics(ax=ax)
     title_color = theme["accents"][accent_key]["main"] if (accent_key and accent_key in theme["accents"]) else theme["muted_ink"]
     zone_box = FancyBboxPatch(
@@ -612,6 +632,7 @@ def draw_modern_card(ax, x, y, width, title, bullets, theme,
     fig_w, fig_h, pt_per_x, pt_per_y, _sx, scale_y = get_canvas_metrics(
         ax=ax, fig_width_in=fig_width_in, fig_height_in=fig_height_in
     )
+    _, _, FancyBboxPatch, _, _ = _get_mpl()
     title = sanitize_cjk_glyphs(title)
     badge_text = sanitize_cjk_glyphs(badge_text)
     accent = theme["accents"].get(accent_key, theme["accents"]["primary"])
@@ -818,6 +839,7 @@ def draw_hierarchical_trunk_fork(ax, p_start, p_card1, p_card2, trunk_label,
     """
     if theme is None:
         theme = THEMES["swiss_editorial"]
+    _, patches, _, _, MplPath = _get_mpl()
     accent = theme["accents"].get(accent_key, theme["accents"]["primary"])
     line_color = accent["main"]
     pill_bg = accent["pill_bg"]
@@ -875,6 +897,7 @@ def draw_labeled_bezier(ax, p0, p3, label_text=None, theme=None,
     """
     if theme is None:
         theme = THEMES["swiss_editorial"]
+    _, patches, _, _, MplPath = _get_mpl()
 
     if accent_key and accent_key in theme["accents"]:
         line_color = theme["accents"][accent_key]["main"]
@@ -921,6 +944,7 @@ def draw_labeled_arrow(ax, p0, p1, label_text=None, theme=None,
     """
     if theme is None:
         theme = THEMES["swiss_editorial"]
+    _, _, _, FancyArrowPatch, _ = _get_mpl()
     accent = theme["accents"].get(accent_key, theme["accents"]["primary"])
     color = accent["main"]
 
@@ -962,6 +986,7 @@ def draw_spine_hub_module(
     """
     if theme is None:
         theme = THEMES["swiss_editorial"]
+    _, _, FancyBboxPatch, _, _ = _get_mpl()
     _, _, _, pt_per_y, _, scale_y = get_canvas_metrics(ax=ax)
     accent = theme["accents"].get(accent_key, theme["accents"]["primary"])
     border_col = accent["main"]
@@ -1243,6 +1268,7 @@ def draw_canvas_header_and_footer(
     """
     if theme is None:
         theme = THEMES["swiss_editorial"]
+    _, _, FancyBboxPatch, _, _ = _get_mpl()
     if takeaway_body is None and takeaway_lines is not None:
         takeaway_body = takeaway_lines
 
@@ -1304,6 +1330,7 @@ def setup_publication_canvas(figsize=(DEFAULT_FIG_W, DEFAULT_FIG_H), dpi=240, th
     Default is compact high-legibility 23.8" x 15.4" (supports adaptive height 12.6"-15.4").
     Returns (fig, ax, theme_dict).
     """
+    plt, _, _, _, _ = _get_mpl()
     configure_cjk_fonts()
     theme_dict = resolve_diagram_theme(theme)
     fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
@@ -1317,6 +1344,7 @@ def setup_publication_canvas(figsize=(DEFAULT_FIG_W, DEFAULT_FIG_H), dpi=240, th
 
 def save_publication_figure(fig, output_path, theme=None, dpi=240):
     """Saves high-DPI lossless PNG figure for razor-sharp CJK text."""
+    plt, _, _, _, _ = _get_mpl()
     theme_dict = resolve_diagram_theme(theme) if theme is not None else THEMES["swiss_editorial"]
     plt.subplots_adjust(left=0.01, right=0.99, top=0.98, bottom=0.02)
     fig.savefig(
@@ -1340,6 +1368,7 @@ def setup_a4_portrait_canvas(height_in=2.30, dpi=300, theme="swiss_editorial"):
     with zero micro-shrinking and zero landscape page disruption.
     Returns (fig, ax, theme_dict).
     """
+    plt, _, _, _, _ = _get_mpl()
     configure_cjk_fonts()
     theme_dict = resolve_diagram_theme(theme)
     fig, ax = plt.subplots(figsize=(A4_PORTRAIT_WIDTH_IN, float(height_in)), dpi=dpi)
@@ -1360,6 +1389,7 @@ def draw_a4_node_box(
     Header band height adapts proportionally to box height `h` and canvas height.
     Returns (x, y, w, h).
     """
+    _, _, FancyBboxPatch, _, _ = _get_mpl()
     if theme is None:
         theme = THEMES["swiss_editorial"]
     _, _, _, pt_per_y, _, _ = get_canvas_metrics(ax=ax)
@@ -1417,6 +1447,7 @@ def draw_a4_arrow(
     """
     Draws a crisp directional flow arrow + concise pill label on an A4-portrait-native canvas.
     """
+    _, _, _, FancyArrowPatch, _ = _get_mpl()
     if theme is None:
         theme = THEMES["swiss_editorial"]
     col = theme["accents"].get(accent_key, theme["accents"]["primary"])["main"]
@@ -1441,6 +1472,7 @@ def draw_a4_arrow(
 
 def save_a4_portrait_figure(fig, output_path, theme=None, dpi=300):
     """Saves an A4-portrait-native (7.44") lightweight diagram at 300 DPI."""
+    plt, _, _, _, _ = _get_mpl()
     theme_dict = resolve_diagram_theme(theme) if theme is not None else THEMES["swiss_editorial"]
     plt.subplots_adjust(left=0.01, right=0.99, top=0.98, bottom=0.02)
     fig.savefig(

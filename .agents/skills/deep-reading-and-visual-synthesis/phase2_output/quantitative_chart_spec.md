@@ -122,6 +122,7 @@ from hcl_color_engine import (
     bind_qualitative_colors,            # (categories, allow_top4_aggregation=False, other_label="其他項目合計", registry=None) -> Dict[str, str]
     get_category_badge_tint,            # (cat_or_key, category_color_map=None) -> str
     despine_axes,                       # (ax, grid_axis="y", grid_color="#CBD5E1", grid_linestyle="--", grid_alpha=0.65, spine_color="#CBD5E1") -> None
+    setup_chart_canvas,                 # (orientation="vertical"|"horizontal", dpi=300, figsize=None, wide_left=False, slide_mode=False, grid_axis=None, facecolor="#FFFFFF", **subplots_kwargs) -> (fig, ax)
     # --- Session Category Color Registry (Cross-Chart & Cross-Format Color Lock) ---
     # 亦可在腳本頂部直接 `from color_registry import use_session_registry, get_active_registry, CategoryColorRegistry, RegistryFullError`
     use_session_registry,               # (session_dir) -> CategoryColorRegistry (載入/建立 <session_dir>/02_color_registry.json 並設為作用中登記表)
@@ -134,8 +135,11 @@ from hcl_color_engine import (
     plot_dumbbell,                      # (ax, labels, val_start, val_end, label_start="期初 / 基準", label_end="期末 / 現況", color_start=None, color_end=None, bar_color="#CBD5E1", bar_linewidth=3.2, dot_size=90.0, show_delta=True, delta_fmt="{:+.1f}", sort_by="end", directed=False, category_color_map=None, **kwargs) -> Dict
     plot_slope_chart,                   # (ax, labels, val_t1, val_t2, t1_label="期初 (T1)", t2_label="期末 (T2)", up_color=None, down_color=None, neutral_color="#94A3B8", value_fmt="{:.1f}", linewidth=2.4, dot_size=75.0, **kwargs) -> Dict
     plot_bullet,                        # (ax, labels, actuals, targets, bands=None, band_colors=None, actual_color=None, target_color="#0F172A", bar_height=0.6, actual_height=0.28, value_fmt="{:.1f}", **kwargs) -> Dict
+    plot_scissors_line,                 # (ax, x_vals, y_series_a, y_series_b, label_a="序列 A", label_b="序列 B", color_a=None, color_b=None, fill_gap=True, gap_color=None, gap_alpha=0.55, value_fmt="{:.1f}", show_end_labels=True, right_pad_ratio=0.22, category_color_map=None, **kwargs) -> Dict
+    plot_paired_dual_bar,               # (ax, labels, vals_a, vals_b, label_a="基準 / 預期", label_b="實際 / 對照", color_a=None, color_b=None, bar_width=0.34, show_delta=True, delta_fmt="{:+.1f}", value_fmt="{:.1f}", category_color_map=None, **kwargs) -> Dict
     plot_marimekko,                     # (ax, categories, weights, sub_matrix_pct, sub_labels, colors=None, edgecolor="#FFFFFF", linewidth=1.6, show_cell_labels=True, min_pct_for_label=7.5, show_weight_header=True, weight_fmt="{:.0f}", category_color_map=None, **kwargs) -> Dict
     plot_waterfall,                     # (ax, step_labels, deltas, is_total_flags=None, pos_color=None, neg_color=None, total_color="#334155", connector_color="#94A3B8", connector_linestyle="--", bar_width=0.56, value_fmt="{:+.1f}", total_fmt="{:.1f}", **kwargs) -> Dict
+    plot_quadrant_bubble,               # (ax, x_vals, y_vals, size_vals=None, labels=None, categories=None, x_ref=None, y_ref=None, quadrant_labels=None, annotate_indices=None, annotate_top_k=4, min_bubble_area=90.0, max_bubble_area=1400.0, show_size_legend=True, size_unit="", category_color_map=None, **kwargs) -> Dict
     add_halo_vline,                     # (ax, x, color=None, linestyle="--", linewidth=2.2, halo_color="#FFFFFF", halo_width=4.8, label=None, zorder=5) -> Line2D
     annotate_floor_extreme,             # (ax, x, y_floor=0.0, label_text="", dot_color=None, dot_size=46.0, arrow_height_ratio=0.14, text_offset_x=0.0, fontsize=9.5, zorder=6, label=None, color=None) -> Annotation
     compute_clipped_kde,                # (data, x_min=0.0, x_max=None, bw_method="scott", grid_size=512) -> (x_grid, density_norm, h)
@@ -161,7 +165,7 @@ from verify_visual_outputs import (
 為確保同一資料實體（如「台北」）在不同圖表、不同排序與不同腳本間永遠維持同一色彩：
 1. **腳本頂部一行啟用**：每個繪圖腳本最上方呼叫 `use_session_registry(SESSION_DIR)`（會自動載入或建立 `<session_dir>/02_color_registry.json`）。
 2. **`bind_qualitative_colors()` 自動連動**：只要工作階段登記表處於啟用狀態，`bind_qualitative_colors()` 會自動透過登記表依「先查表、未登記者取最小空槽位」分配並持久化儲存，不再因各圖排序先後不同而換色。
-3. **繪圖函式只查不寫**：`plot_cleveland_dot()`、`plot_dumbbell()`、`plot_marimekko()` 支援 `category_color_map` 參數且僅執行唯讀查詢（`hex_for()`），不會擅自登記時間軸等非類別標籤；新類別登記必須顯式透過 `bind_qualitative_colors()` 或 `registry.assign()` 完成。
+3. **繪圖函式只查不寫**：`plot_cleveland_dot()`、`plot_dumbbell()`、`plot_marimekko()`、`plot_scissors_line()`、`plot_paired_dual_bar()` 與 `plot_quadrant_bubble()` 皆支援 `category_color_map` 參數且僅執行唯讀查詢（`hex_for()`），不會擅自登記時間軸等非類別標籤；新類別登記必須顯式透過 `bind_qualitative_colors()` 或 `registry.assign()` 完成。
 4. **純語意編碼不受影響**：斜坡圖漲跌色、瀑布圖／有向啞鈴圖正負方向色、聚光燈高亮對比與模式 3 創意隱喻圖等純語意或設計性配色，仍維持各自語意規則，不寫入或覆寫登記表。
 5. **交稿前色彩一致驗證**：完成圖表與儀表板輸出後，執行 `python .agents/skills/deep-reading-and-visual-synthesis/scripts/verify_visual_outputs.py --verify-colors "<session_dir>"`，確認登記表結構與前端 `gephi_palette.js` 內嵌 `entityColors` 完全一致。
 

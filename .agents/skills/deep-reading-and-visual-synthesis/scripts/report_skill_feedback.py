@@ -170,6 +170,13 @@ def build_prefilled_issue_url(
 
 def _detect_local_git_user() -> str:
     """Detect local Git user name (or DEEP_READING_GIT_USER override) for environment tagging."""
+    try:
+        from owner_sync import _detect_local_git_user as _shared_detect_git_user
+
+        return _shared_detect_git_user()
+    except ImportError:
+        pass
+
     env_override = os.environ.get("DEEP_READING_GIT_USER")
     if env_override is not None:
         return env_override.strip()

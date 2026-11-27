@@ -87,7 +87,7 @@ from verify_visual_outputs import (
 ### 2. 「通用內容自適應分頁」與「短／長表分流 ＋ 輕量尾端保護」鐵律
 - **通用 `<h2>` 殘餘空間自適應分頁（Generic Content-Adaptive Smart Pagination，取代每章強制換頁）**：
   - 嚴禁對所有章節一律寫死 `break-before: page`（會製造大量半頁空白），亦嚴禁在章節半途硬插 `.page-break` 切斷圖文呼應。
-  - 直接呼叫 `pdf_report_engine.compile_adaptive_report_pdf()`：引擎自動掃描 HTML 內**任意格式之所有 `<h2>` 標題**（無須寫死 `壹、～柒、` 前綴，完整相容中英文 Markdown/HTML 標題），透過 Chromium 實測每個 `<h2>` 在實際 PDF 頁面下方的剩餘空間比例（`rem_ratio`）：
+  - 直接呼叫 `pdf_report_engine.compile_adaptive_report_pdf()`（多輪分頁量測與定稿自動重用單一 Playwright Chromium 實例以加速編譯，外部簽名不變）：引擎自動掃描 HTML 內**任意格式之所有 `<h2>` 標題**（無須寫死 `壹、～柒、` 前綴，完整相容中英文 Markdown/HTML 標題），透過 Chromium 實測每個 `<h2>` 在實際 PDF 頁面下方的剩餘空間比例（`rem_ratio`）：
     - 剩餘空間 $\ge$ `min_remaining_ratio` 時自然接續流動；
     - 剩餘空間 $<$ `min_remaining_ratio` 時自動注入 `chapter-start` 換頁，確保新章節從頁頂乾淨展開。
   - **文體自適應門檻（`genre` 參數）**：結構化備忘錄／方法論藍圖（`genre="memo"` / `"blueprint"`）預設 **`0.34`（`~0.30–0.35`）**；連續敘事評論／知識卡片（`genre="synthesis"` / `"cards"`）預設 **`0.22`（`~0.20–0.25`）**。

@@ -122,7 +122,7 @@ $$\text{min\_font\_pt} = \max\left(12.0,\ \text{round}\left(3.18 \times \frac{D}
 ## 四、 黑盒引擎 API 契約與「方案 C 三階內部品管」流程
 
 > [!IMPORTANT]
-> **【底層引擎黑盒呼叫鐵律（Black-Box API Rule）】**：[`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)、[`../scripts/pptx_slide_engine.py`](../scripts/pptx_slide_engine.py) 與 [`../scripts/verify_visual_outputs.py`](../scripts/verify_visual_outputs.py) 封裝全套 DISCAS Token 工廠、Pillow 真實字寬量測、五大版型家族 13 精煉版型、確定性渲染層與方案 C 驗證網格。撰寫腳本時**直接依下方簽名 `import` 呼叫，日常執行嚴禁對 `scripts/*.py` 呼叫 `read_file`（除非報錯除錯）**！
+> **【底層引擎黑盒呼叫鐵律（Black-Box API Rule）】**：[`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)、[`../scripts/pptx_slide_engine.py`](../scripts/pptx_slide_engine.py) 與 [`../scripts/verify_visual_outputs.py`](../scripts/verify_visual_outputs.py)（後兩者底層實作已模組化收斂於 `scripts/pptx_engine/`，原檔案保留為 100% 相容統一入口與 CLI 門面）封裝全套 DISCAS Token 工廠、Pillow 真實字寬量測、五大版型家族 13 精煉版型、確定性渲染層與方案 C 驗證網格。撰寫腳本時**直接依下方簽名 `import` 呼叫，日常執行嚴禁對 `scripts/*.py` 呼叫 `read_file`（除非報錯除錯）**！
 
 ```python
 # === scripts/hcl_color_engine.py (Format C Mode 3 Dynamic Theme Bridge) ===

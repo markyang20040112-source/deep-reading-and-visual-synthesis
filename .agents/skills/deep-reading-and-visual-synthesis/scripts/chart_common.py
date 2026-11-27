@@ -9,6 +9,18 @@ from typing import List, Optional, Sequence, Tuple
 from chart_data import _parse_numeric_or_na
 from color_core import GEPHI_SEQUENTIAL_SCALES
 
+CJK_FONT_FALLBACKS: Tuple[str, ...] = (
+    "Microsoft JhengHei",
+    "PingFang TC",
+    "Noto Sans CJK TC",
+    "Source Han Sans TC",
+    "Heiti TC",
+    "WenQuanYi Micro Hei",
+    "SimHei",
+    "Arial Unicode MS",
+    "sans-serif",
+)
+
 def despine_axes(
     ax: object,
     grid_axis: Optional[str] = "y",
@@ -42,20 +54,59 @@ def _ensure_cjk_font() -> None:
     try:
         import matplotlib.pyplot as plt
         current = list(plt.rcParams.get("font.sans-serif", []))
-        cjk_candidates = [
-            "Microsoft JhengHei",
-            "PingFang TC",
-            "Noto Sans CJK TC",
-            "Heiti TC",
-            "SimHei",
-            "Arial Unicode MS",
-        ]
+        cjk_candidates = list(CJK_FONT_FALLBACKS)
         missing = [c for c in cjk_candidates if c not in current]
         if missing:
             plt.rcParams["font.sans-serif"] = cjk_candidates + [c for c in current if c not in cjk_candidates]
         plt.rcParams["axes.unicode_minus"] = False
     except Exception:
         pass
+
+
+def setup_chart_canvas(
+    orientation: str = "vertical",
+    dpi: int = 300,
+    figsize: Optional[Tuple[float, float]] = None,
+    wide_left: bool = False,
+    slide_mode: bool = False,
+    grid_axis: Optional[str] = None,
+    facecolor: str = "#FFFFFF",
+    **subplots_kwargs,
+) -> Tuple[object, object]:
+    """
+    Create a standardized 300 DPI Matplotlib canvas following `quantitative_chart_spec.md`:
+    - orientation='vertical'   -> (12.0, 6.4) default; (9.6, 5.2) when slide_mode=True
+    - orientation='horizontal' -> (12.8, 6.7) default; (10.0, 5.4) when slide_mode=True
+    Applies CJK fonts, golden-ratio `subplots_adjust`, and `despine_axes()`.
+    Returns `(fig, ax)`.
+    """
+    orient = str(orientation or "vertical").strip().lower()
+    if orient not in ("vertical", "horizontal"):
+        raise ValueError(f"Unsupported orientation '{orientation}'. Expected 'vertical' or 'horizontal'.")
+
+    _ensure_cjk_font()
+    import matplotlib.pyplot as plt
+
+    if figsize is not None:
+        resolved_figsize = (float(figsize[0]), float(figsize[1]))
+    elif slide_mode:
+        resolved_figsize = (10.0, 5.4) if orient == "horizontal" else (9.6, 5.2)
+    else:
+        resolved_figsize = (12.8, 6.7) if orient == "horizontal" else (12.0, 6.4)
+
+    fig, ax = plt.subplots(figsize=resolved_figsize, dpi=int(dpi), facecolor=facecolor, **subplots_kwargs)
+    ax.set_facecolor(facecolor)
+
+    if slide_mode:
+        left = 0.14 if (wide_left or orient == "horizontal") else 0.08
+        fig.subplots_adjust(left=left, right=0.96, top=0.92, bottom=0.12)
+    else:
+        left = 0.165 if (wide_left or orient == "horizontal") else 0.082
+        fig.subplots_adjust(left=left, right=0.965, top=0.808, bottom=0.188)
+
+    resolved_grid = grid_axis if grid_axis is not None else ("x" if orient == "horizontal" else "y")
+    despine_axes(ax, grid_axis=resolved_grid)
+    return fig, ax
 
 
 class _SpotlightStyleResult(dict):

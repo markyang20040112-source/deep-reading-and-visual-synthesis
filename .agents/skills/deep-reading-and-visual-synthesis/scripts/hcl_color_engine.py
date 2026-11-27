@@ -12,8 +12,10 @@ from chart_data import *  # noqa: F401, F403
 from chart_common import *  # noqa: F401, F403
 from chart_editorial import *  # noqa: F401, F403
 from chart_family1_ranking import *  # noqa: F401, F403
+from chart_family2_trend import *  # noqa: F401, F403
 from chart_family3_composition import *  # noqa: F401, F403
 from chart_family4_distribution import *  # noqa: F401, F403
+from chart_family5_multivariate import *  # noqa: F401, F403
 from chart_creative_armory import *  # noqa: F401, F403
 from color_registry import (  # noqa: F401
     CategoryColorRegistry,

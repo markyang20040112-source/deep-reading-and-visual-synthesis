@@ -5,6 +5,8 @@
 ```python
 # === Family 5 Black-Box API Signatures (scripts/hcl_color_engine.py) ===
 from hcl_color_engine import (
+    setup_chart_canvas,      # (orientation="vertical", dpi=300, figsize=None, wide_left=False, slide_mode=False, grid_axis=None, **subplots_kwargs) -> (fig, ax)
+    plot_quadrant_bubble,    # (ax, x_vals, y_vals, size_vals=None, labels=None, categories=None, x_ref=None, y_ref=None, quadrant_labels=None, annotate_indices=None, annotate_top_k=4, min_bubble_area=90.0, max_bubble_area=1400.0, show_size_legend=True, size_unit="", category_color_map=None, **kwargs) -> Dict
     add_halo_vline,          # (ax, x, color=None, linestyle="--", linewidth=2.2, halo_color="#FFFFFF", halo_width=4.8, label=None, zorder=5) -> Line2D
     add_inset_leaderboard,   # (ax, labels, values, bbox=(0.62, 0.08, 0.34, 0.32), title="", color=None, **kwargs) -> Axes
     get_sequential_color,    # (value, v_min, v_max, scale="orange", discrete_steps=False, scale_key=None) -> str
