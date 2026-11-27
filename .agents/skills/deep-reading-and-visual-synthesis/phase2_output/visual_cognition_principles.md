@@ -1,29 +1,29 @@
 # 視覺認知與設計規範（Visual Cognition & Design Principles）
 
-> **單一職責定位（Single Responsibility）**：本檔為 Phase 2 **五大產出格式（Format A 知識圖譜、Format B 決策報告、Format C 簡報、Format D 量化圖表、Format E 數據儀表板）唯一共用的視覺認知底層規範**。凡屬跨格式通用的組塊階層、筆風設定檔 8 大插槽全域穿透綁定、分層式色彩配置與字體下限，統一於本檔定義；各專項規格檔（`*_spec.md`）僅規範該媒體專屬的幾何排版與渲染技術，不重複贅述本檔原則。
+> **單一職責定位（Single Responsibility）**：本檔為 Phase 2 **五大產出格式（Format A 知識圖譜、Format B 決策報告／專欄、Format C 簡報、Format D 量化圖表、Format E 數據儀表板）唯一共用的跨格式底層認知與表達原則**。
+> - **徹底解耦原則**：本檔僅規範五大格式真正共通的無損擴展哲學、表達三支柱架構、對外行文與事實保真底線、正黑體與漢字避頭尾標點保護、以及 75-20-5 雙層色票架構。凡因畫布面積與閱讀距離不同而不互通之**組塊階層公式、留白計算方式、物理字級下限與行寬幾何參數**，全數歸還各專項規格檔（`*_spec.md`）獨立定義，嚴禁跨格式硬套。
 
 ---
 
-## 一、 單一畫布階層組塊、平行對齊與多畫布無損擴展法則（Per-Canvas $4 \to 2 \to 3$ Chunking & Zero-Loss Expansion）
+## 一、 工作記憶容量保護與多畫布無損擴展法則（Working Memory Protection & Zero-Loss Expansion）
 
-- **理論依據**：**工作記憶容量極限（Working Memory Capacity $4 \pm 1$, Cowan 2001）**、**格式塔共同區域原則（Law of Common Region, Palmer 1992）** 與 **組塊理論（Chunking, Miller 1956）**。
-- **跨格式設計標準**：
-  1. **單一視覺畫面 $4 \to 2 \to 3$ 階層組塊結構**：任何**單一視覺畫面**（單張圖譜、單頁簡報、報告單一模組或儀表板頂欄）的頂層宏觀容器（Macro Zones / KPI 頂欄）嚴格控制在 **$3 \sim 4$ 個**（單張畫布絕不超過 4 個）；每個宏觀容器內收納 **$2 \sim 3$ 張子卡片（Cards）**；每張子卡片內收納 **$2 \sim 3$ 條核心論點（Bullets）**。
+- **理論依據**：**工作記憶容量極限（Working Memory Capacity $4 \pm 1$, Cowan 2001）**、**組塊理論（Chunking, Miller 1956）** 與 **格式塔共同區域原則（Law of Common Region, Palmer 1992）**。
+- **跨格式共通標準**：
+  1. **單一畫面焦點組塊受載體物理面積約束（各格式組塊上限見對應 `*_spec.md`）**：人類單次視覺掃描能同時處理的頂層獨立組塊有限，嚴禁在單一畫布堆砌過多同級容器引發注意力分散。惟全景知識圖譜、A4 深度報告、`16:9` 簡報投影片與單面板圖表之物理面積與觀看距離差異極大，其具體組塊層數、容器上限與留白呼吸規範一律依各格式 `*_spec.md` 執行。
   2. **無損分流擴展鐵律 vs. Medium 單一故事線收斂特例**：
-     - **一般文獻／深度報告／簡報模式（以「拆圖、擴章、加頁」取代刪減內容）**：Phase 1 Step 5 收斂出的「核心論證主幹分支」與「批判延伸／跨域遷移分支」不論總數多少（如 $5 \sim 8+$ 個分支），**嚴禁為了塞進單張 $4$ 區畫布而刪減任何細節或批判性議題**！當總分支數 $> 4$ 時，Phase 2 強制啟動多畫布／多章節擴展（Format A 自動拆分為 `01` 主幹圖、`02` 機制深挖圖、`03+` 批判延伸與跨域遷移專題圖；Format B 動態擴增章節 `壹～柒...`；Format C 動態加頁；Format D/E 增加面板或互動視角）。
+     - **一般文獻／深度報告／簡報模式（以「拆圖、擴章、加頁」取代刪減內容）**：Phase 1 Step 5 收斂出的「核心論證主幹分支」與「批判延伸／跨域遷移分支」不論總數多少（如 $5 \sim 8+$ 個分支），**嚴禁為了塞進單一畫面而刪減任何細節、縮字硬塞或壓縮批判性議題**！當單一畫面容量不足時，Phase 2 強制啟動多畫布／多章節／多頁擴展（Format A 自動拆分為 `01` 主幹圖、`02` 機制深挖圖、`03+` 批判延伸與跨域遷移專題圖；Format B 動態擴增章節 `壹～柒...`；Format C 按單頁單一議題動態加頁；Format D/E 增加獨立面板或互動視角）。
      - **Medium 每週一圖／輕量數據敘事專欄模式（Single-Hook Convergence）**：針對公開數據新聞與課堂「每週一圖」作業，聚焦**單一核心數據故事主軸**，僅產出 **1～2 張各自獨立之單面板（Single-Panel）`300 DPI` `.png` 統計圖（禁止 `ncols=2` 橫向並排子圖）** ＋ **正文 `<= 1,600` 字之 Medium 原生 Markdown 專欄（免除編譯 A4 PDF）**。
-  3. **同類維度水平平行對齊（Parallel Row Alignment）**：當呈現並列的維度、階段或方案時，各卡片內部的條目必須按相同屬性（依當前筆風設定檔 `Slot 1` 與 `Slot 4` 定義之三階資訊展開順序）嚴格水平對齊，支援視線橫向掃描比對。
-  4. **留白呼吸比（Whitespace Ratio）**：資訊圖譜、量化圖表與數據儀表板留白 $\ge 25\%$，簡報投影片留白 $\ge 35\%$，PDF 報告透過頁邊距與段落間距維持視覺呼吸感。
+  3. **並列維度結構對稱與視覺對齊（Structural Parallelism）**：當同一畫面並列比較多個維度、階段或方案時，各區塊內部資訊應維持一致的屬性顆粒度與對齊基準，支援視線低阻力比對（各格式之具體對齊結構與是否使用開頭錨點，依各格式 `*_spec.md` 規範；其中 Format C 簡報免除機械式括號錨點與固定三階套路）。
 
 ---
 
-## 二、 表達三支柱統御原則：筆風插槽 × 分層配色 × 第三層設計武器庫（Three Pillars of Expression）
+## 二、 表達三支柱統御原則：設計光譜武器庫 × 筆風插槽 × 分層配色（Three Pillars of Expression）
 
 - **設計哲學與徹底解耦原則（Full Decoupling of Visual Geometry vs. Writing Style vs. Design Spectrum）**：
-  - 底層視覺規範僅定義「空間幾何、字級、留白與色彩對比」，**絕對不寫死任何單一行文語氣或單一裝飾風格**。
+  - 底層視覺規範僅定義「空間幾何、字級對比與色彩結構」，**絕對不寫死任何單一行文語氣或單一裝飾風格**。
   - 在 Phase 2 **第三層（最後決策層）**，透過「表達三支柱」統御所有選定之產出格式（Format A / B / C / D / E，詳細實作流程見 [`advisors/layer3_advisor_design_style_color.md`](advisors/layer3_advisor_design_style_color.md)）：
     1. **支柱 1：設計光譜與轉譯武器庫開／關**：依任務特性於 `standard_rigorous`（模式 1：標準嚴謹）、`editorial_narrative`（模式 2：資料八／經濟學人編輯室敘事，見 [`editorial_narrative_spec.md`](editorial_narrative_spec.md)）與 `bespoke_metaphor`（模式 3：開放式創意材質與幾何空間隱喻武器庫，見 [`creative_armory/INDEX.md`](creative_armory/INDEX.md)）間切換，可統一或分檔混搭。
-    2. **支柱 2：筆風設定檔（`Slot 1～8` 100% 全域穿透）**：控制所有生成內容的語氣、資訊展開順序、標題句型、卡片錨點、圖譜箭頭謂詞、統計圖表微文案、簡報講稿與禁用詞。
+    2. **支柱 2：筆風設定檔（`Slot 1～8` 語氣與護欄全域穿透）**：控制所有生成內容的人設語氣、敘事節奏、標題句型、圖譜謂詞、統計圖表微文案、簡報講稿與禁用詞護欄。
     3. **支柱 3：分層顏色設定集（`chart_palettes` ＋ `document_themes` ＋ `derive_thematic_palette`）**：統籌數值色彩科學與文件視覺佈景主題。
 - **作者私人筆風庫 vs. 外部使用者隔離（Owner-Only Style Isolation）**：
   - 當本機 Git 身分驗證為擁有者 `markyang20040112-source` 時，直接讀取 [`../config/owner_styles/`](../config/owner_styles/) 下之專屬筆風庫（`plain_first_progressive.md`、`rigorous_empirical_stat.md`、`editorial_data_journalism.md`、`personalized_essay_style.md`）。
@@ -31,36 +31,26 @@
 - **跨格式寫作共通鐵律（適用所有筆風檔與 Format A～E 對外交付物）**：
   - **零工作流元語言洩漏（Zero Meta-Workflow Leakage）**：讀者並不知道作者背後如何與 AI 進行閱讀理解與多輪對話；所有對外輸出之正文、標題、圖說與圖譜副標**嚴禁出現任何閱讀系統內部流程詞彙**（如 `第一階段`、`Phase 1/2`、`蘇格拉底思辨／詰問／收斂`、`直覺探針`、`Step 1～5`、`零刪減分流`、`系統基模 A/B` 等未面向讀者定義的內部代號）。
   - **高張力修辭同篇去重複（Anti-Repetition Guardrail）**：任何鮮明比喻、口語形容詞或標誌性轉折片語，在同一篇成品中至多出現 `1` 次，避免複製貼上造成閱讀疲勞。
-  - **事實與因果保真底線（Factual & Causal Fidelity — 不干擾行文、不硬塞背景）**：本原則**不要求**在純論述、跨域延伸或已有圖表說明的頁面額外補充數據背景或專有名詞（一切篇幅與表達仍 100% 依循筆風檔節奏與去冗餘原則）。唯獨**當內容確實引用原文數據或因果關係時**，須遵守兩條負面底線：① **不憑空捏造原文未載之統計數字或具體數據案例**；② **不擅自升級因果強度**（原文若為相關、伴隨或局部現象，不改寫為絕對決定或全體必然）。
-- **8 大全生成場景控制插槽（Slots 1～8）跨格式強制映射表**：
-  1. **`Slot 1: Core_Persona_And_Progression`**：控制全格式共通之寫作者人設、語氣冷熱度與三階資訊展開順序。
+  - **事實與因果保真底線（Factual & Causal Fidelity — 不干擾行文、不硬塞背景）**：本原則**不要求**在純論述、跨域延伸或已有圖表說明的頁面額外補充數據背景或專有名詞（一切篇幅與表達仍 100% 依循筆風檔節奏與去冗餘原則）。唯獨**當內容確實引用原文數據或因果關係時**，須遵守兩條負面底線：① **不憑空捏造原文未載之統計數字、百分比或具體數據案例**；② **不擅自升級因果強度**（原文若為相關、伴隨或局部現象，不改寫為絕對決定或全體必然）。
+- **8 大全生成場景控制插槽（Slots 1～8）跨格式映射表**：
+  1. **`Slot 1: Core_Persona_And_Progression`**：控制全格式共通之寫作者人設與語氣冷熱度；其三階資訊展開順序適用於長文論述與深度圖譜（註：Format C 簡報卡片不硬綁三格機械展開，改依頁面論點自然分段）。
   2. **`Slot 2: Interactive_Guidance_Tone`**：控制 Phase 1 蘇格拉底提問口吻與 Phase 2「一次一張圖逐步導學互動模式」之五步解說骨架。
   3. **`Slot 3: Prose_And_Narrative_Rhythm`**：控制 Format B（深度報告與 Medium 專欄）之散文段落長度、破題句式、標點與粗體強調密度。
-  4. **`Slot 4: Structured_Blocks_And_Captions`**：控制 Format B/C 表格與卡片條目開頭錨點格式（`Anchor_Format`）、公式導讀與 `<figure>` 圖說規範。
+  4. **`Slot 4: Structured_Blocks_And_Captions`**：控制 Format B 報告表格／卡片條目開頭錨點格式（`Anchor_Format`）、公式導讀與 `<figure>` 圖說規範（註：Format C 簡報解除機械錨點綁定，不強制每條掛 `● 【...】` 括號前綴，僅自然符合筆風語氣）。
   5. **`Slot 5: Knowledge_Diagram_Copy`**：控制 Format A（知識圖譜 `.png`）之宏觀分區大標、子卡片標題、有向箭頭「謂詞膠囊（`Predicate_Verbs`）」動詞風格與底部 Takeaway 橫幅語氣。
   6. **`Slot 6: Chart_And_Dashboard_MicroCopy`**：控制 Format D（量化統計圖表 `.png`）與 Format E（數據儀表板 Web）之主副標題公式、X/Y 座標軸籤、圖內標註氣泡（`Callouts`）、基準線說明、KPI 卡與網頁 Tooltip 解說微文案。
-  7. **`Slot 7: Slide_Headline_And_Speaker_Notes`**：控制 Format C（高階簡報 `.pptx`）之 Zone 1 斷言標題、Zone 3 行動橫幅與 `Speaker_Notes` 口語化講稿。
+  7. **`Slot 7: Slide_Headline_And_Speaker_Notes`**：控制 Format C（簡報 `.pptx`）之 Zone 1 斷言標題、選配 Zone 3 行動橫幅、畫面精煉自然語氣與 `Speaker_Notes` 口語化講稿。
   8. **`Slot 8: Notation_Terminology_And_Guardrails`**：控制全格式之數值與單位換算、專有名詞中英呈現格式、偏好詞白名單（`Whitelist`）、絕對禁用詞黑名單（`Banned_Cliches`）與 Few-Shot 正反校準。
 - **三態參數解析與即時熱修改（Tri-State Resolution & Hot-Reload）**：
   - 筆風檔內標記為 **`[USER_LOCKED]`** 者強制 100% 遵守；標記為 **`[SCENARIO_PRESET]`** 者依情境套用；標記為 **`[AI_ADAPTIVE]`** 者由 AI 依 `Slot 1` 主基調與當下資料特性自動推導最協調寫法。若使用者於對話中臨時要求調整語氣或用詞，立即局部熱修改並於該次生成生效。
 
 ---
 
-## 三、 跨格式字級、行寬與漢字換行規範（Typography, Line Measure & CJK Wrapping）
+## 三、 跨格式字型家族、字重階層與漢字避頭尾規範（Font Stack, Hierarchy & CJK Kinsoku Shori）
 
-- **理論依據**：**大字級與長行寬閱讀效率研究（Dyson 2004; Tinker 1963）** 與 **前注意特徵處理（Preattentive Processing, Ware 2020）**。過小的字級或過度壓縮的短行寬會強迫眼球頻繁折返（Saccadic Eye Movements），大幅拉高閱讀疲勞。
-- **字體優先序**：統一使用無襯線正黑體（`Microsoft JhengHei`、`PingFang TC`、`Noto Sans CJK TC`；Format B 另支援大專院校傳統中文標楷體 `DFKai-SB` 模式，可由筆風檔 `linked_defaults.pdf_theme` 或 Phase 2 第三層定裝指定），嚴格建立 **3 階字重對比**（標題 Bold $\ge 1.35\times$ 內文 Regular）。
-- **五大產出格式字級與行寬權威基準表（與各 `*_spec.md` 100% 同步）**：
-
-| 產出格式 | 畫布 / 頁面基準 | 主標題 / 斷言字級 | 區塊 / 卡片標題 | 內文 / 條目字級 | 膠囊標籤 / 橫幅 / 註腳 | 單行最佳漢字寬度 / 幾何配置 |
-| :--- | :--- | :---: | :---: | :---: | :---: | :--- |
-| **Format A：知識圖譜** | `23.8" × 15.4"` 標準<br>*(依 2/3 列密度自適應 `12.6"–15.4"`, `240 DPI`)* | `25.0~26.0pt`<br>*(副標題 `14.5~15.5pt`)* | `16.6~17.5pt`<br>*(分區 `15.5~16.5pt`)* | **`16.0~16.5pt`**<br>*(行距 `1.48~1.52×`)* | **雙重小方框 `13.4~14.0pt`**<br>*(卡徽章＋連線膠囊同級；底橫幅 `14.5~16.2pt`)* | **~52～66 漢字/列點**（不刪內容，依卡寬自然折 2 滿行填滿 `88%–92%`；加寬走廊 `>= 6.2–7.4`；文案受 `Slot 5` 控制） |
-| **Format B：決策報告 & Medium 專欄** | `A4 直向`（[`document_report_spec.md`](document_report_spec.md) 印域寬 `189mm`，**禁嵌 Format A 圖譜**；簡圖採 `7.44"` 直向原生繪製）或 **Medium 原生 `.md`**（[`medium_column_spec.md`](medium_column_spec.md)） | `20~24pt`<br>*(Medium `#`)* | `12.0~14.5pt`<br>*(Medium `###`)* | **正文 `p`：`10.8~11.2pt`**<br>*(行高 `1.68~1.75`、段距 `~8px`)*<br>**表格/卡片 (`td`/`.card-body`/`.callout`)：`9.6~10.0pt`**<br>*(行高 `1.50~1.55`)*<br>**文體 5 Medium：正文 `<=1,600` 字（免 PDF）** | **圖說 `figcaption`：`9.0pt`**<br>*(行高 `1.45`)*<br>*(Medium 文末 `---` 參考資料來源不計入 1,600 字)* | **`38~44 漢字`**（通用 `<h2>` 殘餘空間自適應分頁 + 短/長表分流護欄；文體 5 禁用自訂 HTML/表格，每段 3～4 行適配手機閱讀；文案受 `Slot 3 & 4` 控制） |
-| **Format C：簡報投影片** | `16:9`（`13.333" × 7.5"`） | **Zone 1 斷言：`19.5~22pt`**<br>*(S0 首尾頁：`26~32pt`)* | `14.5~16.0pt` | **雙欄卡 (`S1`)：`13.0~14.5pt`**<br>**三/四欄卡 (`S2`/`S3`/`S7`)：`11.5~12.5pt`** | **左上章節膠囊：`9.5pt`**<br>**Zone 3 底部橫幅：`12.5~14.0pt`** | **雙欄：`22~26 漢字/行`**；**三/四欄：`16~19 漢字/行`**（每列槽 $\le 45$ 漢字，垂直置中；文案受 `Slot 4 & 7` 控制） |
-| **Format D：量化圖表** | 單面板 `12.0" × 6.4"`（直柱／折線）／`12.8" × 6.7"`（橫向點陣／分位數），主繪圖區占畫布高 `~62%–65%` (`300 DPI`)<br>*(Medium 模式限 1～2 張獨立單面板，禁 `ncols=2`)* | `16~20pt` | `12.5~13.5pt`<br>*(副標題 `11.2~12.5pt`)* | **`10.5~12.0pt`** | **`9.0~10.5pt`**<br>*(精簡 2 項來源或資料八四層結構底註)* | 依 [`quantitative_chart_spec.md`](quantitative_chart_spec.md) 編碼誠實三鐵律＋8 大元件檢核，按需開啟五大圖表家族（`chart_family1~5`）與第三層設計武器庫；微文案受 `Slot 6` 控制 |
-| **Format E：數據儀表板** | 響應式 Web ／ 單面板靜態匯出依 Format D（`12.0" × 6.4"` / `12.8" × 6.7"`, `~62%–65%`） ／ 全景圖 `24"×14"` (`300 DPI`) | `20~24px` (`pt`) | `14~16px` (`pt`) | **`12~14px`** (`10~12pt`) | **`11~12px`** (`9.0~9.5pt`) | 頂欄 3～4 張 KPI 卡 + 動態多視角畫布 + 明細表（UI 微文案與 Tooltip 受 `Slot 6` 控制） |
-
-- **漢字避頭尾標點保護（Kinsoku Shori）**：所有基於座標繪圖的渲染引擎（`matplotlib`）在強制折行後，必須先剝離續行前導全形/半形縮排（`\u3000 `），檢查次行首字是否為禁則標點（`，、。；：！？）》」】』％`）或前一行末字是否為開括號（`（《「【『`），將違規字元回推或下移後再重新掛回縮排。
+- **理論依據**：**字級與閱讀跳視效率研究（Dyson 2004; Tinker 1963）** 與 **前注意特徵處理（Preattentive Processing, Ware 2020）**。
+- **字體優先序**：統一使用無襯線正黑體（`Microsoft JhengHei`、`PingFang TC`、`Noto Sans CJK TC`；Format B 另支援大專院校傳統中文標楷體 `DFKai-SB` 模式，可由筆風檔 `linked_defaults.pdf_theme` 或 Phase 2 第三層定裝指定），並建立明確的 **3 階字重與尺度對比**（主標題 Bold $\ge 1.35\times$ 正文 Regular）。*(各格式專屬之畫布尺寸、物理字級下限與行寬標準，均以各自 `*_spec.md` 為唯一權威依據。)*
+- **漢字避頭尾標點保護（Kinsoku Shori）**：所有基於座標繪圖的渲染引擎（`matplotlib`）在強制折行後，必須先剝離續行前導全形/半形縮排（`\u3000 `），檢查次行首字是否為禁則標點（`，、。；：！？）》」】』％`）或前一行末字是否為開括號（`（《「【『`），將違規字元回推或下移後再重新掛回縮排；且在靜態圖與簡報中避免使用彩色 Emoji 以防微軟正黑體產生缺字方框（`□`）。
 
 ---
 
@@ -75,7 +65,7 @@
   1. **第一層：`chart_palettes`（數據圖表色票集 — 控制 Format D 量化圖表 ⇄ Format E 數據儀表板）**：
      - 支援於本機 `config/user_preferences.json`（範本見 [`../config/user_preferences.template.json`](../config/user_preferences.template.json)）中儲存並切換多組色票設定集（擁有者 `markyang20040112-source` 預設啟用專屬 `gephi_pastel_locked` 色票；外部使用者透過 `hcl_color_engine.build_palette_from_primary_hexes(hex_list)` 從任意 2～4 個主色經由 CIELAB 插值自動推導全套色階）。
      - 每組 `chart_palette` 包含：**無序類別固定 4 色（`qualitative_4`）**、**零透明度 `0.00` 極淺徽章底色（`light_badge_tints_4`）**、**4 組 5 階 CIELAB 循序色階（`sequential_scales`）**、**9 階對稱發散色階（`diverging_9`，中心冷灰 `#F5F6F7`）** 與 **特殊語義中性色（`discrete_neutrals`：長尾/背景基準灰 `#CBD5E1`、缺失值 `#D9D9D9`）**。
-     - Python 端透過 [`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)（`activate_chart_palette()`、`get_sequential_color()`、`get_diverging_color()`、`bind_qualitative_colors()`）動態取色，並可一鍵同步匯出至前端 [`../scripts/gephi_palette.js`](../scripts/gephi_palette.js)。
+     - Python 端透過 [`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)（`activate_chart_palette()`、`get_sequential_color()`、`get_diverging_color()`、`bind_qualitative_colors()`、`use_session_registry()` 寫入 `02_color_registry.json` 跨圖鎖定同實體色彩）動態取色，並可一鍵同步匯出至前端 [`../scripts/gephi_palette.js`](../scripts/gephi_palette.js)。
      - **嚴禁使用 Alpha 透明度（如 `rgba(...)` 或 `#RRGGBB20`）冒充深淺明度或徽章底色**！
   2. **第二層：`document_themes`（文件與簡報佈景主題 — 控制 Format A 知識圖譜、Format B PDF 報告、Format C PPTX 簡報）**：
      - 控制文件與簡報的主強調色（`primary_accent`）、柔光淺底色（`primary_tint`）、卡片邊框與首尾定錨深色背景（`bookend_dark_bg`），同時強制保留高對比文字（WCAG AA $\ge 4.5:1$）與紅／綠／琥珀語義警示色（`danger_accent`、`success_accent`、`warn_accent`）。

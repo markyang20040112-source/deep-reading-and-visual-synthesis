@@ -5,8 +5,8 @@
 ```python
 # === Family 1 Black-Box API Signatures (scripts/hcl_color_engine.py) ===
 from hcl_color_engine import (
-    plot_cleveland_dot,     # (ax, labels, values, top_n=1, bottom_n=1, highlight_indices=None, highlight_color=None, context_color="#94A3B8", stem_color="#CBD5E1", stem_linestyle="--", stem_linewidth=1.0, value_fmt="{:.1f}", value_offset_pts=7.0, sort_values=True, ascending=True, x_padding_ratio=0.14, **kwargs) -> Dict
-    plot_dumbbell,          # (ax, labels, val_start, val_end, label_start="期初 / 基準", label_end="期末 / 現況", color_start=None, color_end=None, bar_color="#CBD5E1", bar_linewidth=3.2, dot_size=90.0, show_delta=True, delta_fmt="{:+.1f}", sort_by="end", directed=False, **kwargs) -> Dict
+    plot_cleveland_dot,     # (ax, labels, values, top_n=1, bottom_n=1, highlight_indices=None, highlight_color=None, context_color="#94A3B8", stem_color="#CBD5E1", stem_linestyle="--", stem_linewidth=1.0, value_fmt="{:.1f}", value_offset_pts=7.0, sort_values=True, ascending=True, x_padding_ratio=0.14, category_color_map=None, **kwargs) -> Dict
+    plot_dumbbell,          # (ax, labels, val_start, val_end, label_start="期初 / 基準", label_end="期末 / 現況", color_start=None, color_end=None, bar_color="#CBD5E1", bar_linewidth=3.2, dot_size=90.0, show_delta=True, delta_fmt="{:+.1f}", sort_by="end", directed=False, category_color_map=None, **kwargs) -> Dict
     plot_slope_chart,       # (ax, labels, val_t1, val_t2, t1_label="期初 (T1)", t2_label="期末 (T2)", up_color=None, down_color=None, neutral_color="#94A3B8", value_fmt="{:.1f}", linewidth=2.4, dot_size=75.0, **kwargs) -> Dict
     plot_bullet,            # (ax, labels, actuals, targets, bands=None, band_colors=None, actual_color=None, target_color="#0F172A", bar_height=0.6, actual_height=0.28, value_fmt="{:.1f}", **kwargs) -> Dict
     add_badge_vline,        # (ax, x, badge_text, color=None, linestyle="--", linewidth=2.0, badge_y_axes=1.03, x_offset_pts=0.0, zorder=6, **kwargs) -> _BadgeVLineResult

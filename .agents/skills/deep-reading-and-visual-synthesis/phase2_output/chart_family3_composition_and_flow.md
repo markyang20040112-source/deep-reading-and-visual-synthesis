@@ -5,9 +5,9 @@
 ```python
 # === Family 3 Black-Box API Signatures (scripts/hcl_color_engine.py) ===
 from hcl_color_engine import (
-    plot_marimekko,          # (ax, categories, weights, sub_matrix_pct, sub_labels, colors=None, edgecolor="#FFFFFF", linewidth=1.6, show_cell_labels=True, min_pct_for_label=7.5, show_weight_header=True, weight_fmt="{:.0f}", **kwargs) -> Dict
+    plot_marimekko,          # (ax, categories, weights, sub_matrix_pct, sub_labels, colors=None, edgecolor="#FFFFFF", linewidth=1.6, show_cell_labels=True, min_pct_for_label=7.5, show_weight_header=True, weight_fmt="{:.0f}", category_color_map=None, **kwargs) -> Dict
     plot_waterfall,          # (ax, step_labels, deltas, is_total_flags=None, pos_color=None, neg_color=None, total_color="#334155", connector_color="#94A3B8", connector_linestyle="--", bar_width=0.56, value_fmt="{:+.1f}", total_fmt="{:.1f}", **kwargs) -> Dict
-    bind_qualitative_colors, # (categories, allow_top4_aggregation=False, other_label="其他項目合計") -> Dict[str, str]
+    bind_qualitative_colors, # (categories, allow_top4_aggregation=False, other_label="其他項目合計", registry=None) -> Dict[str, str]
     get_category_badge_tint, # (cat_or_key, category_color_map=None) -> str
     ink,                     # (bg_hex, dark_ink="#0F172A", light_ink="#FFFFFF") -> str
 )

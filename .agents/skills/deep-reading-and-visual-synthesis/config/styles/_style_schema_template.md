@@ -37,8 +37,8 @@ linked_defaults:
 - **破題句式與轉折連接詞習慣**：`[USER_LOCKED | SCENARIO_PRESET | AI_ADAPTIVE]` <定義段落開頭習慣（如數據反差破題、問題意識破題或結論先行）與轉折詞偏好>
 - **標點符號與粗體強調密度**：`[USER_LOCKED | SCENARIO_PRESET | AI_ADAPTIVE]` <定義是否允許驚嘆號、破折號與括號使用頻率，以及每段粗體重點句之密度上限>
 
-## Slot 4: `Structured_Blocks_And_Captions` (表格、卡片、公式導讀與圖說)
-- **條目開頭錨點格式 (`Anchor_Format`)**：`[USER_LOCKED | SCENARIO_PRESET | AI_ADAPTIVE]` <定義卡片與表格列點的開頭格式，例如：`● 【直覺白話動詞錨點】`、`● 【四字精確概念】`、或無括號直接陳述>
+## Slot 4: `Structured_Blocks_And_Captions` (Format B 報告表格／卡片、公式導讀與圖說)
+- **條目開頭錨點格式 (`Anchor_Format`)**：`[USER_LOCKED | SCENARIO_PRESET | AI_ADAPTIVE]` <定義 Format B 深度報告卡片與表格列點的開頭格式，例如：`● 【直覺白話動詞錨點】`、`● 【四字精確概念】`、或無括號直接陳述；註：Format C 簡報免除機械式括號錨點與固定三階套路，僅維持自然語氣>
 - **公式導讀與圖說 (`Caption`) 規範**：`[USER_LOCKED | SCENARIO_PRESET | AI_ADAPTIVE]` <定義數學/統計公式下方的導讀方式，以及 `<figure>` 圖說應包含的要素（如觀察重點、分析單位與限制）>
 
 ## Slot 5: `Knowledge_Diagram_Copy` (Format A 知識圖譜內部全部文字)
@@ -51,8 +51,8 @@ linked_defaults:
 - **X/Y 座標軸籤與分類標籤用詞**：`[USER_LOCKED | SCENARIO_PRESET | AI_ADAPTIVE]` <定義座標軸標籤是否標明單位、是否採用雙層 `【四字定位】` 或原始分類名稱>
 - **圖內標註氣泡 (`Callouts`)、基準線與網頁 Tooltip 解說語氣**：`[USER_LOCKED | SCENARIO_PRESET | AI_ADAPTIVE]` <定義圖內極值/中位數/平均數標註與網頁儀表板 KPI 卡、Tooltip 的文字口吻>
 
-## Slot 7: `Slide_Headline_And_Speaker_Notes` (Format C 簡報標題與上台講稿)
-- **Zone 1 斷言標題與 Zone 3 行動橫幅句型**：`[USER_LOCKED | SCENARIO_PRESET | AI_ADAPTIVE]` <定義投影片頂部 22～36 字斷言標題與底部 So-What 行動橫幅的語氣>
+## Slot 7: `Slide_Headline_And_Speaker_Notes` (Format C 簡報畫面文字與上台講稿)
+- **Zone 1 斷言標題、畫面自然短語與選配 Zone 3 橫幅**：`[USER_LOCKED | SCENARIO_PRESET | AI_ADAPTIVE]` <定義投影片頂部 22～36 字斷言標題、畫面精煉要點（自然貼合筆風人設與語氣，免除 `● 【...】` 機械括號錨點與固定三階展開）及選配底部 So-What 橫幅語氣>
 - **演講者備忘稿 (`Speaker_Notes`) 口語化口條**：`[USER_LOCKED | SCENARIO_PRESET | AI_ADAPTIVE]` <定義上台講稿的開場、轉場與口語說服節奏>
 
 ## Slot 8: `Notation_Terminology_And_Guardrails` (數值、單位、術語格式與禁用詞紅綠燈)

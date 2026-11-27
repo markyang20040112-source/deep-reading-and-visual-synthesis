@@ -56,6 +56,9 @@
 1. **【製圖前 6 大條件預填摘要表】**（直接由《資料說明書》與 `df_detail` 自動帶入：實際欄位與枚舉映射、單位、純明細 `df_detail` 真實 `Min/Max` vs. 全檔 `Min/Max`、極性同質性、合法缺失值 `NA` `#D9D9D9` 筆數、前處理血統／`df_other` 消歧方案）。
 2. **【每張圖表之診斷提案】**：
    - 清楚寫出：**「圖 X（檔名）：首選推薦圖型 ＋ 基於本次資料特徵（$N, T, G$）的診斷理由 ＋ 備選方案 ＋ 可搭配之第三層設計方向預告（如適合開啟資料八雙基準膠囊點陣，或適合開啟 RE:LAB 高光液面容器等）」**。
-3. **【推進節奏確認】**：**一次批次生成（`batch_generation`）** vs. **逐步導學互動模式（`step_by_step_tutor`：一次一張圖＋五步解說）**。
+3. **【Format D 內部推進節奏確認】**：**一次批次生成（`batch_generation`）** vs. **逐步導學互動模式（`step_by_step_tutor`：一次一張圖＋五步解說）**。*(註：本項設定**僅作用域為 Format D 統計圖表內部**的出圖與教學節奏，不影響三層拍板後之跨格式逐項接力確認佇列 `D ➔ A ➔ B ➔ C ➔ E`。)*
+4. **【跨 Format D ➔ C 結構分工提醒（若本案亦選定 Format C 簡報）】**：
+   - Format D 原圖優先服務閱讀／報告場景（`10.5–12.0pt` 座標刻度與完整標題底註），但**嚴禁為了兼顧總覽而把跨案例文字事實小卡塞進統計圖內**（跨案例重點留待 Format C 獨立為 `F5-B` 頂部指標橫帶頁或 `F1-C` 巨幅焦點宣言頁）。
+   - 若某張圖表預計掛載至 Format C 高視距（`min_font_pt >= 14.0pt`）或縮放 `< 0.80×` 投影片，於此先行註記連動需求；輪到 Format C 執行時由同繪圖腳本另存無重標、字級與實體吋數 1:1 適配之專用 **`*_slide.png`**（不覆寫 Format B/D 原圖，細則見 [`../quantitative_chart_spec.md`](../quantitative_chart_spec.md)）。
 
 **⏸️ 暫停關卡**：等待使用者確認 Format D / E（及同期選定的其他格式）第二層圖表組合、製圖條件與推進節奏後，立即將圖表選型、討論取捨理由與 `df_other` 消歧決策寫入 `02_phase2_generation_blueprint.md` 第 2 節，隨即讀取 **[`layer3_advisor_design_style_color.md`](layer3_advisor_design_style_color.md)** 進入最後一層（第三層）全域定裝！

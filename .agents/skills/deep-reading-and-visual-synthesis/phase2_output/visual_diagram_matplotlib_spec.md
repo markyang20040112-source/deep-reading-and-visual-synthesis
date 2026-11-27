@@ -2,7 +2,7 @@
 
 > **單一職責定位（Single Responsibility）**：本檔專責 **Format A（視覺化知識圖譜 `.png`）** 的多圖拆分策略、五大瑞士網格拓撲（T1～T5）、主幹分叉連線與 `matplotlib`（搭配 [`generate_mindmap.py`](../scripts/generate_mindmap.py) 引擎）座標級渲染工程守則，並收錄供 Format B 調用之 **A4 直向原生（`7.44"` / `189mm`）輕量流程簡圖輔助 API**。
 > - **前置選型與第三層設計武器庫連動**：第二層多圖分拆與拓撲診斷由 [`advisors/layer2_advisor_a_diagram.md`](advisors/layer2_advisor_a_diagram.md) 執行；若第三層（[`advisors/layer3_advisor_design_style_color.md`](advisors/layer3_advisor_design_style_color.md)）開啟模式 2（`editorial_narrative`：80/20 聚光燈高亮與瓶頸膠囊地標）請加載 **[`editorial_narrative_spec.md`](editorial_narrative_spec.md)**；若開啟模式 3（`bespoke_metaphor`：`0~100` 畫布冰山分層／階梯漏斗／雙向天平空間隱喻）請加載 **[`creative_armory/INDEX.md`](creative_armory/INDEX.md)**。
-> - **筆風與色彩底線**：全圖文字受 `Slot 1`、`Slot 4`、`Slot 5` 與 `Slot 8` 控制，分層色彩與組塊階層請見 [`visual_cognition_principles.md`](visual_cognition_principles.md)。
+> - **筆風與色彩底線**：全圖文字受 `Slot 1`、`Slot 4`、`Slot 5` 與 `Slot 8` 控制，分層色彩與共通原則請見 [`visual_cognition_principles.md`](visual_cognition_principles.md)（Format A 專屬之 `$4 \to 2 \to 3$` 三層組塊、字級與留白規範由本檔定義）。知識圖譜色彩預設服務視覺引導與結構語意（`GLOBAL_COLOR_CONTRACT`），不強制綁定 `02_color_registry.json`；僅當圖譜節點或圖例色標明確對應統計圖表中的同一資料實體、且該元件支援配色覆寫時，始可調用 `get_active_registry().hex_for(name)` 精準對齊。
 
 > [!CAUTION]
 > **核心鐵律**：嚴禁使用擴散生圖模型（Imagen / DALL-E）繪製中文字圖表！所有繁體中文知識圖譜必須 100% 由 Python `matplotlib` 精確渲染。此外，**嚴禁將高密度 Format A 知識圖譜（或 A4 橫向跨頁大圖）直接嵌入 Format B PDF 報告**——Format A 與 Format B 徹底解耦（Format B 內需架構流程圖時，一律改用 A4 直向原生輕量簡圖 API）。
@@ -13,7 +13,7 @@
 
 - **理論依據**：**前導組織體與宏觀結構理論（Ausubel 1968）** 與 **分段原則（Segmenting Principle, Sweller 2019）**。
 - **分圖與無損展開規範（Zero-Loss Multi-Canvas Expansion）**：
-  1. **單張畫布維持 3～4 個宏觀容器，嚴禁刪減分支內容**：為確保緊湊高可讀畫布（`23.8" × 12.6"–15.4"`）上 `16.0~16.5pt` 內文與 `13.4~14.0pt` 膠囊標籤的高可讀性，**單張圖譜**的頂層宏觀容器（Macro Zones）嚴格維持 3～4 個。當 Phase 1 Step 5 收斂出 $> 4$ 個分支（包含 `(a) 核心論證主幹分支` 與 `(b) 批判延伸與跨域遷移分支`）時，**絕對禁止為了塞入單張圖而刪減或壓縮任何延伸議題**，必須自動啟動多圖無損分流：
+  1. **單張全景圖譜 `$4 \to 2 \to 3$` 階層組塊結構與留白（$\ge 25\%$），嚴禁刪減分支內容**：為確保大面積高可讀畫布（`23.8" × 12.6"–15.4"`，約 `300～366 sq in`）上 `16.0~16.5pt` 內文與 `13.4~14.0pt` 膠囊標籤的高可讀性，**單張圖譜**的頂層宏觀容器（Macro Zones）嚴格維持 **$3 \sim 4$ 個** $\rightarrow$ 每個宏觀容器內收納 **$2 \sim 3$ 張子卡片（Cards）** $\rightarrow$ 每張子卡片內收納 **$2 \sim 3$ 條水平平行對齊之核心論點（Bullets）**，全圖整體留白維持 $\ge 25\%$。當 Phase 1 Step 5 收斂出 $> 4$ 個分支（包含 `(a) 核心論證主幹分支` 與 `(b) 批判延伸與跨域遷移分支`）時，**絕對禁止為了塞入單張圖而刪減或壓縮任何延伸議題**，必須自動啟動多圖無損分流：
   2. **編號 `01` 強制為「本篇文章整體內容架構主圖（Article Master Structure Map）」**：承載 Phase 1 收斂之 **`(a) 核心論證主幹分支（3～4 個核心支柱）`**，100% 聚焦於原文從「背景痛點 $\rightarrow$ 核心診斷 $\rightarrow$ 關鍵機會/支柱 $\rightarrow$ 治理與結論」的完整脈絡，先為讀者建立單篇全域心智地圖。
   3. **編號 `02` 為「核心機制／雙軌架構深挖圖（Core Mechanism Deep-Dive Map）」**：針對文中最高價值的單一工程機制、雙腦協同管線或決策框架進行 3×3 矩陣或雙軌匯流解剖。
   4. **編號 `03+` 為「批判延伸、失效邊界與跨域遷移專題圖（Critical Boundaries, Counter-Examples & Cross-Domain Synthesis Map）」**：專門承載 Phase 1 Step 3（隱含假設失效邊界、反方對立案例、組織阻力）與 Step 4（跨領域同構基模與進階追問）所產生的 **`(b) 批判延伸與跨域遷移分支`**，確保所有延伸思辨結晶獲得獨立、飽滿的視覺化呈現！
@@ -22,7 +22,7 @@
 
 ## 二、 五大動態拓撲版型與主幹分叉路由（5 Topologies & Hierarchical Trunk-Fork）
 
-繪圖前必須根據知識結構，從以下 5 種 `0～100` 瑞士網格拓撲中挑選最匹配的一種，並落實 [`visual_cognition_principles.md`](visual_cognition_principles.md) 的 **$4 \to 2 \to 3$ 階層組塊** 與 **當前啟用筆風設定檔（`Slot 1` 認知推進順序、`Slot 4` 條目開頭錨點格式、`Slot 5` 分區大標／卡片標題／有向箭頭謂詞膠囊 `Predicate_Verbs`／底部 Takeaway 橫幅語氣、以及 `Slot 8` 術語與禁用詞護欄）**：
+繪圖前必須根據知識結構，從以下 5 種 `0～100` 瑞士網格拓撲中挑選最匹配的一種，並落實本檔第一節的 **$4 \to 2 \to 3$ 階層組塊** 與 **當前啟用筆風設定檔（`Slot 1` 認知推進順序、`Slot 4` 條目開頭錨點格式、`Slot 5` 分區大標／卡片標題／有向箭頭謂詞膠囊 `Predicate_Verbs`／底部 Takeaway 橫幅語氣、以及 `Slot 8` 術語與禁用詞護欄）**：
 
 | 拓撲代號與名稱 | 適用知識結構 | `0～100` 瑞士網格空間配置與連線規範 |
 | :--- | :--- | :--- |

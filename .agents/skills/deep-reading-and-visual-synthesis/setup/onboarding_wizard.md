@@ -29,12 +29,12 @@
 當外部新使用者首次啟動本技能時，請先暫停主任務（但先將使用者已上傳之文章或 CSV 安全歸檔至 `reading_sessions/`），親切引導完成以下環境健檢與個人化設定：
 
 ### Step 0：分級環境健檢（Pre-Flight Environment Check）
-啟動精靈時，AI 先在背景靜默執行一筆 Python 探針檢查環境套件（`python -c "import matplotlib, numpy, pandas"` 等）與 CLI 工具，並依以下**三級分類**向使用者簡潔回報缺少項目（**嚴禁未經同意就強制下載龐大套件**）：
+啟動精靈時，AI 先在背景靜默執行一筆 Python 探針檢查環境套件（`python -c "import importlib.util; pkgs=['matplotlib','numpy','pandas','PIL','pptx','playwright','fitz','requests','youtube_transcript_api','pymupdf4llm','docx']; print({p: bool(importlib.util.find_spec(p)) for p in pkgs})"`，確認包含核心套件以及 `PIL`、`playwright`）與 CLI 工具，並依以下**三級分類**向使用者簡潔回報缺少項目（**嚴禁未經同意就強制下載龐大套件**）：
 
 | 工具分級 | 包含項目 | 什麼時候需要？ | 引導處置方式 |
 | :--- | :--- | :--- | :--- |
 | **1. 核心必備** | `Python 3.10+`、`matplotlib`、`numpy`、`pandas` | 幾乎所有模式都會用到（畫知識圖譜、統計圖表、CSV 三層分流） | 若有缺少，主動詢問：**「是否幫您一鍵執行 `pip install` 安裝這幾個核心套件？」** |
-| **2. 格式與擷取選配** | • `python-pptx`（Format C 簡報 `.pptx`）<br>• `playwright` ＋ Chromium（Format B `.pdf` 編譯與預覽轉圖）<br>• `requests`、`youtube-transcript-api`、`pymupdf4llm`、`python-docx`（Phase 1 網址／YouTube 字幕／PDF／Word 自動擷取） | **僅於輸出 `.pptx`/`.pdf` 或自動擷取外部連結／文件時需要**（未裝時網頁擷取仍可退回內建 `urllib + lxml` 保底） | 告知用途與缺少項目，由使用者決定**「現在一併安裝」**或**「先跳過，有需要該格式時再裝」** |
+| **2. 格式與擷取選配** | • `Pillow`（`PIL`：Format C 精準繁中字寬／斷行計算、方案 C `4×4` 接觸表與 `2×2` 高清網格預覽，以及 `300 DPI` PNG 輸出寫入）<br>• `python-pptx`（Format C 簡報 `.pptx` 生成與結構驗證）<br>• `playwright` ＋ Chromium（安裝套件後須再執行 `playwright install chromium`；兼用於 Format B `.pdf` 編譯／預覽轉圖，以及 Format C 模式 3 `Tier 3` `300 DPI` 透明底層渲染；未安裝時 Format C `Tier 3` 可自動退回本機 Chrome / Edge CLI 保底）<br>• `PyMuPDF`（`fitz`：PDF 頁面轉圖預覽與 PDF 文本擷取底層）、`requests`、`youtube-transcript-api`、`pymupdf4llm`、`python-docx`（Phase 1 網址／YouTube 字幕／PDF／Word 自動擷取） | **僅於輸出 `.pptx`/`.pdf`（含 Format C 精準字寬／網格品管／模式 3 `Tier 3`）或自動擷取外部連結／文件時需要**（`find_spec('playwright')` 為 `True` 時若需使用，請一併確認 Chromium 瀏覽器已下載；未裝 `playwright` 時 `Tier 3` 可退回本機 Chrome/Edge CLI；未裝擷取套件時網頁擷取可退回內建 `urllib + lxml` 保底） | 告知用途與缺少項目，由使用者決定**「現在一併安裝」**或**「先跳過，有需要該格式時再裝」** |
 | **3. 雲端協作（選用）** | `git`、`gh` (GitHub CLI) | 僅用於「跨電腦同步」或「Format E 發布線上網站」 | **明確告知「完全沒有 Git 或 GitHub 帳號也能 100% 正常使用本技能（本機存檔＋匿名 Webhook 自動回報靈感）」**，不強迫安裝 |
 
 ---
@@ -71,7 +71,7 @@
 ---
 
 ### Step 3：設定「Phase 2 三層決策確認關卡」之詢問偏好（`confirmation_gate`）
-詢問使用者在每次進入 Phase 2 生成成果前，針對 **確認關卡各設定維度（1. 產出格式範圍、2. 筆風檔、3. 顏色集、4. 圖表設計光譜／逐步導學互動節奏、5. 版面細節）**：
+詢問使用者在每次進入 Phase 2 生成成果前，針對 **確認關卡各設定維度（1. 產出格式範圍、2. 筆風檔、3. 顏色集、4. 圖表設計光譜／Format D 內部批次或逐步導學節奏、5. 版面與交付細節：PDF 字體、跨格式 `D ➔ A ➔ B ➔ C ➔ E` 逐項接力確認 `sequential_confirm`、Format C 方案 C 品管 `option_c_2x2_and_high_risk` 與 Git 同步）**：
 - **預設推薦（`"ask_every_time"`）**：每次生成前由 AI 列出建議清單向您確認後再動工（最靈活、零誤判）。
 - **鎖定預設免問（`"auto_apply_default": true`）**：若某幾個維度（例如顏色集或筆風檔）固定不變，可設為自動套用免問以加快速度。
 
@@ -89,5 +89,5 @@
 ## ✅ 二、 完成寫入與無縫接回主任務
 
 完成上述設定後：
-1. 將新使用者的專屬色票、筆風路徑、Phase 2 決策確認偏好、本機識別（有 Git 者寫入 `"bound_git_user"`；無 Git 者寫入 `"bound_local_user"` 與 `"bound_git_user": null`）與 **`"onboarding_completed": true`** 完整寫入本機 `config/user_preferences.json`（並確保移除任何 `owner_only: true` 條目）。
+1. 基於 [`../config/user_preferences.template.json`](../config/user_preferences.template.json)（Schema `14.0`），將新使用者的專屬色票、筆風路徑、Phase 2 決策確認偏好（含 `5_layout_and_delivery_details` 之 `default_delivery_cadence`、`default_delivery_queue` 與 `default_slide_qa_mode`）、本機識別（有 Git 者寫入 `"bound_git_user"`；無 Git 者寫入 `"bound_local_user"` 與 `"bound_git_user": null`）與 **`"onboarding_completed": true`** 完整寫入本機 `config/user_preferences.json`（並確保移除任何 `owner_only: true` 條目）。
 2. 立即關閉本精靈，無縫接回使用者原本上傳的文章或資料集任務（依 [`../SKILL.md`](../SKILL.md) 進入 Phase 1 或 Phase 2）！

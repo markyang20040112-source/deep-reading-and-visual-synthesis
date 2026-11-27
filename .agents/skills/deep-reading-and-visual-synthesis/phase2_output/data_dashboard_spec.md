@@ -13,7 +13,7 @@
 > 內部要生成哪些圖表，必須完全依據 **[`advisors/layer2_advisor_de_chart.md`](advisors/layer2_advisor_de_chart.md)** 之「資料結構四維快篩 × 8 大溝通意圖決策樹」動態選配；其單圖繪製與編碼防詐欺守則完全遵循 [`quantitative_chart_spec.md`](quantitative_chart_spec.md) 及對應之 `chart_family1~5` 規格檔。
 
 ### 1. 動態呈現方式與版面拓撲（Adaptive Presentation & Layout Topologies）
-遵循 **Shneiderman (1996) 視覺資訊尋求箴言（*"Overview first, zoom and filter, then details-on-demand"*）** 與 [`visual_cognition_principles.md`](visual_cognition_principles.md) 之 **$4 \to 2 \to 3$ 階層組塊原則**，依資料規模與使用者需求動態選擇呈現架構：
+遵循 **Shneiderman (1996) 視覺資訊尋求箴言（*"Overview first, zoom and filter, then details-on-demand"*）** 與 **儀表板頂層組塊與字級呼吸標準**（頂層 KPI 摘要卡控制在 `3～4` 張、主視覺區留白 $\ge 25\%$；Web 字級階梯：主標題 `20~24px`、區塊標題 `14~16px`、內文與軸籤 `12~14px`、膠囊註腳 `11~12px`），依資料規模與使用者需求動態選擇呈現架構：
 
 1. **【呈現模式 A：多視角切換互動工作台（Multi-Perspective Interactive Workbench）】**
    - **適用情境**：資料具備多個觀察切面（如同時含結構組成、跨實體排行、期比增減、分配密度或多指標切換）。
@@ -42,11 +42,12 @@
 ```javascript
 // === scripts/gephi_palette.js (window.GephiPalette) Black-Box API Signatures ===
 const {
-  PALETTE,                        // { categories, badgeTints, other: '#CBD5E1', na: '#D9D9D9', divergingCenter: '#F5F6F7', seqOrange, seqBlue, seqPink, seqGreen, divergingHex }
+  PALETTE,                        // { categories, badgeTints, other: '#CBD5E1', na: '#D9D9D9', divergingCenter: '#F5F6F7', seqOrange, seqBlue, seqPink, seqGreen, divergingHex, entityColors, entityAliases }
   THEMATIC_PRESETS,               // Built-in CIELAB thematic presets (milk_tea, forest_eco, ocean_blue, coffee_roast, pineapple_tropical, ...)
   labInterpolate,                 // (hexList, t) -> '#RRGGBB' (True CIELAB piecewise linear interpolation)
   getSequentialColor,             // (val, min, max, scale='orange', discreteSteps=false) -> '#RRGGBB' (Enforces (val - min)/(max - min) normalization)
   getDivergingColor,              // (val, center=0, maxSpan=1, discreteSteps=false) -> '#RRGGBB' (Symmetric 9-node mapping around #F5F6F7)
+  getEntityColor,                 // (name, fallback=null) -> '#RRGGBB' | null (Looks up pre-registered entityColors / entityAliases from 02_color_registry.json)
   bindQualitativeColors,          // (categories, allowTop4Aggregation=true, otherLabel='其他項目合計') -> { colorMap, badgeTintMap, top4Categories, otherCategories }
   getCategoryBadgeTint,           // (catOrKey, badgeTintMap) -> active PALETTE.badgeTints[0..3] | '#F1F5F9'
   buildPaletteFromPrimaryHexes,   // (hexList) -> customPaletteObj (CIELAB auto-derivation from 2~4 primary hex colors)
@@ -70,8 +71,9 @@ from verify_visual_outputs import verify_dashboard_bundle # (dashboard_dir) -> d
      --color-other: #CBD5E1; --color-na:   #D9D9D9; --div-zero: #F5F6F7;
    }
    ```
-2. **跨視角同名類別色彩鎖定（Global `categoryColorMap` Lock）**：
-   - 初始化時必須針對全資料集呼叫 `bindQualitativeColors(sortedCats, true)` 建立全域固定 `categoryColorMap` 與 `badgeTintMap`。當使用者切換地區分組、排序或頁籤時，必須從 `categoryColorMap[cat]` 取色，**嚴禁依當前畫面陣列 `idx` 重新計算 Top 4 或換色**。
+2. **跨視角同名類別色彩鎖定（Global `categoryColorMap` Lock & `02_color_registry.json` 連動）**：
+   - Python 端呼叫 `export_gephi_palette_js("./js/gephi_palette.js")` 時，若工作階段已啟用 `02_color_registry.json`（`use_session_registry(SESSION_DIR)`），會自動將 `entityColors` 與 `entityAliases` 嵌入產出的 `gephi_palette.js`。
+   - 前端初始化時必須針對全資料集呼叫 `bindQualitativeColors(sortedCats, true)` 建立全域固定 `categoryColorMap` 與 `badgeTintMap`，或直接以 `GephiPalette.getEntityColor(name)` 取用與 Format D 靜態圖完全相同的實體色碼。當使用者切換地區分組、排序或頁籤時，必須從 `categoryColorMap[cat]` 取色，**嚴禁依當前畫面陣列 `idx` 重新計算 Top 4 或換色**。
 3. **零 Alpha 透明度鐵律與 `0.00` 淺底色徽章（Zero-Alpha Badge Tints）**：
    - **嚴禁使用 Alpha 透明度（如 `rgba(...)` 或 `${hex}20`）冒充數值明度或表格膠囊底色**！明細表或 UI 內的類別標籤底色，必須一律使用對應循序色階的 `0.00` 極淺節點（直接調用 `getCategoryBadgeTint(cat, badgeTintMap)`）。
 4. **正確數值正規化公式、`>4` 類別展開防呆與原表 `df_other` 雙重語義消歧**：

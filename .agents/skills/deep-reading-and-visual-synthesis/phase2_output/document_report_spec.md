@@ -72,8 +72,9 @@ from verify_visual_outputs import (
 ```
 
 ### 1. A4 邊距擴張與舒適字級規格（Expansive Print Margins & Comfortable Typography）
-- **頁面尺寸與擴張印域**：`@page { size: A4 portrait; margin: 11mm 10.5mm 12mm 10.5mm; }`（可列印寬度 **`189mm`**）。
+- **頁面尺寸、擴張印域與單行最佳行寬**：`@page { size: A4 portrait; margin: 11mm 10.5mm 12mm 10.5mm; }`（可列印寬度 **`189mm`**，正文單行最佳漢字寬度 **`38～44` 漢字**，透過頁邊距與段落間距維持視覺呼吸感）。
 - **舒適字級與行高硬指標**：
+  - 報告主標題（`h1`）：**`20pt ~ 24pt Bold`**；章節與區塊標題（`h2`, `h3`）：**`12.0pt ~ 14.5pt Bold`**。
   - 正文段落（`p`）：**`10.8pt ~ 11.2pt`**（引擎預設 `10.9pt`），**行高 `1.68 ~ 1.75`**（預設 `1.70`），段距 `margin-bottom: ~8px`（`orphans: 3; widows: 3;`）。
   - 表格、卡片與收斂框（`table`, `td`, `.card-body`, `.callout`）：**`9.6pt ~ 10.0pt`**（引擎預設 `9.8pt`），**行高 `1.50 ~ 1.55`**（預設 `1.52–1.54`），舒適內距（`th, td { padding: 6px 8px; }`、`.card-body { padding: 8px 10px; }`、`.callout { padding: 8px 12px; }`）。
   - 圖說（`figcaption`）：**`9.0pt`**（行高 `1.45`）；表標題（`caption`）：`9.6pt Bold`。

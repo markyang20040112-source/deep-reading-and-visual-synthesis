@@ -57,7 +57,9 @@
       '#3B82F6', // 0.750 (+50%)
       '#234F97', // 0.875 (+75%)
       '#0D244C'  // 1.000 (+100% positive extreme)
-    ]
+    ],
+    entityColors: {},
+    entityAliases: {}
   };
 
   const SCALE_ALIASES = {};
@@ -262,11 +264,65 @@
     return labInterpolate(PALETTE.divergingHex, p);
   }
 
+  function normalizeEntityKey(name) {
+    if (name === null || name === undefined) return '';
+    let s = String(name).normalize('NFKC').trim();
+    s = s.replace(/[A-Za-z]+/g, m => m.toLowerCase());
+    const aliases = (PALETTE && PALETTE.entityAliases) || {};
+    const seen = new Set();
+    while (Object.prototype.hasOwnProperty.call(aliases, s) && !seen.has(s)) {
+      seen.add(s);
+      s = aliases[s];
+    }
+    return s;
+  }
+
+  function getEntityColor(name, fallback = null) {
+    if (name === null || name === undefined) return PALETTE.na;
+    const raw = String(name).trim();
+    const rawLower = raw.toLowerCase();
+    if (!raw || KNOWN_NA_TOKENS.has(rawLower) || KNOWN_NA_TOKENS.has(raw)) {
+      return PALETTE.na;
+    }
+    if (RESERVED_OTHER_TOKENS.has(raw) || RESERVED_OTHER_TOKENS.has(rawLower)) {
+      return PALETTE.other;
+    }
+    const key = normalizeEntityKey(raw);
+    const entityColors = (PALETTE && PALETTE.entityColors) || {};
+    if (Object.prototype.hasOwnProperty.call(entityColors, key)) {
+      return entityColors[key];
+    }
+    if (Object.prototype.hasOwnProperty.call(entityColors, raw)) {
+      return entityColors[raw];
+    }
+    return fallback;
+  }
+
   function bindQualitativeColors(categories, allowTop4Aggregation = false, otherLabel = '其他項目合計') {
     const colorMap = {};
     const badgeTintMap = {};
-    const uniqueValid = [];
+    const top4Categories = [];
     const otherCategories = [];
+    const unregisteredUnique = [];
+    const unregisteredSeen = new Set();
+
+    const catHexNorm = PALETTE.categories.map(c => normalizeHex(c));
+    const entityColors = (PALETTE && PALETTE.entityColors) || {};
+    const usedEntityHexes = new Set(
+      Object.values(entityColors).map(c => {
+        try { return normalizeHex(c); } catch (_) { return String(c).toUpperCase(); }
+      })
+    );
+
+    const freeSlots = [];
+    PALETTE.categories.forEach((hex, idx) => {
+      if (!usedEntityHexes.has(catHexNorm[idx])) {
+        freeSlots.push({
+          hex,
+          tint: (PALETTE.badgeTints && PALETTE.badgeTints[idx]) || '#F1F5F9'
+        });
+      }
+    });
 
     (categories || []).forEach(rawCat => {
       if (rawCat === null || rawCat === undefined) {
@@ -290,22 +346,37 @@
         }
         return;
       }
-      if (!uniqueValid.includes(cat)) {
-        uniqueValid.push(cat);
+      const registeredHex = getEntityColor(cat, null);
+      if (registeredHex !== null) {
+        colorMap[cat] = registeredHex;
+        const normReg = normalizeHex(registeredHex);
+        const slotIdx = catHexNorm.indexOf(normReg);
+        badgeTintMap[cat] = slotIdx >= 0
+          ? ((PALETTE.badgeTints && PALETTE.badgeTints[slotIdx]) || '#F1F5F9')
+          : (BADGE_TINT_LOOKUP[normReg] || '#F1F5F9');
+        if (!top4Categories.includes(cat)) {
+          top4Categories.push(cat);
+        }
+        return;
+      }
+      if (!unregisteredSeen.has(cat)) {
+        unregisteredSeen.add(cat);
+        unregisteredUnique.push(cat);
       }
     });
 
-    if (uniqueValid.length > 4 && !allowTop4Aggregation) {
+    if (unregisteredUnique.length > freeSlots.length && !allowTop4Aggregation) {
       throw new Error(
-        `Unique category count (${uniqueValid.length}) exceeds the 4 locked qualitative colors. ` +
+        `Unique category count exceeds the 4 locked qualitative colors (${unregisteredUnique.length} new vs ${freeSlots.length} free slot(s)). ` +
         `Either confirm expansion mode or enable Smart 4+1 aggregation (allowTop4Aggregation=true).`
       );
     }
 
-    uniqueValid.forEach((cat, idx) => {
-      if (idx < 4) {
-        colorMap[cat] = PALETTE.categories[idx];
-        badgeTintMap[cat] = PALETTE.badgeTints[idx];
+    unregisteredUnique.forEach((cat, idx) => {
+      if (idx < freeSlots.length) {
+        colorMap[cat] = freeSlots[idx].hex;
+        badgeTintMap[cat] = freeSlots[idx].tint;
+        top4Categories.push(cat);
       } else {
         colorMap[cat] = PALETTE.other;
         badgeTintMap[cat] = '#F1F5F9';
@@ -323,7 +394,7 @@
     return {
       colorMap,
       badgeTintMap,
-      top4Categories: uniqueValid.slice(0, 4),
+      top4Categories: top4Categories.slice(0, 4),
       otherCategories
     };
   }
@@ -449,6 +520,12 @@
     if (Array.isArray(div9) && div9.length > 0) {
       PALETTE.divergingHex = div9.slice();
     }
+    if (customPalette.entityColors && typeof customPalette.entityColors === 'object') {
+      PALETTE.entityColors = { ...customPalette.entityColors };
+    }
+    if (customPalette.entityAliases && typeof customPalette.entityAliases === 'object') {
+      PALETTE.entityAliases = { ...customPalette.entityAliases };
+    }
     rebuildLookups();
     return PALETTE;
   }
@@ -506,6 +583,7 @@
     labInterpolate,
     getSequentialColor,
     getDivergingColor,
+    getEntityColor,
     bindQualitativeColors,
     getCategoryBadgeTint,
     buildPaletteFromPrimaryHexes,

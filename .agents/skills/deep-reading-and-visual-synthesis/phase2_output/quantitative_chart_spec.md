@@ -36,10 +36,10 @@
 ### 2. 出版級圖表 8 大元件完整度檢核表（Chart Anatomy Checklist — 資料四、八）
 每次生成圖表後、驗收前，依序核對以下 8 項幾何與元件完備性：
 1. **圖表外框與留白呼吸區**：整體留白 $\ge 25\%$，嚴禁過高畫布上下空洞。
-2. **頂部斷言主副標題區**：主標題（`16~17.5pt Bold`）為完整數據結論句；副標題（`11.2~12.5pt`）交代樣本、單位、口徑與排序邏輯。
+2. **頂部斷言主副標題區**：主標題（`16~20pt Bold`，預設 `16.5pt`）為完整數據結論句；副標題（`11.2~12.5pt`）交代樣本、單位、口徑與排序邏輯。
 3. **頂部圖例或基準線膠囊區**：無框單列圖例（`frameon=False`）或資料八 `add_badge_vline` 頂部帶框圓角膠囊（確保不撞及副標題）。
 4. **主繪圖核心區**：單面板佔畫布總高約 **`62%–65%`**。
-5. **極簡去邊框座標軸與零旋轉標籤**：隱藏頂部與右側軸線（`despine_axes`），**中文標籤 100% 水平零旋轉（禁止斜放 45°/90°）**。
+5. **極簡去邊框座標軸、字級階層與零旋轉標籤**：隱藏頂部與右側軸線（`despine_axes`），區塊／軸標題 `12.5~13.5pt`、刻度與資料標籤 **`10.5~12.0pt`**，**中文標籤 100% 水平零旋轉（禁止斜放 45°/90°）**。
 6. **背景極淡輔助基準格線**：`#CBD5E1` 細虛線（`alpha=0.45~0.65`），絕不搶奪主視覺。
 7. **資料數列與直接數據標註**：主角極值聚光燈高亮，節點或長條末端直接標註數值並採白色外框避讓；**雙序列差距比較必守共用基線**，多條折線右側末端直接標籤應在 X 軸右側預留乾淨留白對齊排列（嚴防與線段或邊界相撞）。
 8. **底部官方來源與方法論圖註**：預設採雙行精簡官方來源（1. 官方資料集網址、2. 資料涵蓋期間）；若開啟編輯室模式則呼叫 `add_editorial_footer` 繪製四層結構化底註（`資料補充 / 註 / 來源 / 提醒`）。
@@ -114,20 +114,27 @@ from hcl_color_engine import (
     build_palette_from_primary_hexes,   # (hex_list, palette_id="custom_cielab_palette", palette_name="Custom CIELAB Palette", sync_js_path=None) -> Dict
     derive_thematic_palette,            # (theme_preset_or_hex, sync_js_path=None, activate=False, **kwargs) -> Dict
     activate_chart_palette,             # (palette_dict_or_id, prefs_path=None) -> Dict
-    export_gephi_palette_js,            # (output_path, palette_dict=None) -> str
+    export_gephi_palette_js,            # (output_path, palette_dict=None, registry=None) -> str
     load_and_split_csv,                 # (csv_path, numeric_cols=None, label_cols=None, subtotal_keywords=None, other_keywords=None, known_na_tokens=None) -> (df_raw, df_detail, df_other, df_subtotal, stats_report)
     ink,                                # (bg_hex, dark_ink="#0F172A", light_ink="#FFFFFF") -> str (WCAG AA ink contrast)
     get_sequential_color,               # (value, v_min, v_max, scale="orange", discrete_steps=False, scale_key=None) -> str
     get_diverging_color,                # (value, center=0.0, max_span=None, discrete_steps=False) -> str
-    bind_qualitative_colors,            # (categories, allow_top4_aggregation=False, other_label="其他項目合計") -> Dict[str, str]
+    bind_qualitative_colors,            # (categories, allow_top4_aggregation=False, other_label="其他項目合計", registry=None) -> Dict[str, str]
     get_category_badge_tint,            # (cat_or_key, category_color_map=None) -> str
     despine_axes,                       # (ax, grid_axis="y", grid_color="#CBD5E1", grid_linestyle="--", grid_alpha=0.65, spine_color="#CBD5E1") -> None
+    # --- Session Category Color Registry (Cross-Chart & Cross-Format Color Lock) ---
+    # 亦可在腳本頂部直接 `from color_registry import use_session_registry, get_active_registry, CategoryColorRegistry, RegistryFullError`
+    use_session_registry,               # (session_dir) -> CategoryColorRegistry (載入/建立 <session_dir>/02_color_registry.json 並設為作用中登記表)
+    get_active_registry,                # () -> CategoryColorRegistry | None
+    clear_active_registry,              # () -> None
+    CategoryColorRegistry,              # 類別色彩登記表類別（assign / pin / add_alias / hex_for / tint_for / color_map / audit）
+    RegistryFullError,                  # ValueError 子類：超過 4 色槽位且未開啟 4+1 聚合時拋出
     # --- Chart Families & Distribution Helpers ---
-    plot_cleveland_dot,                 # (ax, labels, values, top_n=1, bottom_n=1, highlight_indices=None, highlight_color=None, context_color="#94A3B8", stem_color="#CBD5E1", stem_linestyle="--", stem_linewidth=1.0, value_fmt="{:.1f}", value_offset_pts=7.0, sort_values=True, ascending=True, x_padding_ratio=0.14, **kwargs) -> Dict
-    plot_dumbbell,                      # (ax, labels, val_start, val_end, label_start="期初 / 基準", label_end="期末 / 現況", color_start=None, color_end=None, bar_color="#CBD5E1", bar_linewidth=3.2, dot_size=90.0, show_delta=True, delta_fmt="{:+.1f}", sort_by="end", directed=False, **kwargs) -> Dict
+    plot_cleveland_dot,                 # (ax, labels, values, top_n=1, bottom_n=1, highlight_indices=None, highlight_color=None, context_color="#94A3B8", stem_color="#CBD5E1", stem_linestyle="--", stem_linewidth=1.0, value_fmt="{:.1f}", value_offset_pts=7.0, sort_values=True, ascending=True, x_padding_ratio=0.14, category_color_map=None, **kwargs) -> Dict
+    plot_dumbbell,                      # (ax, labels, val_start, val_end, label_start="期初 / 基準", label_end="期末 / 現況", color_start=None, color_end=None, bar_color="#CBD5E1", bar_linewidth=3.2, dot_size=90.0, show_delta=True, delta_fmt="{:+.1f}", sort_by="end", directed=False, category_color_map=None, **kwargs) -> Dict
     plot_slope_chart,                   # (ax, labels, val_t1, val_t2, t1_label="期初 (T1)", t2_label="期末 (T2)", up_color=None, down_color=None, neutral_color="#94A3B8", value_fmt="{:.1f}", linewidth=2.4, dot_size=75.0, **kwargs) -> Dict
     plot_bullet,                        # (ax, labels, actuals, targets, bands=None, band_colors=None, actual_color=None, target_color="#0F172A", bar_height=0.6, actual_height=0.28, value_fmt="{:.1f}", **kwargs) -> Dict
-    plot_marimekko,                     # (ax, categories, weights, sub_matrix_pct, sub_labels, colors=None, edgecolor="#FFFFFF", linewidth=1.6, show_cell_labels=True, min_pct_for_label=7.5, show_weight_header=True, weight_fmt="{:.0f}", **kwargs) -> Dict
+    plot_marimekko,                     # (ax, categories, weights, sub_matrix_pct, sub_labels, colors=None, edgecolor="#FFFFFF", linewidth=1.6, show_cell_labels=True, min_pct_for_label=7.5, show_weight_header=True, weight_fmt="{:.0f}", category_color_map=None, **kwargs) -> Dict
     plot_waterfall,                     # (ax, step_labels, deltas, is_total_flags=None, pos_color=None, neg_color=None, total_color="#334155", connector_color="#94A3B8", connector_linestyle="--", bar_width=0.56, value_fmt="{:+.1f}", total_fmt="{:.1f}", **kwargs) -> Dict
     add_halo_vline,                     # (ax, x, color=None, linestyle="--", linewidth=2.2, halo_color="#FFFFFF", halo_width=4.8, label=None, zorder=5) -> Line2D
     annotate_floor_extreme,             # (ax, x, y_floor=0.0, label_text="", dot_color=None, dot_size=46.0, arrow_height_ratio=0.14, text_offset_x=0.0, fontsize=9.5, zorder=6, label=None, color=None) -> Annotation
@@ -146,8 +153,17 @@ from hcl_color_engine import (
 )
 from verify_visual_outputs import (
     check_matplotlib_text_collisions,   # (fig, shrink_pt=1.5, print_report=True) -> dict (Zero-token text-on-text & canvas bounds pre-check before view_file)
+    verify_color_registry,              # (session_dir) -> dict (CLI: --verify-colors <session_dir>)
 )
 ```
+
+### 跨圖類別配色登記表（`02_color_registry.json`）
+為確保同一資料實體（如「台北」）在不同圖表、不同排序與不同腳本間永遠維持同一色彩：
+1. **腳本頂部一行啟用**：每個繪圖腳本最上方呼叫 `use_session_registry(SESSION_DIR)`（會自動載入或建立 `<session_dir>/02_color_registry.json`）。
+2. **`bind_qualitative_colors()` 自動連動**：只要工作階段登記表處於啟用狀態，`bind_qualitative_colors()` 會自動透過登記表依「先查表、未登記者取最小空槽位」分配並持久化儲存，不再因各圖排序先後不同而換色。
+3. **繪圖函式只查不寫**：`plot_cleveland_dot()`、`plot_dumbbell()`、`plot_marimekko()` 支援 `category_color_map` 參數且僅執行唯讀查詢（`hex_for()`），不會擅自登記時間軸等非類別標籤；新類別登記必須顯式透過 `bind_qualitative_colors()` 或 `registry.assign()` 完成。
+4. **純語意編碼不受影響**：斜坡圖漲跌色、瀑布圖／有向啞鈴圖正負方向色、聚光燈高亮對比與模式 3 創意隱喻圖等純語意或設計性配色，仍維持各自語意規則，不寫入或覆寫登記表。
+5. **交稿前色彩一致驗證**：完成圖表與儀表板輸出後，執行 `python .agents/skills/deep-reading-and-visual-synthesis/scripts/verify_visual_outputs.py --verify-colors "<session_dir>"`，確認登記表結構與前端 `gephi_palette.js` 內嵌 `entityColors` 完全一致。
 
 1. **強制三層互斥分流 `assert` 與兩段式安全轉型**：
    - 一律透過 `load_and_split_csv()`（探測 `utf-8-sig` $\rightarrow$ `utf-8` $\rightarrow$ `cp950` $\rightarrow$ `big5`，初始 `dtype=str` 防代碼前置零遺失，先映射已知合法缺漏為 `np.nan`，再剝離 `,` 執行嚴格數值轉型）拆分並執行：
@@ -173,3 +189,9 @@ from verify_visual_outputs import (
    - Windows `Microsoft JhengHei` 遇彩色 Emoji 必現缺字方框（`□`），圖表內一律禁止 Emoji，僅用原生幾何符號（`▲`、`●`、`■`、`★`）。
    - **嚴禁拼接字元長箭頭（如 `──→`、`━━→`）**：在 `Microsoft JhengHei` 中全形破折號與箭頭字元基線與筆寬不齊，必生視覺斷裂缺口；圖內有向指引一律採 Matplotlib 原生向量箭頭（`arrowstyle="-|>"`），文字軸籤或圖例僅用單一標準箭頭符號 `→`。
    - 底部資料來源**必須寫原始官方發布機關與資料集正式名稱**（嚴禁寫成「資料來源：資料說明書」），精簡版只需附 **1. 官方資料集網址、2. 資料涵蓋期間**。
+4. **跨 Format D ➔ C 簡報專用無重標縮圖再生條款（`*_slide.png` — 絕不覆寫原圖）**：
+   - 上述標準畫布（`(12.0, 6.4)` / `(12.8, 6.7)`、`10.5–12.0pt` 刻度、含完整主副標題與底註）優先服務 Format B 深度報告與 Medium 專欄閱讀。
+   - 若同份統計圖後續需掛載至 **Format C 投影片（`F5-A` / `F1-C`）**，且符合以下**任一條件**——① **貼入投影片後縮放比 `< 0.80×`**（或實效 PPI `< 150` 恐生點陣螞蟻字）、② **簡報屬高視距設定（`min_font_pt >= 14.0pt`）**、或 ③ **原圖含與簡報 Zone 1 重複之斷言大標、雙重來源底註或跨案例文字事實小卡**——必須從**同一份繪圖腳本**另存一張專供簡報掛載之 **`<原圖檔名>_slide.png`**（嚴禁覆寫 Format B/D 原圖）：
+     1. 依投影片目標貼圖框實體吋數 **1:1 設定 `figsize`**，並隨簡報 `min_font_pt` 同步放大座標軸與資料標籤字級；
+     2. **徹底剔除圖內重複斷言大標、雙重底註與跨案例文字事實小卡**（僅保留純淨數據繪圖、精煉軸籤與必要圖內直接標註；跨案例文字總覽交由 Format C 獨立成 `F5-B` 頂部指標橫帶或 `F1-C` 頁，詳見 [`presentation_slide_spec.md`](presentation_slide_spec.md)）；
+     3. 雙版本共享完全相同的原始數據過濾與統計口徑，確保跨格式數字 100% 一致。

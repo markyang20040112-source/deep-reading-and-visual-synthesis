@@ -1,101 +1,192 @@
-# 斷言-證據式簡報設計與原生向量排版規範（Format C: Presentation Slide Spec）
+# 16:9 視距自適應簡報設計與規格驅動渲染規範（Format C: Presentation Slide Spec — 路 B 升級版）
 
-> **單一職責定位（Single Responsibility）**：本檔專責 **Format C（16:9 高階主管簡報 `.pptx`）** 的斷言-證據（Assertion-Evidence）三區架構、首尾定錨與中段雙因子動態配頁、**防審美疲勞之八大版型指派與防撞車仲裁引擎（`S0`～`S7`）** 與 `python-pptx` 原生向量繪製規範。
-> - **前置分鏡與第三層設計武器庫連動**：第二層四幕劇分鏡與版型配當由 [`advisors/layer2_advisor_c_slide.md`](advisors/layer2_advisor_c_slide.md) 執行；若第三層（[`advisors/layer3_advisor_design_style_color.md`](advisors/layer3_advisor_design_style_color.md)）開啟模式 2（`editorial_narrative`：單一巨幅數據衝擊頁與雙基準線對決）請加載 **[`editorial_narrative_spec.md`](editorial_narrative_spec.md)**；若開啟模式 3（`bespoke_metaphor`：主題場景化容器／漏斗／天平向量視覺與乾淨主題精靈圖標點綴）請加載 **[`creative_armory/INDEX.md`](creative_armory/INDEX.md)**。
-> - **筆風與色彩底線**：Zone 1 斷言標題、Zone 2 卡片錨點、Zone 3 行動橫幅與 `Speaker_Notes` 講稿受 `Slot 1`、`Slot 4`、`Slot 7` 與 `Slot 8` 控制，分層色彩與組塊階層請見 [`visual_cognition_principles.md`](visual_cognition_principles.md)。
-
----
-
-## 一、 單頁投影片「三區黃金結構」與斷言-證據核心法則（3-Zone Architecture）
-
-- **理論依據**：**斷言-證據簡報架構（Assertion-Evidence Approach, Alley & Neeley 2005）**、**前注意聚光燈法則（Knaflic 2015）** 與 **冗餘效應消除（Mayer 2009）**。全面禁止傳統純文字項目符號頁（Zero Raw Bullet-Point Slides），每頁 `16:9`（`13.333" × 7.5"`）嚴格切分為三區：
-
-1. **【Zone 1：頂部斷言區（Top 15% Height, `y = 0.0"` to `1.18"`）】**
-   - **頂部章節導航膠囊「剛剛好貼合字寬（Exact Text-Hug Sizing）」**：左上角深藍色章節膠囊既不可比文字短（穿框），也不可比文字長出一大截。必須使用微軟正黑體 `9.5pt` 精確字寬公式：
-     $$\text{pill\_w} = \frac{9.5}{72.0} \times (1.00 \times \text{CJK\_Chars} + 0.50 \times \text{ASCII\_Chars}) + 0.22\text{"}$$
-     搭配文字水平置中（`PP_ALIGN.CENTER`）與左右對稱微內距，讓膠囊完美貼合字體長度。
-   - **Zone 1 垂直三段等距呼吸配置**：
-     1. 頂部留白 `0.15"` $\rightarrow$ 章節膠囊（`top = 0.15"`, `height = 0.28"`, 底邊 `0.43"`）。
-     2. 中段呼吸間距 `0.15"`（嚴禁將大標題緊貼膠囊底邊）。
-     3. **完整句子結論斷言標題（Sentence Assertion Headline）**：配置於 `top = 0.58"`, `height = 0.44"`，強制設定 `vertical_anchor = MSO_ANCHOR.MIDDLE`，底部留白 `0.16"`。字數嚴格控制在 **1～2 行、22～36 漢字**（`19.5pt ~ 22pt Bold`），直接陳述該頁「主詞 + 動詞 + 因果/數據結論」。
-2. **【Zone 2：中央視覺證據畫布（Middle 75% Height, `y = 1.32"` to `6.55"`）】**
-   - **禁止塞入縮小版心智圖圖片**：嚴禁將高密度心智圖直接縮小貼入投影片（會導致字體過小看不清）。所有畫面必須使用 `python-pptx` 原生向量幾何圖形與大字級卡片，或嵌入專為簡報比例裁切的高解析度單面板量化圖表（`300 DPI`）。
-   - **依欄數物理幾何分級之內文字級下限（Column-Count Calibrated Typography）**：
-     - **雙欄並排卡片（`S1` 不對稱雙欄，單卡寬度 $\approx 5.4"\sim 6.6"$）**：內文字級鎖定 **`13.0pt ~ 14.5pt`**（每行容納 `22～26` 漢字）。
-     - **三欄或四欄並排卡片（`S2` 三支柱、`S3` 四步管線、`S7-A/B` 圖卡複合，單卡寬度 $\approx 2.85"\sim 4.65"$）**：內文字級鎖定 **`11.5pt ~ 12.5pt`**（每行容納 `16～19` 漢字，**每個水平列槽嚴格控制在 $\le 45$ 漢字／2～3 行以內**，杜絕文字溢位穿框）。
-   - **並排卡片內部「水平平行對齊列槽（Parallel Row Panels）」**：當畫面有 2 欄、3 欄或 4 欄卡片並排時，嚴禁將所有列點塞進單一文字框任其高低錯位；必須調用 `draw_parallel_row_cards()` 將每張卡片內部切分為**相同 $Y$ 座標與等高之獨立列槽（列槽三階展開邏輯與開頭錨點受當前筆風設定檔 `Slot 1` 與 `Slot 4` 控制）**，並在每個列槽內垂直置中（`MSO_ANCHOR.MIDDLE`），確保跨卡橫向 100% 平行對齊。
-   - **Knaflic 80/20 聚光燈配額（Preattentive Spotlight）**：同頁的 2～4 個視覺區塊中，**最多僅允許 1 個核心破局區塊使用高彩度強調色邊框/頂帶**，其餘背景與對照區塊一律退居低飽和結構灰藍（`#64748B` / `#CBD5E1`），避免滿頁五顏六色造成視覺疲勞，確保聽眾於 $200\text{ms}$ 內鎖定焦點。
-3. **【Zone 3：底部行動啟示橫幅（Bottom 10% Height, `y = 6.68"` to `7.22"` — 受筆風檔 `Slot 7` 控制）】**
-   - 全寬單行高對比橫幅（**`12.5pt ~ 14.0pt Bold`**），依筆風檔 `Slot 7` 句型規範一句話點出本頁證據對決策者或研究者的具體行動意義／解讀邊界（*So-What Takeaway*）。
-   - **講者備忘稿（Speaker Notes — 受筆風檔 `Slot 7` 控制）雙通道分離與 AST 口語轉場鎖定**：**不設整頁總字數、段落數或框數硬上限（以論點質量與零刪減為最優先；若單一核心容器或同框多段並列為該頁最佳視覺解，完全允許）**，惟每個文字框之實際字級折行總高度不得超出該框自身物理高度（零穿框），並將完整口語推演、類比解釋與轉場台詞一律依筆風檔 `Slot 7` 口條寫入 `slide.notes_slide.notes_text_frame`（`add_speaker_notes()`）。**嚴禁將第二層分鏡之 `AST（Before ➔ After）` 標語直接畫入投影片畫面（Zone 1/2/3）以免畫面雜亂**；撰寫每頁 `Speaker_Notes` 時，**開頭第一句**須自然承接該頁 `Before`（呼應上一頁留下的疑問或痛點），中段推演視覺證據，**結尾最後一句**收斂至 `After` 並替下一頁鋪墊懸念。
+> **單一職責定位（Single Responsibility）**：本檔為 **Format C（16:9 視距自適應簡報 `.pptx` — 路 B 升級版單一自適應架構）** 的唯一終端實作總規範。涵蓋 DISCAS 視距反推字級底線與封頂收斂階梯、五步內容優先流程（含 `Step 3` 文案凍結至 `02c_slide_spec_lock.json` 與 `Step 4A` 純文字配置對齊表）、**五大簡報版型家族（13 精煉版型：1 首尾定錨 ＋ 12 內容與衝擊版型）**、模組 1～3（`TOP` 自然流式堆疊、去方塊語彙、圖表 1:1 純粹性）、淨新增 Anti-AI-Slop 底線、方案 C 三階內部品管與黑盒引擎 API 契約。
+> - **跨檔分工與零重複邊界**：Step 1 定位與單一議題章節規劃見 [`advisors/layer2_advisor_c_slide.md`](advisors/layer2_advisor_c_slide.md)；Step 2 筆風、設計模式與配色（含模式 3 `Tier 1/2/3` 推薦與 Topic Art Direction DNA 卡）見 [`advisors/layer3_advisor_design_style_color.md`](advisors/layer3_advisor_design_style_color.md)；跨格式共通底層定律（表達三支柱、零元語言、事實因果保真、正黑體與 75-20-5 雙層色票）見 [`visual_cognition_principles.md`](visual_cognition_principles.md)。若開啟模式 2 加讀 [`editorial_narrative_spec.md`](editorial_narrative_spec.md)；開啟模式 3 加讀 [`creative_armory/INDEX.md`](creative_armory/INDEX.md)（按需單開 [`diagram_spatial_metaphors.md`](creative_armory/cases/03_spatial_and_thematic/diagram_spatial_metaphors.md) 或 [`thematic_palette_frame.md`](creative_armory/cases/03_spatial_and_thematic/thematic_palette_frame.md)）。
+> - **筆風語氣自然穿透（解除機械套路綁定）**：簡報文字自然遵循選定筆風檔之人設語氣、標題力度、講稿口條與禁用詞護欄（`Slot 1 / 7 / 8`），**全面廢除對 `Slot 1`「`淺→中→深` 三格機械展開」與 `Slot 4`「每條強制掛 `● 【粗體直覺白話錨點】`」的硬性綁定**。
 
 ---
 
-## 二、 防審美疲勞核心：三階版型指派與防撞車仲裁引擎（3-Tier Layout Dispatch Engine）
+## 一、 路 B 升級版：DISCAS 視距自適應字級與五步內容優先管線
 
-- **理論依據**：**相容性原則（Compatibility Principle, Kosslyn 2007：版型幾何必須與論點內在邏輯同構）** 與 **視覺習慣化防禦（Visual Habituation Defense, Mackworth 1948：相鄰頁變換空間拓撲以維持前注意警覺度）**。
-- **AI 決定每一頁使用何種排版的「三階段控制流程」**：
+### 1. DISCAS 繁中視距地板對照表與「地板 ≠ 起跳線」原則
+依據 **ANSI/AVIXA V202.01（DISCAS）**，`16:9` 畫布（`13.333" × 7.5"` = `540pt` 高，繁中無襯線黑體實字高係數 `0.85× em`）由最遠觀眾視距 $D$（公尺）與畫面高度 $H$（公尺）反推全簡報不可跌破的最小正文字級硬底線：
 
-### 階段 1：首尾位置鎖定（Position Lock）
-- **第 1 頁（封面頁）** 與 **最後 1 頁（峰終結尾頁）** $\rightarrow$ 無條件鎖定為 **`S0`（深色首尾定錨型）**。
+$$\text{min\_font\_pt} = \max\left(12.0,\ \text{round}\left(3.18 \times \frac{D}{H}\right)\right)$$
 
-### 階段 2：論點語義與證據型態對映（Semantic-to-Layout Dispatch Table）
-中段每一頁依其**「核心論點邏輯」與「證據型態」**，查表指派**首選版型（Primary Fit）**；若與前一頁撞版，則自動啟用右欄的**防撞車備選版型（Fallback Fit）**：
+| 觀看情境（或自訂 $D/H$） | $D/H$ | 硬底線 `min_font_pt` | 建議全檔目標基準 `target_body_pt` | 結構與寫作自適應連動（融合模式 2 精髓） |
+| :--- | :---: | :---: | :---: | :--- |
+| **① 筆電近看／留存預讀** | $\le 3.5$ | **`12.0pt`** | `13.0–13.5pt` | 閱讀自足：精煉完整短句，無框細線為主、單層輕卡點綴 |
+| **② 小型會議室**（`4–6m`） | `~4.0–5.0` | **`14.0pt`** | `15.0–16.0pt` | 報告閱讀兩棲：微縮句長、輕量化框線，遠近皆清晰 |
+| **③ 標準教室投影**（`8–10m`） | `~5.3–6.7` | **`16.0–18.0pt`** | `16.0–18.0pt`（建議 `18.0pt`） | 教室口報：自動禁 4 欄窄排改無框、視情境轉關鍵短語＋講稿＋尾段 `Appendix` |
+| **④ 演講廳／Pitch**（`12m+`） | `>= 7.0` | **`20.0pt+`** | `20.0–24.0pt` | 大場衝擊：高比例採 `F1-C` 巨幅焦點宣言頁與 `F5-A` 全幅圖頁，觸發物理短語精簡 |
+| **⑤ 自訂物理距離**（輸入 $D, H$） | 依實算 | **`max(12.0, round(3.18 * D / H))`** | 依地板上調訂定 | 依實算 `min_font_pt` 自動歸入對應級距 |
 
-| 版型代號與名稱 | 觸發條件（當該頁論點具備以下特徵時選用） | 空間幾何配置與 80/20 聚光燈設計（`13.333" × 7.5"`） | 防撞車備選轉換版型（若前一頁已用此版型時） |
+- **地板 ≠ 起跳線（全檔統一基準字級）**：`min_font_pt` 只是防遠距糊字的物理底線，**不是每頁都硬貼底線的起跳線**。進入 Step 4 時必先在地板之上訂定單一全簡報目標設計基準字級 **`target_body_pt >= min_font_pt`**（經統一 Token 工廠 `build_slide_design_tokens()` 貫穿全檔），避免相鄰頁字級忽大忽小。
+- **封頂收斂字級階梯（`resolve_typography_scale(target_body_pt)` — 防止高字級大標失衡）**：
+  - `13.0pt ➔ 斷言主標 21–22pt`（`~1.60×`）｜`15–16pt ➔ 24–25pt`（`~1.55×`）｜`18pt ➔ 26–27pt`（`~1.48×`）｜`20pt ➔ 27–28pt`（`~1.35–1.40×`），嚴守大標 Bold $\ge 1.35\times$ 正文同時保護斷言主標不超過 `2` 行。
+- **高字級雙防線（坑 1 ＆ 坑 2 護欄）**：
+  1. **防窄寬破碎（坑 1）**：當 `target_body_pt >= 16.0pt` 時，**禁用 4 欄並排卡片**（`F3-A` 水平流程限 3 步；4～5 里程碑自動切上下交錯時間軸），改採無框分欄（`minimal_column`）並優先調度 `F2-A` 雙欄、`F2-B`、`F2-C`、`F5-A/C`、`F1-C`。
+  2. **防頁數失控與寫作顆粒度分流（坑 2）**：容量吃緊時**第一優先永遠採「增加頁數＋去框釋放空間＋自然流式堆疊」**；僅於「現場口說防演說抑制效應（Wecker 2012）」或「`>= 20.0pt` 大場物理門檻」時進一步精煉為關鍵短語錨點（完整推論寫入 `Speaker_Notes` 並視需要於主封底後附 `F4-B` `Appendix` 備查頁）。
+
+### 2. 五步內容優先流程與 `02c_slide_spec_lock.json` 確定性管線
+
+| 階段 | 階段名稱 | 核心動作與產出 | 強制停頓關卡與工程護欄 |
+| :---: | :--- | :--- | :--- |
+| **Step 1** | **定位與視距地板**（[`layer2_advisor_c_slide.md`](advisors/layer2_advisor_c_slide.md)） | 確立北極星 AST、使用情境、DISCAS `min_font_pt` 與單一議題章節清單 | **不提前鎖版型**，亦不用死板總字數限縮議題 |
+| **Step 2** | **筆風、模式與配色**（[`layer3_advisor_design_style_color.md`](advisors/layer3_advisor_design_style_color.md)） | 鎖定筆風檔、模式 1/2/3 與靜態／動態主題色票 | 模式 3 須由使用者拍板 `Tier 1/2/3` 並寫出 **Topic Art Direction DNA** |
+| **Step 3** | **文案先行 ➔ 凍結鎖定** | 撰寫每頁標題、副標、Lead/Body 要點、資料來源與 `Speaker_Notes`，**以人眼好讀之 Markdown 逐頁呈現文案草案供使用者審核**（不讓使用者讀原始 JSON），拍板後凍結寫入工作階段根目錄之 **`02c_slide_spec_lock.json`（`copy` 區）** | **⏸️ 文案審核關卡**：使用者拍板後立即生效 **拍板文案保真鐵律**（Step 4 嚴禁未經同意壓縮／刪改文字致失真；極端微調須列前後對照徵求同意） |
+| **Step 4A** | **渲染前純文字配置對齊** | 依兩段式語義自動配框架產出配置，調用 `export_step4a_alignment_preview()` 呈現**人眼好讀之純文字逐頁配置＋配圖對齊表**（頁次、家族與版型、定稿標題、文案骨架與 `★聚光燈`、掛載圖檔名與 `*_slide.png`/模式 3 標記、是否省略 Zone 3；**不讓使用者讀原始 JSON**） | **⏸️ 版面與配圖對齊關卡**：確認後鎖入 `02c_slide_spec_lock.json`（`layout` 區） |
+| **Step 4B** | **確定性渲染與保真比對** | 呼叫 `render_deck_from_spec()` 嚴格唯讀讀取 `02c_slide_spec_lock.json` 產出 `.pptx`，並自動執行 `validate_layout_sequence()` 與 `check_copy_fidelity()` | 程式碼級鎖死唯讀 `copy` 區，核驗文字與百分比／金額／年份等關鍵數值 100% 原樣保真 |
+| **Step 5** | **方案 C 三階內部品管與單頁重繪** | 依第四節執行 AI 內部三階品管；發現單頁瑕疵時以 `slide_indices=[k]` 局部重繪覆檢，全數通過後 `--cleanup` 清理暫存再交付 | 遇孤兒字或溢出**先調幾何、絕不先縮字**；唯幾何無解須微調文案時始問使用者 |
+
+- **`02c_slide_spec_lock.json` 標準四區 Schema 契約**（存於 `reading_sessions/<專案>/02c_slide_spec_lock.json`）：
+  1. `deck_meta`：專案標題、觀看情境、DISCAS `distance_m`/`screen_height_m`/`min_font_pt`、模式 1/2/3（及模式 3 `tier`＋DNA）、筆風檔 ID；
+  2. `design_tokens`：全檔統一之 `target_body_pt`、`doc_theme_id` / `theme_overrides` 與 `resolve_typography_scale()` 計算結果；
+  3. `slides[i].copy`（**Step 3 凍結唯讀區**）：`chapter_pill`、`headline`、`subtitle`、`items`（Lead/Body 結構化段落）、`zone3_takeaway`（選配）、`speaker_notes`、`key_numbers`（供保真校驗）；
+  4. `slides[i].layout`（**Step 4A 鎖定幾何區**）：`family_id`（`F1-A`～`F5-C`）、`variant`（如 `minimal_column` / `staggered_timeline` / `header_only` / `quote_manifesto`）、`spotlight_idx`、`include_zone3`、`visual_asset`（含 `*_slide.png` 或模式 3 `Tier 2/3` 路徑）。
+
+---
+
+## 二、 五大簡報版型家族（13 精煉版型：1 首尾定錨 ＋ 12 內容與衝擊版型）與自動配框架
+
+> **理論依據**：**相容性原則（Kosslyn 2007：版型幾何須與論點內在邏輯同構）** 與 **視覺習慣化防禦（Mackworth 1948：相鄰頁切換拓撲重心）**。引擎保留舊代號 `S0～S14` 與 `Hero Stat` 雙向正規化解析，100% 向下相容。
+
+### 1. 五大簡報版型家族總表（1 首尾定錨 `F1-A` ＋ 12 內容與衝擊版型）
+
+| 簡報版型家族 | 精煉版型代號與名稱（對照舊代號） | 語義觸發條件（何時首選） | 預設視覺語彙與對應黑盒 API |
 | :--- | :--- | :--- | :--- |
-| **S0：深色首尾定錨型**<br>*(Dark Bookend)* | **僅限第 1 頁封面 & 最後 1 頁結尾總結** | 深石板藍底（`#0F172A`）+ 頂部亮色分類膠囊 + `26~32pt` 巨幅主標題 + 底部 3 張關鍵指標或決策鐵律亮框卡。 | *(固定於首尾，中段禁用)* |
-| **S1：不對稱雙欄對照型**<br>*(Asymmetric Contrast)* | **2 個二元對立觀點**（迷思 vs. 真相、舊模式 vs. 新典範、失敗案例 vs. 成功標竿） | 左欄（`45%` 寬，中性灰或警示色條）呈現「舊盲點／反例」$\leftrightarrow$ 右欄（`55%` 寬，**聚光燈強調色條**）呈現「新破局／正例」。 | 轉為 **`S4`**（畫出兩者互動/轉換機制）或 **`S5`**（加入第 2 維度展開為 2×2 象限） |
-| **S2：三支柱聚焦卡片型**<br>*(Three Pillars + 1 Spotlight)* | **3 個並列同質維度**（三大痛點、三大陷阱、三個分析層面） | 水平等寬並列 3 張圓角卡片（內部切為 3 個水平平行對齊列槽）。前 2 張為穩重結構色，**第 3 張套用聚光燈高亮邊框**。 | 若 3 點具先後關係則轉為 **`S3`（水平階梯流）**；若具交互作用則轉為 **`S4`（三層系統架構）** |
-| **S3：水平階梯演進流程型**<br>*(4-Step Process Pipeline)* | **3～4 個具時序或因果依賴的步驟**（落地路線圖、MVP 四部曲、轉換管線） | 由左至右排列 3～4 個帶編號（`Step 01` $\rightarrow$ `Step 04`）之垂直流程卡，卡片間以原生向量箭頭標註轉換條件，於核心破局步驟高亮。 | 轉為 **`S5`**（依「實行難度 × 商業價值」或「短期 × 長期」排入 2×2 矩陣） |
-| **S4：核心系統迴路／雙腦架構型**<br>*(System Loop / Architecture)* | **多組件雙向協同、正負反饋閉環或雙腦架構**（如左腦規則 × 中間裁判 × 右腦檢索） | 左側或中央繪製原生向量雙軌/三層系統迴路圖（標註雙向互動箭頭與仲裁核心），旁側或下方配置關鍵機制洞察卡。 | 轉為 **`S1`**（左右雙腦對比 + 中央橋接橫幅）或 **`S2`**（三層平行協同矩陣） |
-| **S5：2×2 策略象限矩陣型**<br>*(2×2 Quadrant Matrix)* | **4 個分類項目或雙軸評估**（四大機會領域、風險 × 報酬矩陣、四象限治理） | 正交雙軸四象限網格，將三個次要象限設為淺灰背景，僅將**目標破局象限**高亮放大並標註行動方針。 | 若 4 項具演進順序則轉為 **`S3`（四步階梯管線）** |
-| **S6：核心公式／理論解剖型**<br>*(Equation / Theory Anatomy)* | **含數學公式、不等式、剪刀差模型或核心理論定律** | 上方置中呈現醒目的深色或高對比「核心公式／定律展示盒」，下方水平並列 3 張指向拆解卡，依當前筆風設定檔（`Slot 1` 與 `Slot 4`）逐一對應公式變數的實質意義。 | 轉為 **`S1`**（左側公式與理論推導 + 右側商業實證對照） |
-| **S7：量化圖表＋洞見卡複合型**<br>*(Chart + Cards Dual-Mode: `S7-A` 左圖右卡 / `S7-B` 上圖下卡)* | **含高解析度量化實證圖表與 3 張數據洞見卡**（依**圖片內容長寬比**與**文字結構**動態二選一，嚴禁寫死單一放法！） | • **`S7-A`（左圖最大化 `W=7.35"~7.45"` + 圖表正下方緊鄰註解框 + 右垂直三卡 `W=4.65"`）**：當圖片接近 `16:9` 或雙圖並列（`1.3 ≤ AR ≤ 2.1`、具垂直高度斷崖）且文字為 3 段精煉垂直遞進洞見時選用。**強制規範**：左側圖表寬度最大化至 `7.35"~7.45"`（`Left = 0.50"`），「圖表導讀註解框」必須緊貼配置於**圖表正下方**（符合 Mayer 空間鄰近原則），且右側三張卡片維持原寬 `W = 4.65"`（`Left = 8.18"`）絕不壓縮！<br>• **`S7-B`（上全寬圖 + 下水平三卡）**：當圖片為極寬扁橫幅（`AR > 2.1`，如超長跨期時間軸或寬幅矩陣）或文字卡需直接對應圖表左、中、右三區段時選用。 | 若與前後頁版型重心重複，可在 **`S7-A`（左右重心）** 與 **`S7-B`（上下重心）** 之間自動切換以打破視覺疲勞！ |
+| **家族 1｜破題與節奏**<br>*(Bookend & Impact)* | • **`F1-A` 封面／封底**（原 `S0` — **1 首尾定錨**）<br>• **`F1-B` 極簡章節過場頁**（原 `S13`，短簡報可省）<br>• **`F1-C` 巨幅焦點宣言頁**（合原 `Hero Stat`＋`S14`） | 開場與峰終收尾；長簡報跨幕換氣；單一極強震撼數字或核心金句主張定錨 | 極高留白純排版（無方塊）：<br>`add_bookend_slide_s0()`<br>`draw_section_divider_slide()`<br>`draw_hero_stat_slide()`（數字／金句雙變體） |
+| **家族 2｜觀點並陳與結構展開**<br>*(Structured Narrative)* | • **`F2-A` 並列／對比欄**（合原 `S1`＋`S2`）<br>• **`F2-B` 瑞士網格「左標右展」橫列**（原 `S8`）<br>• **`F2-C` 不對稱便當盒網格 Bento**（原 `S9`） | 二元對決、3 支柱並列、3～4 類條列展開、「1 核心主軸＋2 輔助支柱」非對稱結構 | **無框＋細線為主**（輕卡／Bento 主塊點綴）：<br>`draw_parallel_row_cards()`（`minimal_column` 大序號／無框中線／`clean_card`）<br>`draw_editorial_split_rows_s8()`<br>`draw_bento_grid_slide()` |
+| **家族 3｜時序、因果與機制**<br>*(Flow & Mechanism)* | • **`F3-A` 流程軌道／上下交錯時間軸**（合原 `S3`＋`S12`）<br>• **`F3-B` 精簡機制架構圖**（原 `S4`，嚴限 `3～5` 節點） | 3 步先後管線、4～5 階段歷史／路線里程碑、3～5 節點正負回饋閉環或因果協同機制 | 細線軌道與簡潔向量節點：<br>`draw_process_steps_s3()`（3 步水平軌道／4～5 節點自動轉上下交錯時間軸）<br>`draw_clean_mechanism_s4()` |
+| **家族 4｜多維比較與分類**<br>*(Comparison & Matrix)* | • **`F4-A` 2×2 正交四象限**（原 `S5`）<br>• **`F4-B` 極簡三線比較表**（原 `S11`，亦適配 `Appendix` 備查） | 兩獨立評估維度（X × Y）交叉分類四種狀態；多方案 × 多維度橫向比較或尾段備查表 | 十字軸線／顧問無外框三線表：<br>`draw_quadrant_matrix_s5()`（預設去框十字軸，可選輕框）<br>`draw_comparison_table_slide()`（原生表格＋單欄淡底聚光） |
+| **家族 5｜數據實證與公式解剖**<br>*(Evidence & Anatomy)* | • **`F5-A` 主圖＋四向無框導讀**（原 `S7`／`S7-A/B/C/D`）<br>• **`F5-B` 頂部指標橫帶＋下方洞察**（原 `S10`）<br>• **`F5-C` 焦點公式／指標解剖**（原 `S6`，含原生 OMML） | `300 DPI` 量化統計圖表佐證、3～4 個量化核心指標總覽／跨案例彙整、數學公式或定律拆解 | 圖數主導＋無框導讀：<br>`draw_visual_callout_slide()`（`right`/`left`/`top`/`bottom`/`header_only`）<br>`draw_kpi_strip_slide()`<br>`draw_focal_anatomy_s6()`（搭配 `insert_omml_equation()`） |
 
-### 階段 3：全局序列防撞車檢核（Storyboard Anti-Collision Check）
-在動手寫 `python-pptx` 腳本前，AI 必須先列出全簡報的 **「分頁版型序列（Layout Sequence）」** 並調用 `validate_layout_sequence(layouts)` 執行兩項硬性檢查：
-1. **相鄰異構檢核（`Layout[i] != Layout[i+1]`）**：檢查是否有任何連續兩頁使用相同版型代號。若有，強制將第 $i+1$ 頁依上表右欄轉為備選版型。
-2. **視覺重心交替檢核（Visual Center-of-Gravity Alternation）**：確保全簡報在「左右分欄（`S1`）」、「上下分層（`S6`/`S7`）」、「三欄/四欄並列（`S2`/`S3`）」與「網格/系統圖（`S4`/`S5`）」之間交錯切換，整份簡報至少涵蓋 **5 種以上不同版型**。
-
----
-
-## 三、 首尾錨定與中段「雙因子動態擴展・零刪減加頁」法則（Bookends & Zero-Truncation Dynamic Budgeting）
-
-1. **強制保留首尾定錨頁（Mandatory Bookends）**：
-   - **第 1 頁（封面頁 Cover Slide）** 與 **最後 1 頁（峰終定律結尾總結頁 Closing Slide, Kahneman 1993）** 必須固定保留為獨立單頁（套用版型 `S0`），嚴禁講完最後一頁內容就突兀結束。
-2. **中段四幕敘事弧與「零刪減動態加頁」法則**：
-   - 中段依序展開 **Act I（現狀診斷與痛點）→ Act II（核心矛盾與理論模型）→ Act III（系統架構、反例邊界與跨域實證）→ Act IV（落地行動路線圖）**。
-   - **不設硬性總頁數上限，嚴禁刪減批判延伸分支**：當 Phase 1 Step 5 收斂出 $> 4$ 個分支（含 `(b) 批判延伸與跨域遷移分支`）時，**必須動態加開獨立投影片**（如以 `S1` 呈現正反案例對撞、以 `S5` 呈現假設失效邊界象限、以 `S4` 呈現跨領域同構系統）並附上完整講者備忘稿，確保所有思辨成果 100% 呈現：
-     - **功能性聚合（何時合於一頁）**：當多個觀點屬於「正反二元對比（`S1`）」、「三大平行維度比較（`S2`）」、「四步管線/四象限（`S3`/`S5`）」或「系統因果閉環（`S4`）」時，聚合於同一頁方便聽眾同屏橫向比對。
-     - **空間呼吸與序列推進（何時拆頁擴展）**：當塞入同頁會導致文字超出卡片物理高度（穿框）、三欄內文字級被迫低於 `11.5pt`（雙欄低於 `13.0pt`）、或留白低於 `35%` 時，**必須拆分為連續多頁並依階段 2 & 3 切換不同版型（`S1`～`S7`）**。
+### 2. 兩段式語義自動配框架矩陣與全局防撞車護欄
+1. **第一段（文案邏輯鎖家族 — `recommend_layout_family()`）**：依 Step 3 定稿文案之內在論點結構鎖定家族——開合／換氣／極強單點衝擊 $\rightarrow$ **`F1`**；對立／並列／清單／主輔展開 $\rightarrow$ **`F2`**；先後步驟／里程碑／3～5 節點機制 $\rightarrow$ **`F3`**；雙軸四類／多維對比表／備查 $\rightarrow$ **`F4`**；圖表／多指標橫帶／公式定律 $\rightarrow$ **`F5`**。
+2. **第二段（物理條件與節奏鎖版型）**：
+   - `target_body_pt >= 16.0pt` 自動避開過窄多欄，轉用無框雙欄、`F2-B` 橫列、`F2-C` Bento、`F5-A/C` 或 `F1-C`；
+   - `4～5` 個時間里程碑自動採 **`F3-A` 上下交錯時間軸**；
+   - 跨案例多組指標總覽獨立成 **`F5-B`**，嚴禁塞進統計圖表內。
+3. **全簡報防撞車與去方塊節奏硬護欄（`validate_layout_sequence()` 自動檢核）**：
+   - **首尾定錨**：第 1 頁封面與主結尾鎖定 **`F1-A`**（尾段 `Appendix` 備查頁可置於主封底後）；
+   - **相鄰異構**：連續兩頁嚴禁重複同一版型代號（`Layout[i] != Layout[i+1]`）；
+   - **帶方塊卡片頁佔比 `<= 30%～40%`**（超過 `40%` 觸發去框警示）；目標全檔節奏配比為 **無框純排版＋細線 `50%～60%` × 單層輕卡／焦點盒 `25%～30%` × 主圖／巨數衝擊 `15%～20%`**；
+   - **單一版型家族佔比 `<= 40%`**；
+   - **多樣性底線**：長簡報（`>= 6` 頁）至少涵蓋 **5 種以上不同版型**（`< 6` 頁之短簡報依頁數彈性降階，不誤攔合法短簡報）。
 
 ---
 
-## 四、 黑盒引擎 API 簽名、`python-pptx` 防溢位與強制視覺檢查鐵律（Black-Box Engine API & QA Gate）
+## 三、 模組 1～3 版面工程規範 ＋ 淨新增 Anti-AI-Slop 底線
+
+### 1. 模組 1｜微排版、空間再分配與「2＋1 彈性三區結構」
+1. **Zone 1 頁頂斷言區緊貼頂部自然計算（`TOP` 對齊）**：
+   - 廢除寫死 `head_lines=max(2,...)` ＋ `MIDDLE` 造成單行大標懸浮空置之舊設計；頁頂區改為 **`MSO_ANCHOR.TOP` 緊貼頂部自然計算高度**，構成克制三段（每層至多 2～3 視覺變數）：
+     - **頁頂章節膠囊**（`9.5pt`，由 `calc_pill_width()` 精準貼合字寬，右側選配講者／頁碼膠囊）；
+     - **完整因果斷言主標**（建議 1～2 行，字級由 `resolve_typography_scale(target_body_pt)` 推算，Bold 深墨 `#0F172A`）；
+     - **選配無框頁副標**（`#64748B`，補充資料口徑或 `F5-A` `header_only` 全幅純圖頁脈絡）。
+2. **Zone 2 兩層組塊、`TOP` 自然流式堆疊、容器三層表頭與 Content-Driven Height**：
+   - **簡報專屬兩層組塊上限**：單頁只承載 1 個獨立子議題，Zone 2 頂層容器限 **`2～4` 個** × 每容器 **`2～3` 點**（全頁總要點 `<= 6～8` 點）。
+   - **垂直對齊規則化、容器內部 `TOP` 靠上 ＋ 整體 Zone 2 兩段式垂直均衡**：多欄、四象限與圖旁導讀之**單一容器／欄位內部**全面維持 **`MSO_ANCHOR.TOP` ＋ 固定間距由上往下自然流式堆疊**（廢除 `slot_h` 硬均分並杜絕幽靈空分隔線與導讀總標斷層；`MIDDLE` 僅保留給高度 `<= 0.55"` 之單行窄帶／膠囊／橫幅、封面主標、公式盒與巨幅數字），亦不改動全檔統一之 `target_body_pt`；同時於中段版型（`F2`～`F5`）底層執行**整體 Zone 2 兩段式均衡**（不加每頁標配頁底細字，維持極簡白底）：① **先自然舒展**——當 Zone 2 實高較可用高度多出 `> 1.2"` 時，將組塊間距、表列上下 padding 或要點間距適度舒展 `1.25×～1.45×`（不壓迫 Zone 3 或底緣）；② **再整體群組光學置中（`~40% / 60%`）**——舒展後若仍矮於可用高度超過 `0.50"`，將該頁整組 Zone 2 物件一體下移至光學重心（上方分攤 `~40%` 剩餘空白、下方留 `~60%`，**上方新增緩衝上限 `<= 0.90"`**，嚴守不碰撞 Zone 3 與底緣 `7.22"`）。
+   - **Content-Driven Height 與 Tullis 雙層留白**：容器高度由實際文字高度驅動（把無用內部死白推出方塊外），維持外框邊界留白 `26%～32%`（高視距簡報可擴至 `35%～45%+`）與框內文字佔高 `<= 65%～70%`（行距 `1.28~1.35×`）；`F3-B`（`S4`）採緊湊比例節點並徹底移除細長摩天樓節點框與大灰底墊板；`F5-C`（`S6`）善用寬螢幕採 `left_right`（左 `38%` 焦點盒 ＋ 右 `62%` 無框拆解列）或 `top_bottom`（上方極薄焦點帶 ＋ 下方無框三欄，省略 Zone 3）。
+   - **克制文字層級與聚光燈減噪**：
+     - **容器／欄位表頭拆為三層**：**Kicker 眉標 $\rightarrow$ 主標（`target_body_pt + 3pt` Bold 深墨 `#0F172A`）$\rightarrow$ 副標（`#64748B`）**；
+     - **要點拆為獨立兩段**：**Lead 小標（`+1.0～1.5pt Bold` 深墨 `#0F172A`）$\rightarrow$ Body 說明（`#334155` Regular）**；
+     - **圖旁導讀區拉開明確階梯**：**導讀總標 `1.30×` / 小標 `1.15×` / 內文 `1.0×`**，且左側豎細線高度緊貼實際文字高度；
+     - **聚光燈主角減噪**（全頁至多 `1` 個）：消除多重重複框線，改以 **極淡底色面＋單條左／頂色帶＋深墨標題** 呈現，次要對照退居 `#CBD5E1` / `#64748B`。
+   - **Pillow 真實字寬量測、繁中 Kinsoku 斷行與反轉版幾何修框**：
+     - 全面以 **`measure_text_layout()`**（讀取 Windows `msjh.ttc` / `msjhbd.ttc` `index=0` 實寬 ＋ 支援行內 `**粗體**` 權重 ＋ 配合 `<a:ea>`/`eaLnBrk="1"`/`hangingPunct="1"` 之自寫繁中禁行首標點與禁行尾開括號斷行器，**嚴禁英文空白 `split()` 與連字號 `-` 斷中文**）計算真實行數與偵測 **單字孤兒換行（尾行 `<= 2` 漢字＋標點）**；
+     - 觸發溢出或孤兒換行時呼叫 **`autofit_box_geometry_first()`（反轉版先調幾何、絕不先縮字）**：優先微幅調整框高、欄寬比例或拆頁，**嚴禁未經授權把字級壓低於 `target_body_pt` 或跌破 `min_font_pt`**。
+3. **Zone 3（按需選配 Optional）與 `Speaker_Notes` 雙通道**：
+   - Zone 3 預設按需省略（`F5-A` 主圖、`F5-C` 公式或 Zone 1 已講明結論時不畫）；必要時可選 `"dark_banner"` 或輕量 `"subtle_line"`。
+   - 每頁必備完整口語化 `Speaker_Notes`（自然銜接 AST 轉場，不將 AST 標語印入畫面），且支援行內 `**粗體詞組**` 自動解析並禁止以 `\n` 硬塞多條要點於單一段落。
+
+### 2. 模組 2｜去方塊設計語彙擴充（單層去套盒 ＋ 6 大去方塊詞彙）
+- **純文字卡片去雙層套盒**：凡使用卡片一律採單層乾淨白底卡（頂部極薄色帶＋無框標題＋細分隔線），徹底消滅框中框圓角表頭與逐列小方框。
+- **6 大無方塊／輕量化詞彙**：① 升級 `minimal_column`（巨型淡序號 `01/02/03`＋短色條＋靠上堆疊＋極細垂直線）；② 去框十字軸 `F4-A`（3 象限無框排字、僅聚光燈象限極淡底色）；③ 水平細線節點軌道／交錯軸 `F3-A`；④ 瑞士網格左標右展 `F2-B`（左 `28%` 序號分類＋右 `72%` 展開＋極細橫線）；⑤ 無框中線對決 `F2-A`；⑥ 高留白巨幅宣言 `F1-C`（搭配 `F2-C` Bento 與 `F4-B` 極簡三線表）。
+
+### 3. 模組 3｜圖表純粹性、1:1 實體吋數與跨 Format D ➔ C `*_slide.png`
+- **主視覺圖四向無框導讀鐵律**：凡含主視覺圖（`F5-A` 量化統計圖或 `F3-B` 3～5 節點精簡機制圖），**嚴禁在圖旁或上下疊加帶框卡片**，亦嚴禁縮小貼入高密度 Format A 知識圖譜；一律依數據列數與圖幅比例選用 `right` / `left` / `top` / `bottom` / `header_only` 四向無框導讀（如 2 列扁平數據優先採寬扁 `bottom` 或 `F1-C` 巨幅數字頁），且圖說錨定於 Zone 2 下緣與右側底緣切齊。
+- **圖表純粹性與 1:1 實體吋數**：嚴禁在統計圖內塞入跨案例文字事實小卡（獨立成 `F5-B` 或 `F1-C`）、重複繪製 Zone 1 斷言大標或雙重底註；繪圖須依目標貼圖框實體吋數 **1:1 設 `figsize`**。若掛載既有 Format D 原圖時符合「縮放比 `< 0.80×`、`min_font_pt >= 14.0pt`、或原圖含重標／事實小卡」，必須由同腳本另存無重標專用 **`*_slide.png`** 而不覆寫原圖（詳見 [`quantitative_chart_spec.md`](quantitative_chart_spec.md)）。
+
+### 4. 淨新增 Anti-AI-Slop 三底線（與 `visual_cognition_principles.md` 零重複）
+1. **嚴禁多行正文置中對齊**：所有 2 行以上之說明段落與清單要點一律靠左對齊（僅封面主標、單行膠囊、巨幅數字與公式盒允許置中）。
+2. **嚴禁純裝飾性無意義圓圈圖標徽章與發光陰影框**：關閉所有 PowerPoint 預設模糊陰影，不為了湊版面插入無結構語義之圓形裝飾小圖示或霓虹發光外框。
+3. **嚴禁跨區重複文案與殘留草稿字元**：同一句結論不可同時出現在 Zone 1 大標、圖表內標題與 Zone 3 橫幅；完稿畫面絕不可殘留未替換之 `TBD` / `TODO` 或未轉譯之 Markdown 星號 `**`。
+
+- *(註：簡報主色系與視覺引導預設屬設計與排版層，不與 `02_color_registry.json` 綁定；僅當簡報元素明確代表與統計圖表共用之特定資料實體（如「台北」KPI 摘要卡或圖例色標），且該版型支援強調色覆寫時，始透過 `get_active_registry().hex_for(name)` 精準對齊。)*
+
+*(註：若 Layer 3 開啟 **模式 3 `bespoke_metaphor`**，請依 [`advisors/layer3_advisor_design_style_color.md`](advisors/layer3_advisor_design_style_color.md) 拍板之 `Tier 1 / 2 / 3` 與 Topic Art Direction DNA 卡，按需參閱 [`creative_armory/INDEX.md`](creative_armory/INDEX.md) 執行主題幾何原語、無字概念主視覺或 1～2 頁 HTML+SVG `300 DPI` 透明底層，嚴守 `1` 核心母題與 `20/80` 克制比。)*
+
+---
+
+## 四、 黑盒引擎 API 契約與「方案 C 三階內部品管」流程
 
 > [!IMPORTANT]
-> **【底層引擎黑盒呼叫鐵律（Black-Box API Rule）】**：[`scripts/pptx_slide_engine.py`](../scripts/pptx_slide_engine.py) 與 [`scripts/verify_visual_outputs.py`](../scripts/verify_visual_outputs.py) 已封裝 `13.333" × 7.5"` 原生向量三區結構、微軟正黑體膠囊精確字寬計算、欄數自適應平行列槽卡片與版型防撞車驗證器。撰寫簡報生成腳本時，**請直接依下方 API 簽名 `import` 呼叫，日常執行嚴禁呼叫 `view_file` / `read_file` 讀取 `scripts/*.py` 原始碼**（除非發生執行報錯需除錯）！
+> **【底層引擎黑盒呼叫鐵律（Black-Box API Rule）】**：[`../scripts/hcl_color_engine.py`](../scripts/hcl_color_engine.py)、[`../scripts/pptx_slide_engine.py`](../scripts/pptx_slide_engine.py) 與 [`../scripts/verify_visual_outputs.py`](../scripts/verify_visual_outputs.py) 封裝全套 DISCAS Token 工廠、Pillow 真實字寬量測、五大版型家族 13 精煉版型、確定性渲染層與方案 C 驗證網格。撰寫腳本時**直接依下方簽名 `import` 呼叫，日常執行嚴禁對 `scripts/*.py` 呼叫 `read_file`（除非報錯除錯）**！
 
 ```python
-# === scripts/pptx_slide_engine.py & verify_visual_outputs.py Black-Box API Signatures ===
-from pptx_slide_engine import (
-    create_widescreen_presentation, # () -> Presentation (13.333" x 7.5")
-    calc_pill_width,                # (text, font_pt=9.5, pad_in=0.22) -> float (inches, exact CJK/ASCII width)
-    add_zone1_header,               # (slide, chapter_pill_text, assertion_headline, pill_bg_hex="#0284C7", headline_pt=20.5) -> None
-    add_zone3_footer,               # (slide, takeaway_text, bg_hex="#0F172A", border_hex="#0284C7", font_pt=13.0) -> None
-    add_bookend_slide_s0,           # (prs, badge_text, main_title, subtitle_text, kpi_cards=None, speaker_notes=None) -> slide
-    draw_parallel_row_cards,        # (slide, cards_spec, left=0.50, top=1.36, total_width=12.333, height=5.12, spotlight_idx=None, body_font_pt=None, width_ratios=None) -> List[box]
-    add_speaker_notes,              # (slide, notes_text) -> None
-    validate_layout_sequence,       # (layouts, require_bookends=True, min_distinct=5) -> bool (Raises ValueError on collision)
+# === scripts/hcl_color_engine.py (Format C Mode 3 Dynamic Theme Bridge) ===
+from hcl_color_engine import (
+    derive_slide_theme_from_topic,  # (topic_or_hex, mode="light_classroom"|"dark_stage", **kwargs) -> Dict[str, str] (CIELAB + WCAG AA >= 4.5:1)
 )
+
+# === scripts/pptx_slide_engine.py Black-Box API Contract (Backward-Compatible) ===
+from pptx_slide_engine import (
+    # --- Core Canvas, DISCAS Tokens, Real Text Measurement, Autofit, SVG 300DPI & OMML ---
+    create_widescreen_presentation, # () -> Presentation (13.333" x 7.5")
+    load_document_theme,            # (doc_theme_id=None) -> Dict[str, str]
+    hex_to_rgb_color,               # (hex_str) -> RGBColor
+    set_slide_background,           # (slide, bg_hex=None, doc_theme_id=None) -> None
+    calc_pill_width,                # (text, font_pt=9.5, pad_in=0.24) -> float (inches)
+    calc_min_font_pt_from_distance, # (distance_m, screen_height_m) -> float (>= 12.0pt DISCAS floor)
+    resolve_typography_scale,       # (target_body_pt) -> Dict[str, float] (capped converging scale: headline/card_title/lead/body/caption)
+    build_slide_design_tokens,      # (min_font_pt=12.0, target_body_pt=None, doc_theme_id=None, theme_overrides=None) -> Dict
+    measure_text_layout,            # (text, box_width_in, font_pt, bold=False, line_spacing=1.30, ...) -> Dict (Pillow msjh.ttc index=0 + CJK Kinsoku lines, orphan_flag, safe_height_in)
+    autofit_box_geometry_first,     # (text_spec, candidate_boxes, target_body_pt, ...) -> Dict (grow height / rebalance widths / flag split; NEVER shrink below target_body_pt)
+    render_svg_to_png_300dpi,       # (html_or_svg_path, out_png_path, width_px, height_px) -> str (Playwright+Chromium primary, Chrome/Edge CLI fallback, RGBA 300 DPI)
+    insert_omml_equation,           # (text_frame, equation_str, font_pt=None, ...) -> None (native editable <m:oMath> XML + plain fallback)
+    add_zone1_header,               # (slide, chapter_pill_text, assertion_headline, pill_bg_hex=None, pill_fg_hex="#FFFFFF", headline_hex=None, headline_pt=20.5, subtitle_text=None, subtitle_pt=13.0, subtitle_hex=None, right_badge_text=None, show_divider=True, tokens=None, doc_theme_id=None) -> float (TOP aligned, returns zone2_top_in)
+    add_zone3_footer,               # [Optional] (slide, takeaway_text, bg_hex=None, border_hex=None, fg_hex="#F8FAFC", font_pt=13.0, style="dark_banner"|"subtle_line", tokens=None, doc_theme_id=None) -> None
+    add_speaker_notes,              # (slide, notes_text) -> None
+    # --- 5 Layout Families / 13 Refined Layouts (1 Bookend + 12 Content & Impact; all accept optional tokens=None) ---
+    add_bookend_slide_s0,           # [F1-A / S0]  (prs, badge_text="EXECUTIVE BRIEFING", main_title="", subtitle_text="", kpi_cards=None, speaker_notes=None, bg_hex=None, accent_hex=None, title_pt=28.0, subtitle_pt=14.5, footer_text=None, tokens=None, doc_theme_id=None, **kwargs) -> Slide  [Note: first arg is prs, NOT slide]
+    draw_section_divider_slide,     # [F1-B / S13] (slide, section_num, section_title, subtitle_text="", tokens=None, doc_theme_id=None) -> None
+    draw_hero_stat_slide,           # [F1-C / Hero Stat + S14] (slide, stat_value, stat_label, context_points=(), right_image_path=None, variant="big_number"|"quote_manifesto", left=0.5, top=1.36, total_width=12.333, height=None, stat_pt=54.0, body_font_pt=13.5, tokens=None, doc_theme_id=None) -> Tuple
+    draw_parallel_row_cards,        # [F2-A / S1 + S2] (slide, cards_spec, left=0.5, top=1.36, total_width=12.333, height=None, gap=0.26, spotlight_idx=None, body_font_pt=None, title_font_pt=None, width_ratios=None, card_style="clean_card"|"minimal_column"|"borderless_centerline", tokens=None, doc_theme_id=None) -> List[Tuple]
+    draw_editorial_split_rows_s8,   # [F2-B / S8]  (slide, rows_spec, left_ratio=0.28, spotlight_idx=None, left=0.5, top=1.36, total_width=12.333, height=None, body_font_pt=None, tokens=None, doc_theme_id=None) -> List[Tuple]
+    draw_bento_grid_slide,          # [F2-C / S9]  (slide, primary_block, secondary_blocks, spotlight_idx=0, left=0.5, top=1.36, total_width=12.333, height=None, body_font_pt=None, tokens=None, doc_theme_id=None) -> List[Tuple]
+    draw_process_steps_s3,          # [F3-A / S3 + S12] (slide, steps_spec, layout_style="auto"|"fine_track"|"staggered_timeline"|"card_arrow", left=0.5, top=1.36, total_width=12.333, height=None, spotlight_idx=None, body_font_pt=None, tokens=None, doc_theme_id=None) -> List[Tuple]
+    draw_clean_mechanism_s4,        # [F3-B / S4]  (slide, nodes_spec, edges_spec=None, topology="horizontal_chain"|"cycle_loop"|"hub_spoke"|"custom", callouts=None, callout_position="right", callout_heading=None, visual_ratio=0.64, left=0.5, top=1.36, total_width=12.333, height=None, body_font_pt=13.0, tokens=None, doc_theme_id=None) -> Tuple
+    draw_quadrant_matrix_s5,        # [F4-A / S5]  (slide, quadrants_spec, x_axis_label="", y_axis_label="", spotlight_idx=1, borderless=True, left=0.5, top=1.36, total_width=12.333, height=None, body_font_pt=12.5, tokens=None, doc_theme_id=None) -> List[Tuple]
+    draw_comparison_table_slide,    # [F4-B / S11] (slide, headers, rows, spotlight_col=None, col_widths=None, left=0.5, top=1.36, total_width=12.333, height=None, body_font_pt=None, tokens=None, doc_theme_id=None) -> Tuple
+    draw_visual_callout_slide,      # [F5-A / S7]  (slide, image_path=None, callout_position="right"|"left"|"top"|"bottom"|"header_only", callouts=None, visual_ratio=0.65, visual_caption=None, callout_heading=None, body_font_pt=13.0, left=0.5, top=1.36, total_width=12.333, height=None, spotlight_idx=0, tokens=None, doc_theme_id=None) -> Tuple
+    draw_kpi_strip_slide,           # [F5-B / S10] (slide, kpi_items, insight_blocks=(), spotlight_idx=0, left=0.5, top=1.36, total_width=12.333, height=None, body_font_pt=None, tokens=None, doc_theme_id=None) -> List[Tuple]
+    draw_focal_anatomy_s6,          # [F5-C / S6]  (slide, focal_title, focal_formula, focal_note="", breakdown_items=(), mode="left_right"|"top_bottom", focal_ratio=0.38, use_omml=False, left=0.5, top=1.36, total_width=12.333, height=None, body_font_pt=13.0, tokens=None, doc_theme_id=None) -> Tuple
+    draw_theme_geometric_accent,    # [Mode 3 Tier 1] (slide, motif_type="diagonal_wedge"|"ruler_ticks"|"step_blocks"|"vector_scale", tokens=None, doc_theme_id=None, **kwargs) -> None
+    # --- Two-Stage Semantic Routing, Anti-Collision & Spec-Driven Deterministic Pipeline ---
+    recommend_layout_family,        # (slide_copy_spec, target_body_pt=13.0, ...) -> Dict (family_id, variant, rationale)
+    validate_layout_sequence,       # (layouts, require_bookends=True, min_distinct=5, max_boxed_ratio=0.40, max_family_ratio=0.40) -> bool (normalizes F1-A..F5-C & S0..S14; scales min_distinct for <6 slides)
+    export_step4a_alignment_preview,# (spec_json_or_path) -> str (Human-readable Step 4A Markdown alignment table)
+    render_deck_from_spec,          # (spec_json_or_path, output_pptx_path, ...) -> str (Read-only deterministic render from 02c_slide_spec_lock.json)
+    check_copy_fidelity,            # (spec_json_or_path, pptx_path) -> Dict (Verifies 100% text & key numeric fidelity, zero TBD/**)
+)
+
+# === scripts/verify_visual_outputs.py (Option C 3-Tier Internal QA Engine) ===
 from verify_visual_outputs import (
-    render_pptx_to_pngs,            # (pptx_path, out_dir=None, width_px=1920, height_px=1080) -> List[str]
-    verify_pptx_structure,          # (pptx_path) -> dict (Checks physical box capacity overflow, canvas bounds & Speaker Notes)
-    cleanup_preview_artifacts,      # (target_dir) -> List[str] (Removes _preview_*.png, slide_*.png)
+    verify_pptx_structure,          # (pptx_path, min_font_pt=None, profile="reading", spec_lock_path=None, ...) -> Dict (passed, errors, warnings, high_risk_slides)
+    render_pptx_to_pngs,            # (pptx_path, out_dir=None, width_px=1920, height_px=1080, dpi=None, slide_indices=None) -> List[str] (3-strategy full or single-slide re-render)
+    build_pptx_contact_sheet,       # (png_paths, out_path, cols=4, rows=4, ...) -> str (4x4 deck rhythm overview)
+    build_pptx_qa_grids,            # (png_paths, out_dir, ...) -> List[str] (1920x1080 HD 2x2 four-up QA grids, 960x540 per tile)
+    cleanup_preview_artifacts,      # (target_dir) -> List[str] (Removes _preview_*.png, slide_*.png, _qa_contact_*.png, _qa_grid_*.png)
 )
 ```
 
-1. **獨立段落保護（No `\n` Soft Breaks）**：嚴禁以 `p.text = "...\n●..."` 塞入多行文字；必須使用 `draw_parallel_row_cards()` 或 `tf.add_paragraph()` 逐條建立獨立段落，並明確設定 `tf.word_wrap = True`、行距 `line_spacing = 1.25~1.35` 與段距 `space_after = Pt(4~6)`。
-2. **結構體檢與轉圖強制視覺檢查（Structural & Visual Inspection Gate）**：生成 `.pptx` 後，先調用 `verify_pptx_structure(pptx_path)`（或 `--verify-pptx`）確認每頁講稿齊備、無畫布越界且無文字物理穿框，再調用 `render_pptx_to_pngs(pptx_path)` 轉出每頁預覽圖並呼叫 `view_file` 逐頁檢視，確認 **(1) 零文字重疊或穿框、(2) 相鄰頁版型無重複單調感、(3) 80/20 聚光燈焦點鮮明**，檢驗通過後立即調用 `cleanup_preview_artifacts(out_dir)` 清除暫存圖片檔。
+### 方案 C：AI 內部三階分級視覺品管流程（`default_slide_qa_mode = "option_c_2x2_and_high_risk"`）
+> **角色定位**：三階視覺品管與診斷拼圖**僅供 AI 在交稿前執行內部自我品質把關**，不丟給使用者逐頁盯圖；唯遇「單字孤兒換行調幾何仍無解而須微調文案」等例外時，始列出修改前後對照徵求同意。
 
+1. **第一階（0 視覺 Token 程式全掃）**：執行 `verify_pptx_structure(pptx_path, min_font_pt=..., spec_lock_path=...)`（全面以 Pillow 真實字寬 `measure_text_layout()` 把關）：
+   - **Hard Error（`passed: False`，強制修復）**：內容字級低於 `min_font_pt`、物理穿框、超出動態畫布邊界、**任意兩非背景內容框邊界碰撞**、**`Zone 2 / Zone 3` 重疊碰撞**、缺講稿、畫面殘留 `**` / `TBD` / `TODO`、或與 `02c_slide_spec_lock.json` 文案／關鍵數字保真失配；
+   - **Soft Warning（幾何優化提醒）**：單字孤兒換行（尾行 `<= 2` 漢字＋標點）、嵌入圖縮放比 `< 0.80×` 或實效 PPI `< 150`（提醒同腳本另存 `*_slide.png`）、局部過滿或過空、左右視覺失衡、**上下垂直頭重腳輕（Vertical Top-Heavy：中段內容頁若 `Zone 2 上方留白 < 0.30"` 且 `底部空白 > 1.80"` 即提醒，排除 `F1-A/F1-B` 首尾過場頁與已有合理置中留白之頁面）**、方塊卡片頁佔比 `> 40%`、單一家族佔比 `> 40%`、雙層套盒、圖旁疊卡；
+   - 自動輸出 **`high_risk_slides` 清單**（涵蓋 `F5-A` 圖表頁、`F4-B` 表格頁、`F5-C` 公式頁、模式 3 視覺頁、任何 Warning 頁與填滿率 `> 75%` 頁）。
+2. **第二階（100% 全頁低費率視覺掃描）**：調用 `render_pptx_to_pngs()` ➔ 輸出並檢視 **1 張 `4×4` 全覽接觸表**（`build_pptx_contact_sheet()` 鳥瞰全檔節奏、配色與去方塊比例）＋ 依序檢視全部 **`1920×1080` 高清 `2×2` 四宮格**（`build_pptx_qa_grids()`，每格 `960×540`，`12pt` 繁中清晰可辨，達成 **100% 全頁視覺覆蓋**）。
+3. **第三階（高風險頁 `1920×1080` 滿版精檢 ＋ `slide_indices` 單頁局部覆檢）**：僅針對 `high_risk_slides` 開啟單張 `1920×1080` 滿版大圖細檢；若局部修復特定頁面，調用 `render_pptx_to_pngs(..., slide_indices=[k])` 僅重繪該頁（若改動版型或頁序則連同前後鄰頁）覆檢，確認全數無瑕後執行 `cleanup_preview_artifacts()` 清空暫存檔交付。

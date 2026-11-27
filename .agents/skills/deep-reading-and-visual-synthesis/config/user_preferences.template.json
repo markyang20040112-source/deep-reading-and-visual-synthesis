@@ -1,5 +1,5 @@
 {
-  "schema_version": "13.0",
+  "schema_version": "14.0",
   "bound_git_user": null,
   "bound_local_user": null,
   "bound_git_repo": null,
@@ -41,6 +41,9 @@
         "mode": "ask_every_time",
         "auto_apply_default": false,
         "default_pdf_theme": "modern_sans",
+        "default_delivery_cadence": "sequential_confirm",
+        "default_delivery_queue": ["D", "A", "B", "C", "E"],
+        "default_slide_qa_mode": "option_c_2x2_and_high_risk",
         "default_git_sync": "none"
       }
     }

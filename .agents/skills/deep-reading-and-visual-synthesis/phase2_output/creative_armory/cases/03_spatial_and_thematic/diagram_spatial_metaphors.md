@@ -22,7 +22,23 @@
 
 ---
 
-## 二、 Format C（高階簡報 `.pptx` — 向量物理結構隱喻）
+## 二、 Format C（高階簡報 `.pptx` — 模式 3 `Tier 1 / 2 / 3` 操作細則與主題目標對齊規範）
 
-- 於階段進展或雙力對比投影片（Zone 2）中，使用 `python-pptx` 原生向量幾何繪製**階梯進度台階**、**容器液面填充向量塊**或**天平雙軌對比圖**；
-- 必要時可於章節破題處點綴經 `image-generator` 產出並已去背的無文字主題小精靈圖標，強化受眾長期記憶留存（`T24`），同時嚴守 Zone 1～3 斷言架構與零文字穿框底線。
+動工前必須先於 [`../../../advisors/layer3_advisor_design_style_color.md`](../../../advisors/layer3_advisor_design_style_color.md) 完成使用者拍板之 **Topic Art Direction DNA 卡**（選定 `Tier 1 / Tier 2 / Tier 3` 與唯一核心視覺母題），嚴禁未經詢問預設硬套單一等級。
+
+### 1. 三級漸進解鎖實作細則（`Tier 1` ➔ `Tier 2` ➔ `Tier 3`）
+1. **`Tier 1`（100% 原生幾何原語 ＋ 動態主題色票）**：
+   - 搭配 [`thematic_palette_frame.md`](thematic_palette_frame.md) 之 `derive_slide_theme_from_topic()` 推導主題色票，並於 `pptx_slide_engine.py` 調用 **`draw_theme_geometric_accent()` 主題幾何原語**（斜切色面 `diagonal_wedge`、極細刻度尺線 `ruler_ticks`、階段進度台階 `step_blocks`、向量天平 `vector_scale`）與巨型淡序號無框分欄打造專屬雜誌幾何誌感；
+   - **全物件 100% 為 PowerPoint 原生向量與文字**，後續改字彈性最高、生成成本最低。
+2. **`Tier 2`（`Tier 1` ＋ `generate_image` 無文字概念主視覺）**：
+   - 在 `Tier 1` 基礎上，僅於 **封面（`F1-A`）、過場（`F1-B`）或至多 1 頁核心破題頁** 置入經 `generate_image` 產出之 **零任何文字與數字、預留乾淨負空間** 概念藝術底圖；
+   - 中文斷言標題與細線一律以 PowerPoint 原生文字疊加於乾淨負空間上；**嚴禁使用無關裝飾圖或商務握手／發光大腦圖庫風格照**；中段 70%～80% 頁維持 100% 原生可編輯。
+3. **`Tier 3`（`Tier 1/2` ＋ 1～2 頁核心機制頁 HTML+SVG `300 DPI` 透明視覺底層嵌入）**：
+   - 僅針對原生 PowerPoint 幾何難以精準承載的 **1～2 頁最核心因果／系統隱喻**（如平滑貝茲訊號濾網漏斗、失衡天平、冰山分層切面），以 HTML/CSS+SVG 精繪透明視覺底層，並呼叫 `pptx_slide_engine.render_svg_to_png_300dpi(html_or_svg_path, out_png_path, width_px, height_px)`（優先 Playwright + Chromium `device_scale_factor=3, omit_background=True` 寫入 `300 DPI`；未安裝時自動退回本機 Chrome/Edge CLI）無損嵌入 Zone 2；
+   - **原生可編輯紅線**：頁頂 Zone 1 斷言大標與旁側無框導讀／註解必須維持 PowerPoint 原生可編輯文字，且底層色票與幾何性格必須與全檔其餘原生頁一體成型。
+
+### 2. 防花俏四條底線與品質驗證
+1. **唯一核心母題**：全簡報嚴限 **`1` 個核心視覺母題**，貫穿主題 DNA，嚴禁每頁換一套不連貫的視覺隱喻。
+2. **`20/80` 克制配比**：高創意表現頁（`Tier 2` 概念底圖或 `Tier 3` SVG 底層）控制在全簡報 **`<= 20%～30%`**，其餘 **`70%～80%`** 頁面採乾淨無框排版與極細線條承托，確保認知聚焦。
+3. **零無關裝飾廢圖紅線**：嚴守 Bartsch & Cobern (2003) 實證底線，拒絕任何不承載結構資訊之純裝飾插圖、圓圈小徽章或發光外框。
+4. **物理底線強制驗收**：所有模式 3 頁面仍須 100% 遵守 [`../../../presentation_slide_spec.md`](../../../presentation_slide_spec.md) 之 DISCAS `min_font_pt` 硬底線、拍板文案保真鐵律與方案 C 內部品管（自動列入 `high_risk_slides` 執行 `1920×1080` 滿版精檢）。
