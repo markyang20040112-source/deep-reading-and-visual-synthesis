@@ -46,7 +46,7 @@
 若第一層有勾選 **Format E**，除上述內部圖表選型外，須同時決定儀表板整體骨架（**嚴禁寫死固定四圖頁籤**）：
 1. **呈現模式 A：多視角切換互動工作台（Multi-Perspective Workbench）** $\rightarrow$ 頂部維度篩選列 ＋ 3～4 張 KPI 摘要卡 ＋ 動態分頁視角 ＋ 可搜尋與匯出 CSV 之明細表。
 2. **呈現模式 B：多面板全景聯動網格（Synchronized Bento Grid）** $\rightarrow$ 不對稱寬主圖（55～60%）＋ 右側互補副面板，同屏比對全局結構與局部排行。
-3. **呈現模式 C：雙模態協同交付** $\rightarrow$ 零後端獨立 Git-Ready 網頁儀表板 ＋ 一張 `300 DPI` 靜態全景儀表板圖（`.png`）。
+3. **呈現模式 C：雙模態協同交付** $\rightarrow$ 零後端獨立 Deploy-Ready 網頁儀表板 ＋ 一張 `300 DPI` 靜態全景儀表板圖（`.png`）。
 
 ---
 

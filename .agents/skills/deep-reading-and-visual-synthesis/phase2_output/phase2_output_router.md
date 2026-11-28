@@ -133,7 +133,7 @@
    - 凡生成 `.png`、`.pdf`、`.pptx` 或儀表板，必須呼叫 [`../scripts/verify_visual_outputs.py`](../scripts/verify_visual_outputs.py) 轉圖並實地視覺檢查（Format C `Step 5` 依 `default_slide_qa_mode = "option_c_2x2_and_high_risk"` 執行方案 C 三階內部品管：`4×4` 接觸表 ＋ `2×2` 高清四宮格 ＋ `high_risk_slides` 滿版精檢，必要時以單頁重繪覆檢），驗畢執行 `--cleanup` 清理暫存預覽圖。
    - **⏸️ 單格式接力確認**：向使用者交付當前格式成果並勾選藍圖第 5 節對應檔案 `- [x]`，**待使用者確認無誤後，始進入佇列下一個格式**。
 5. **步驟 5（全佇列確認完畢後僅執行一次）：全格式結案、藍圖更新與統一 Git 同步**：
-   - 待佇列中所有選定格式皆交付並獲使用者確認後，將 `02_phase2_generation_blueprint.md` 標頭狀態更新為 **`已交付`**；最後統一按需開啟 [`../setup/git_sync_and_evolution_protocol.md`](../setup/git_sync_and_evolution_protocol.md) 執行公私雙倉庫 Git 同步、獨立儀表板網站 GitHub Pages 發布、Medium 課堂繳交連結推送或 Step E1～E3 靈感進化流程。
+   - 待佇列中所有選定格式皆交付並獲使用者確認後，將 `02_phase2_generation_blueprint.md` 標頭狀態更新為 **`已交付`**；最後統一按需開啟 [`../setup/git_sync_and_evolution_protocol.md`](../setup/git_sync_and_evolution_protocol.md) 執行公私雙倉庫 Git 同步、Format E 儀表板雲端直推部署（依 `web_deploy.provider`）、Medium 課堂繳交連結推送或 Step E1～E3 靈感進化流程。
 
 ---
 

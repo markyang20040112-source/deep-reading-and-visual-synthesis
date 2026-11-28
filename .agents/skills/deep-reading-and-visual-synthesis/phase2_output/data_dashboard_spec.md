@@ -1,6 +1,6 @@
 # 數據儀表板設計與互動／靜態雙模態實作規範（Format E: Data Dashboard Spec）
 
-> **單一職責定位（Single Responsibility）**：本檔專責 **Format E（數據儀表板：互動式 Web 數據儀表板 `.html`/`.css`/`.js` ＋ 出版級靜態全景儀表板圖 `.png`）** 的**動態呈現架構選型（工作台 / Bento 網格 / 雙模態交付，嚴禁寫死圖表類型與呈現格式）**、**前端 CSS `:root` 變數與 `scripts/gephi_palette.js` 色彩工程實作**、第三層設計武器庫前端延伸，以及**零後端自包含前端工程、獨立 Git 儲存庫綁定與網站發布驗收守則**。
+> **單一職責定位（Single Responsibility）**：本檔專責 **Format E（數據儀表板：互動式 Web 數據儀表板 `.html`/`.css`/`.js` ＋ 出版級靜態全景儀表板圖 `.png`）** 的**動態呈現架構選型（工作台 / Bento 網格 / 雙模態交付，嚴禁寫死圖表類型與呈現格式）**、**前端 CSS `:root` 變數與 `scripts/gephi_palette.js` 色彩工程實作**、第三層設計武器庫前端延伸，以及**零後端自包含前端工程、雲端直推部署與網站發布驗收守則**。
 > - **圖表選型、色彩 SSOT 與家族規格連動**：本檔已去除與 Format D 重複之選型長表與靜態圖細則！內部圖表動態選型請見 **[`advisors/layer2_advisor_de_chart.md`](advisors/layer2_advisor_de_chart.md)**；配色設定集與編碼誠實三鐵律請見 **[`quantitative_chart_spec.md`](quantitative_chart_spec.md)**；各家族繪圖細則依需求按需開啟 **[`chart_family1_ranking_and_deviation.md`](chart_family1_ranking_and_deviation.md)**、**[`chart_family2_trend_and_comparison.md`](chart_family2_trend_and_comparison.md)**、**[`chart_family3_composition_and_flow.md`](chart_family3_composition_and_flow.md)**、**[`distribution_and_density_chart_spec.md`](distribution_and_density_chart_spec.md)** 或 **[`chart_family5_multivariate_and_spatial.md`](chart_family5_multivariate_and_spatial.md)**；若第三層開啟模式 2 則加讀 **[`editorial_narrative_spec.md`](editorial_narrative_spec.md)**，若開啟模式 3 則加讀 **[`creative_armory/INDEX.md`](creative_armory/INDEX.md)**。
 > - **筆風設定檔 100% 穿透綁定**：儀表板標題、KPI 卡、頁籤、座標軸籤與 Tooltip 解說微文案受 **`Slot 6`** 與 **`Slot 8`** 控制（[`visual_cognition_principles.md`](visual_cognition_principles.md)）。
 
@@ -22,7 +22,7 @@
    - **適用情境**：需要在單一畫面同時比對「全局結構 × 關鍵排行 × 變化趨勢／落差診斷」以進行高階主管決策。
    - **動態組件**：採用不對稱 Bento 網格（如左側主視覺面板佔 `55%~60%` 寬度呈現核心結構或跨階段軌跡，右側上下堆疊 2 個互補副面板呈現常態化排行與正負偏差），各面板間遵守**跨面板色相區隔與固定類別色碼綁定**。
 3. **【呈現模式 C：雙模態協同交付（Self-Contained Web Dashboard + High-Res Static Overview PNG）】**
-   - **互動網頁端**：產出零後端依賴、雙擊 `index.html` 即可離線秒開、且可直接綁定獨立 Git 儲存庫發布為線上網站的互動式 Web 專案（使用 `ECharts` / `Chart.js` / `Plotly` / 原生 Canvas 等）。
+   - **互動網頁端**：產出零後端依賴、雙擊 `index.html` 即可離線秒開、且可直接透過雲端直推發布為線上網站的互動式 Web 專案（使用 `ECharts` / `Chart.js` / `Plotly` / 原生 Canvas 等）。
    - **靜態出版端**：同步以 Python `matplotlib` (`GridSpec`) 渲染一張遵循完全相同配色與黃金比例垂直空間規範（`24" × 14"`, `dpi=300`）的出版級靜態全景儀表板圖（`.png`）。
 
 ### 2. 第三層設計武器庫連動（模式 2 編輯室工作台 & 模式 3 主題沉浸式策展網頁）
@@ -117,85 +117,63 @@ from verify_visual_outputs import verify_dashboard_bundle # (dashboard_dir) -> d
 
 ---
 
-## 四、 零後端自包含前端架構、獨立 Git 綁定與網站部署規範（Self-Contained Engineering, Git Binding & Web Deployment）
+## 四、 零後端自包含前端架構與雲端直推部署規範（Self-Contained Engineering & Direct-Deploy Workflow）
 
-### 1. 雙擊即開且相容子路徑部署之 Git-Ready 檔案結構（Zero-Backend & Git-Ready Package Structure）
-每個生成的互動式 Web 數據儀表板，預設皆視為**「準備綁定獨立 Git 儲存庫並發布為線上網站（如 GitHub Pages / GitLab Pages / Vercel / Netlify）」**的標準靜態網站專案，必須一次生成以下完整模組化結構：
+### 1. 雙擊即開且相容雲端部署之 Deploy-Ready 檔案結構（Zero-Backend & Deploy-Ready Package Structure）
+每個生成的互動式 Web 數據儀表板，預設皆視為**「準備直接部署為線上網站（預設由使用者擇一選用 Netlify 或 Cloudflare Pages；無部署帳號者提供 GitHub Pages `git subtree` 備援）」**的標準靜態網站專案，必須一次生成以下完整模組化結構：
 - `index.html`：響應式語義化佈局（頂部標題與資料來源聲明、動態維度控制列、KPI 摘要卡片區、主視覺化圖表區、底部搜尋明細表與 CSV 匯出按鈕）。
-  - **【純相對路徑鐵律（Strict `./` Relative Paths）】**：`index.html`、`css/style.css` 與 `js/dashboard.js` 內部引用任何本地資源時，**必須一律使用明確的 `./` 相對路徑**（如 `./css/style.css`、`./js/gephi_palette.js`、`./js/dashboard.js`、`./data/<dataset>_data.js`、`fetch('./data/<dataset>_data.json')`），**嚴禁使用以 `/` 開頭的根目錄絕對路徑**（如 `/css/style.css`），確保同時 100% 相容於：(1) 檔案總管 `file://` 直接雙擊開啟、(2) 獨立網域根目錄，以及 (3) GitHub Pages 子路徑網站（`https://<username>.github.io/<repo-name>/`）而絕不發生 404 破圖或腳本載入失敗！
+  - **【純相對路徑鐵律（Strict `./` Relative Paths）】**：`index.html`、`css/style.css` 與 `js/dashboard.js` 內部引用任何本地資源時，**必須一律使用明確的 `./` 相對路徑**（如 `./css/style.css`、`./js/gephi_palette.js`、`./js/dashboard.js`、`./data/<dataset>_data.js`、`fetch('./data/<dataset>_data.json')`），**嚴禁使用以 `/` 開頭的根目錄絕對路徑**（如 `/css/style.css`），確保同時 100% 相容於：(1) 檔案總管 `file://` 直接雙擊開啟、(2) Netlify / Cloudflare Pages 根網域直推部署，以及 (3) GitHub Pages 子路徑備援（`https://<username>.github.io/<repo-name>/`）而絕不發生 404 破圖或腳本載入失敗！
   - **【禁用執行期 `cdn.tailwindcss.com` 鐵律（Zero Runtime Tailwind CDN）】**：**嚴禁依賴 `<script src="https://cdn.tailwindcss.com"></script>`**（不僅產生 Console 生產環境警告，更會導致離線環境版面崩潰）！所有網格、卡片、按鈕、表格與響應式排版樣式必須完整編寫於本地 `./css/style.css` 中。
 - `css/style.css`：於 `:root` 集中定義當前啟用配色設定集之所有 CSS 變數（`--color-cat-1`、`--tint-cat-1` 等，與 `js/gephi_palette.js` 同步）與完整自包含 UI 樣式，確保零外部 CSS 框架依賴。
 - `js/gephi_palette.js` ＋ `js/dashboard.js`：由 `hcl_color_engine.export_gephi_palette_js("./js/gephi_palette.js")` 匯出權威 CIELAB 色彩引擎，`dashboard.js` 直接調用 `window.GephiPalette` 完成全域固定類別色碼映射、`(v - min)/(max - min)` 循序插值與 9 階對稱發散取色，並監聽 `window.addEventListener('resize', ...)` 自動自適應縮放。
 - `data/<dataset>_data.js` ＋ `data/<dataset>_data.json`：**【離線雙載入防 CORS 鐵律】** 為了讓使用者在檔案總管直接雙擊 `index.html`（`file://` 協定）時不會因瀏覽器阻擋 `fetch('*.json')` 而白屏，必須同時將結構化資料輸出為 `data/<dataset>_data.js`（內含 `window.DASHBOARD_DATA = ...` 並於 `index.html` 以 `<script src="./data/<dataset>_data.js">` 引入）與標準 `.json` 檔！
-- `.nojekyll`：於儀表板專案根目錄建立空白 `.nojekyll` 檔，防止 GitHub Pages 啟動 Jekyll 編譯器而忽略底線開頭檔案或拖慢部署速度。
-- `.gitignore`：預先建立標準忽略清單（排除 `.DS_Store`、`Thumbs.db`、`*.log`、`.vscode/`、`.idea/`、`__pycache__/`、`node_modules/` 等），讓該目錄隨時可直接執行 `git init` 獨立版控。
-- `README.md`：**【網站專案與 Git 部署指南】** 每個儀表板必須自動生成專屬 `README.md`，內容須包含：(1) 儀表板核心特色與視角說明、(2) 專案檔案結構樹（含 `.nojekyll` 與 `.gitignore`）、(3) 本機雙擊與 HTTP Server 預覽方式、(4) **一鍵綁定獨立 Git 儲存庫並發布至 GitHub Pages（含 `gh` CLI 自動建庫、`main` 或 `gh-pages` 分支推送、防外層倉庫嵌套 `.git` 清理指令與 `git subtree` 方案）**、(5) 鎖定版 CIELAB 配色速查表與資料來源聲明。
+- `.nojekyll`：於儀表板專案根目錄建立空白 `.nojekyll` 檔，**僅供 GitHub Pages 備援方案使用**（防止 GitHub Pages 啟動 Jekyll 編譯器而忽略底線開頭檔案）。
+- `.gitignore`：預先建立標準忽略清單（排除 `.DS_Store`、`Thumbs.db`、`*.log`、`.vscode/`、`.idea/`、`__pycache__/`、`node_modules/`、`.netlify/`、`.wrangler/` 等部署 CLI 狀態資料夾與開發暫存檔）。
+- `README.md`：**【網站專案與雲端部署指南】** 每個儀表板必須自動生成專屬 `README.md`，內容須包含：(1) 儀表板核心特色與視角說明、(2) 專案檔案結構樹（含 `.nojekyll` 與 `.gitignore`）、(3) 本機雙擊與 HTTP Server 預覽方式、(4) **依 `web_deploy.provider` 寫入該平台一組部署／重部署指令（另附一行 GitHub Pages subtree 備援指令）**、(5) 鎖定版 CIELAB 配色速查表與資料來源聲明。
 
 
 ### 2. 強制視覺與結構驗收（Mandatory Visual & Bundle Inspection Gate）
 - 若包含靜態全景儀表板圖（`.png`），生成後必須透過 `view_file` 實際檢視渲染成品，確認無文字重疊、無穿線、無溢界、圖例與標題對齊完美。
-- 若為互動式 Web 儀表板，必須執行 `python .agents/skills/deep-reading-and-visual-synthesis/scripts/verify_visual_outputs.py --verify-dashboard "<儀表板目錄>"`（或呼叫 `verify_dashboard_bundle()`）確認基礎檔案齊備、零 Tailwind CDN、純 `./` 相對路徑、`data/*_data.js` + `.json` 雙檔齊全、`css/style.css` 含 `:root` 與 `tabular-nums` 且無殘留嵌套 `.git`；同時確認所有篩選控制項、視角切換、Tooltip 單位顯示與 CSV 匯出（含 `\uFEFF` UTF-8 BOM 防 Excel 中文亂碼）運作正常，並清除任何臨時測試腳本或廢棄預覽檔。
+- 若為互動式 Web 儀表板，必須執行 `python .agents/skills/deep-reading-and-visual-synthesis/scripts/verify_visual_outputs.py --verify-dashboard "<儀表板目錄>"`（或呼叫 `verify_dashboard_bundle()`）確認基礎檔案齊備、零 Tailwind CDN、純 `./` 相對路徑、`data/*_data.js` + `.json` 雙檔齊全、`css/style.css` 含 `:root` 與 `tabular-nums`、`.gitignore` 含 `.netlify/`、`.wrangler/` 且無殘留嵌套 `.git`；同時確認所有篩選控制項、視角切換、Tooltip 單位顯示與 CSV 匯出（含 `\uFEFF` UTF-8 BOM 防 Excel 中文亂碼）運作正常，並清除任何臨時測試腳本或廢棄預覽檔。
 
-### 3. 獨立 Git 儲存庫綁定與網站發布標準流程（Git Repository Binding & Live Website Deployment Workflow）
-由於每個數據儀表板生成完成後，皆預期綁定一個獨立 Git 儲存庫並架設為網站，AI 於完成儀表板渲染與驗收後，**必須執行以下「Git 網站綁定與部署閉環」**：
+### 3. 雲端直推部署閉環（Direct-Deploy Workflow & GitHub Pages Fallback）
+每個數據儀表板驗收通過後，依以下流程執行**雲端直推部署**（需 Node.js 18+ 環境以執行官方 CLI；若已安裝並登入對應 Marketplace 外掛亦可直接調用）：
 
-1. **步驟 A：主動回報部署就緒狀態並詢問遠端綁定方式（Proactive Deployment Prompt）**
-   - 交付成果時，除了告知本機雙擊 `index.html` 預覽路徑外，主動詢問使用者是否要**立即綁定獨立 Git 儲存庫並發布為線上網站**：
-     - **方式 1（提供遠端 Git URL 直接綁定推送）**：請使用者提供新建之空白 GitHub / GitLab 儲存庫網址（例如 `https://github.com/<username>/<repo-name>.git`），由 AI 自動完成初始化、綁定推送（`main` 或 `gh-pages` 分支）與內層 `.git` 無損清理。
-     - **方式 2（透過 GitHub CLI `gh` 全自動建庫＋開通 GitHub Pages）**：若使用者環境已登入 `gh` CLI，只需指定儲存庫名稱（如 `<repo-name>`），即可由 AI 自動建立公開儲存庫、推送程式碼並啟用 GitHub Pages。
-     - **方式 3（保留 Git-Ready 封裝供後續手動推送）**：若當下暫不綁定，專案目錄內已備妥 `.gitignore`、`.nojekyll` 與寫好專案路徑的 `README.md` 部署指令，使用者後續隨時可複製指令一鍵上線。
+1. **步驟 A：決定部署平台（`web_deploy.provider`）**
+   - 讀取 `config/user_preferences.json` 之 `web_deploy.provider`。
+   - 若為 `"ask_every_time"`，於交付本機預覽路徑時同步詢問使用者**擇一**選擇：
+     - **Netlify**（介面直覺、草稿預覽明確）
+     - **Cloudflare Pages**（免費額度大、全球 CDN 速度快）
+     - **GitHub Pages 備援**（無上述平台帳號時，採外層倉庫 `git subtree` 推送）
+     - **暫不部署**（僅保留本機 Deploy-Ready 封裝）
+   - 同時詢問是否將本次選擇寫回 `web_deploy.provider` 作為日後預設值。
+   - **【單一平台擇一鐵律】**：**一次只部署到使用者選定的那一個平台，嚴禁同時部署到多個平台。**
 
-2. **步驟 B：執行獨立 Git 綁定、推送與 GitHub Pages 自動開站（Standard Binding & Publishing Commands）**
-   - **標準獨立倉庫初始化與推送指令（支援推送至 `main` 或 `gh-pages` 分支，自動繼承外層倉庫 Git 身分並內建推送後清理內層 `.git` 防護）**：
+2. **步驟 B：公開網址與資料曝光警示（`warn_public_url_before_deploy`）**
+   - 若 `web_deploy.warn_public_url_before_deploy` 為 `true`，執行部署前必須明確提醒使用者：**部署後的線上網址為公開存取，且靜態網站內的 `data/` 資料檔（`.js` 與 `.json`）皆可被訪客直接檢視或下載**；若包含機密或內部未公開數據，須待使用者確認後再行部署（或建議改用平台密碼保護／暫不部署）。
+
+3. **步驟 C：執行部署（Marketplace 外掛優先條件 ＋ 官方 CLI 預設）**
+   - 若 `web_deploy.use_marketplace_plugin == "auto"` 且對應平台之 Marketplace 外掛（Netlify：`antigravity-plugins-partners/plugin/netlify`；Cloudflare：`antigravity-plugins-partners/plugin/cloudflare`）已安裝且已登入（可先確認帳號狀態），可優先透過外掛 MCP 工具直接部署資料夾。
+   - 其餘所有情況（未裝外掛、未登入或設為 `"never"`）一律使用官方 CLI 直接部署資料夾（需 Node.js 18+）：
+
+   | 平台 | 登入／驗證 | 首次建站＋正式部署（Production） | 草稿預覽（Preview，建議先跑） | 後續更新重部署（Redeploy） |
+   | :--- | :--- | :--- | :--- | :--- |
+   | **Netlify** | `npx netlify-cli login`<br>*(或設 `NETLIFY_AUTH_TOKEN`)* | `npx netlify-cli sites:create --name "<site-name>"`<br>`npx netlify-cli deploy --dir "<儀表板目錄>" --prod --site "<site-name或site-id>"` | `npx netlify-cli deploy --dir "<儀表板目錄>" --site "<site-name或site-id>"` | 同正式部署指令（沿用藍圖紀錄之 `--site`，不另建新站） |
+   | **Cloudflare Pages** | `npx wrangler login`<br>*(或設 `CLOUDFLARE_API_TOKEN`)* | `npx wrangler pages project create "<project-name>" --production-branch main`<br>`npx wrangler pages deploy "<儀表板目錄>" --project-name "<project-name>" --branch main` | `npx wrangler pages deploy "<儀表板目錄>" --project-name "<project-name>" --branch preview` | 同正式部署指令（沿用藍圖紀錄之 `--project-name`，正式網址 `https://<project-name>.pages.dev/`） |
+
+   - **建議先跑草稿預覽**：首次發布建議先執行 Preview 部署，取得預覽網址給使用者確認無誤後，再推送正式環境（`--prod` / `--branch main`）。
+
+4. **步驟 D：紀錄站點資訊與更新重部署（Blueprint Lock）**
+   - 部署完成後，必須將 **部署平台（provider）**、**站點／專案名稱（site / project name）**、**正式網址（Production URL）** 與 **最近部署日期** 寫入 `02_phase2_generation_blueprint.md` 交付清單。
+   - 日後該儀表板有任何修改或資料更新時，一律沿用已紀錄之同一站點／專案重新部署，**嚴禁另開新站導致網址碎片化**。
+
+5. **步驟 E：GitHub Pages 精簡備援（僅供無 Netlify / Cloudflare 帳號之外部使用者）**
+   - 當使用者沒有 Netlify 或 Cloudflare 帳號、但已有外層 Git 知識庫與 GitHub 遠端倉庫時，**先將儀表板所有檔案正常 commit 至外層主倉庫**，再於**外層主倉庫根目錄**執行：
      ```bash
-     # 1. 先從外層主倉庫讀取 Git 身分（防止本機未設定 --global .gitconfig 導致 Author identity unknown 報錯）
-     GIT_USER_NAME=$(git config user.name || echo "dashboard-bot")
-     GIT_USER_EMAIL=$(git config user.email || echo "dashboard-bot@users.noreply.github.com")
-
-     cd "<儀表板專案目錄>"
-     git init
-     git config user.name "$GIT_USER_NAME"
-     git config user.email "$GIT_USER_EMAIL"
-     git add -A
-     git commit -m "feat(dashboard): initial release of interactive data dashboard"
-     git branch -M main
-     git remote add origin https://github.com/<username>/<repo-name>.git
-     # 推送至 main 分支（若欲直接以 gh-pages 分支開站，可改為 git push -u origin main:gh-pages --force）
-     git push -u origin main
-     # 【關鍵防護】若此目錄位於外層主倉庫 (reading_sessions/...) 內，推送完畢立即移除內層 .git 避免外層產生 gitlink 空指標：
-     # PowerShell: Remove-Item -Recurse -Force .git
-     # Bash:       rm -rf .git
+     git subtree split --prefix="reading_sessions/<YYYYMMDD_主題簡稱>/<儀表板子路徑>" -b dashboard-deploy
+     git push https://github.com/<username>/<repo-name>.git dashboard-deploy:main --force
+     git branch -D dashboard-deploy
      ```
-   - **GitHub CLI 一鍵建庫與開啟 GitHub Pages 網站（若 `gh auth status` 可用；參數加引號確保 PowerShell 與 Bash 雙相容）**：
-     ```bash
-     GIT_USER_NAME=$(git config user.name || echo "dashboard-bot")
-     GIT_USER_EMAIL=$(git config user.email || echo "dashboard-bot@users.noreply.github.com")
-
-     cd "<儀表板專案目錄>"
-     git init
-     git config user.name "$GIT_USER_NAME"
-     git config user.email "$GIT_USER_EMAIL"
-     git add -A
-     git commit -m "feat(dashboard): initial release of interactive data dashboard"
-     git branch -M main
-     gh repo create <repo-name> --public --source=. --remote=origin --push
-     gh api repos/{owner}/{repo}/pages -X POST -F build_type=legacy -F "source[branch]=main" -F "source[path]=/"
-     # 【關鍵防護】若位於外層主倉庫內，發布後立即移除內層 .git 以確保外層主倉庫完整備份所有前端原始碼：
-     # PowerShell: Remove-Item -Recurse -Force .git
-     # Bash:       rm -rf .git
-     ```
-     部署完成後，立即向使用者回報正式網站網址：`https://<username>.github.io/<repo-name>/`（亦可直接匯入 Vercel / Netlify 零設定部署）。
-
-3. **步驟 C：【雙倉庫無損同步護欄 — 嚴防外層主倉庫嵌套 `.git` 子模組衝突（Nested Gitlink Prevention）】**
-   - **核心風險**：當儀表板目錄位於本技能主倉庫（`deep-reading-and-visual-synthesis/reading_sessions/...`）內部時，若在子目錄內執行 `git init` 後保留子目錄的 `.git/` 資料夾，外層主倉庫在執行階段完成自動同步（`git add -A`）時，會將該儀表板目錄誤判為未配置的 **Git 子模組（gitlink，mode `160000`）**，導致外層主倉庫只記錄一筆空指標而**無法追蹤並備份儀表板內部的 `index.html`、`css/`、`js/`、`data/` 原始碼**！
-   - **強制防衝突處置原則（二擇一）**：
-     - **方案 1（獨立推送後清理內層 `.git` 或使用 `--git-dir` 隔離法 — 預設推薦）**：如上方步驟 B 所示，在子目錄內完成向獨立網站 Git 儲存庫的 `git push` 後，於執行外層主倉庫 `git add -A` 前，**必須先移除子目錄內的 `.git` 資料夾**（PowerShell：`Remove-Item -Recurse -Force .git`；Bash：`rm -rf .git`），或從頭使用外部臨時 Git 目錄（`git --git-dir="$env:TEMP/dashboard_git" --work-tree="." ...`）執行推送。如此既能讓**獨立網站 Git 儲存庫成功發布 GitHub Pages**，又能讓**主知識庫完整備份每一支前端檔案**！
-     - **方案 2（`git subtree split/push` 子樹直推法 — 零內層 `.git`）**：先將儀表板所有檔案正常 commit 至外層主倉庫，再於主倉庫根目錄執行：
-       ```bash
-       git subtree split --prefix="reading_sessions/<YYYYMMDD_主題簡稱>/<儀表板子路徑>" -b dashboard-deploy
-       # 可直接推送至目標獨立倉庫之 main 或 gh-pages 分支：
-       git push https://github.com/<username>/<repo-name>.git dashboard-deploy:main --force
-       git branch -D dashboard-deploy
-       ```
-       即可在不產生任何嵌套 `.git` 的情況下，將該儀表板目錄做為乾淨的根目錄獨立推送到目標網站 Git 儲存庫！
+     推送後由使用者前往該 GitHub 倉庫之 **Settings ➔ Pages** 啟用（Source 選 `main` 分支與 `/(root)`）。
+   - **【嚴禁在儀表板目錄內 `git init`】**：**嚴禁在儀表板子目錄內執行 `git init`**。採 Netlify / Cloudflare Pages 直推部署完全不會在目錄內產生 `.git/`，外層私人倉庫得以自然完整追蹤並備份每一支前端原始碼，從根本消除嵌套 `.git`（gitlink）衝突。
 

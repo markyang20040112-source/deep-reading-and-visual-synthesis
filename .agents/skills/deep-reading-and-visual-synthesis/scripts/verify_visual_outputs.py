@@ -346,11 +346,12 @@ def verify_dashboard_bundle(dashboard_dir: str) -> dict:
     Verify a Format E zero-backend interactive web dashboard directory:
     1. Required files exist: `index.html`, `css/style.css`, `js/gephi_palette.js`, `js/dashboard.js`,
        `.nojekyll`, `.gitignore`, `README.md`.
-    2. `index.html` does NOT load `cdn.tailwindcss.com` and uses strict `./` relative local paths
+    2. `.gitignore` includes ignore rules for `.netlify/` and `.wrangler/` CLI state directories.
+    3. `index.html` does NOT load `cdn.tailwindcss.com` and uses strict `./` relative local paths
        (no root-absolute `/css/...` or `/js/...` paths).
-    3. `data/` contains BOTH `*_data.js` and `*_data.json` (offline `file://` dual-loading).
-    4. `css/style.css` includes `:root` CSS variables and `tabular-nums`.
-    5. No nested `.git` directory remains inside `dashboard_dir`.
+    4. `data/` contains BOTH `*_data.js` and `*_data.json` (offline `file://` dual-loading).
+    5. `css/style.css` includes `:root` CSS variables and `tabular-nums`.
+    6. No nested `.git` directory remains inside `dashboard_dir`.
     Returns dict with `passed`, `dashboard_dir`, `issues`, `stats_line`.
     """
     import re
@@ -372,6 +373,16 @@ def verify_dashboard_bundle(dashboard_dir: str) -> dict:
     missing = [rel for rel in required_files if not (d / rel).is_file()]
     if missing:
         issues.append(f"缺少必要網站專案檔案：{', '.join(missing)}")
+
+    gitignore_path = d / ".gitignore"
+    if gitignore_path.is_file():
+        gi_lines = {
+            line.strip().rstrip("/")
+            for line in gitignore_path.read_text(encoding="utf-8", errors="replace").splitlines()
+            if line.strip() and not line.strip().startswith("#")
+        }
+        if ".netlify" not in gi_lines or ".wrangler" not in gi_lines:
+            issues.append("`.gitignore` 缺少 `.netlify/` 或 `.wrangler/`（部署 CLI 狀態資料夾）忽略規則。")
 
     index_path = d / "index.html"
     if index_path.is_file():
@@ -402,7 +413,7 @@ def verify_dashboard_bundle(dashboard_dir: str) -> dict:
             issues.append("`css/style.css` 缺少 `font-variant-numeric: tabular-nums` 等寬數字對齊設定。")
 
     if (d / ".git").exists():
-        issues.append("偵測到殘留之嵌套 `.git` 目錄！推送獨立網站倉庫後請務必清除內層 `.git`，避免外層倉庫產生 gitlink 衝突。")
+        issues.append("偵測到儀表板目錄內有 `.git`！Format E 已改為雲端直推部署，嚴禁在儀表板目錄 git init；GitHub Pages 備援請改用 `git subtree split`。")
 
     stats_line = (
         f"🌐 Format E 網站結構檢查（{d.name}）："

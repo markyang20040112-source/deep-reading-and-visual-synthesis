@@ -35,7 +35,7 @@
 | :--- | :--- | :--- | :--- |
 | **1. 核心必備** | `Python 3.10+`、`matplotlib`、`numpy`、`pandas` | 幾乎所有模式都會用到（畫知識圖譜、統計圖表、CSV 三層分流） | 若有缺少，主動詢問：**「是否幫您一鍵執行 `pip install` 安裝這幾個核心套件？」** |
 | **2. 格式與擷取選配** | • `Pillow`（`PIL`：Format C 精準繁中字寬／斷行計算、方案 C `4×4` 接觸表與 `2×2` 高清網格預覽，以及 `300 DPI` PNG 輸出寫入）<br>• `python-pptx`（Format C 簡報 `.pptx` 生成與結構驗證）<br>• `playwright` ＋ Chromium（安裝套件後須再執行 `playwright install chromium`；兼用於 Format B `.pdf` 編譯／預覽轉圖，以及 Format C 模式 3 `Tier 3` `300 DPI` 透明底層渲染；未安裝時 Format C `Tier 3` 可自動退回本機 Chrome / Edge CLI 保底）<br>• `PyMuPDF`（`fitz`：PDF 頁面轉圖預覽與 PDF 文本擷取底層）、`requests`、`youtube-transcript-api`、`pymupdf4llm`、`python-docx`（Phase 1 網址／YouTube 字幕／PDF／Word 自動擷取） | **僅於輸出 `.pptx`/`.pdf`（含 Format C 精準字寬／網格品管／模式 3 `Tier 3`）或自動擷取外部連結／文件時需要**（`find_spec('playwright')` 為 `True` 時若需使用，請一併確認 Chromium 瀏覽器已下載；未裝 `playwright` 時 `Tier 3` 可退回本機 Chrome/Edge CLI；未裝擷取套件時網頁擷取可退回內建 `urllib + lxml` 保底） | 告知用途與缺少項目，由使用者決定**「現在一併安裝」**或**「先跳過，有需要該格式時再裝」** |
-| **3. 雲端協作（選用）** | `git`、`gh` (GitHub CLI) | 僅用於「跨電腦同步」或「Format E 發布線上網站」 | **明確告知「完全沒有 Git 或 GitHub 帳號也能 100% 正常使用本技能（本機存檔＋匿名 Webhook 自動回報靈感）」**，不強迫安裝 |
+| **3. 雲端協作（選用）** | `git`、`gh`、`Node.js 18+`（`npx netlify-cli` / `npx wrangler`） | 跨電腦同步或 Format E 發布線上網站 | **明確告知「完全沒有 Git、GitHub 或雲端部署帳號也能 100% 正常使用本技能（本機存檔＋匿名 Webhook 自動回報靈感）」**，不強迫安裝 |
 
 ---
 
@@ -77,17 +77,20 @@
 
 ---
 
-### Step 4：設定本機／Git 同步與跨使用者靈感回報偏好（`git_and_feedback`）
+### Step 4：設定本機／Git 同步、Format E 部署平台與靈感回報偏好（`git_and_feedback` & `web_deploy`）
 1. **無 Git 帳號支援與同步模式（`git_sync_mode`）**：
    - 若新使用者**沒有 Git / GitHub 帳號**，或不需要將閱讀紀錄推送到遠端，直接設為 **`"none"`**（僅保存在本機 `reading_sessions/`），並以本機系統帳號（`bound_local_user`）或自訂暱稱作為個人設定識別碼，確保下次開啟免重複初始化。
    - 若新使用者有自己的個人 Git 倉庫，可設為 `"auto_push_main"` 並協助將 `git remote set-url origin` 指向其個人倉庫。
 2. **跨使用者靈感自動回報（`upstream_feedback_repo` & `feedback_webhook_url`）**：
    - 保持指向原作者公開倉庫 `"markyang20040112-source/deep-reading-and-visual-synthesis"` 與匿名 Apps Script Webhook，當使用者在日常使用中累積技能優化靈感時，**即使沒有 GitHub 帳號**，亦可於 Step E1 透過 `scripts/report_skill_feedback.py` 一鍵背景自動回報（自動加上 `[FR-*]` 固定分類代號）協助技能演進。
+3. **Format E 部署平台（`web_deploy`）**：
+   - 詢問使用者未來若生成 Format E 互動式網頁儀表板，偏好哪種線上發布方式（`netlify`／`cloudflare_pages`／`ask_every_time` 每次再問／`none` 不部署），並寫入 `web_deploy.provider`。
+   - 若使用者的 AI 代理環境支援 Marketplace 外掛（如 Antigravity），詢問是否加裝對應平台外掛（Netlify `antigravity-plugins-partners/plugin/netlify`／Cloudflare `antigravity-plugins-partners/plugin/cloudflare`），由使用者自行從外掛卡片安裝，AI 不代裝；若環境不支援外掛則直接略過此題，`use_marketplace_plugin` 維持 `"auto"`，一律走官方 CLI。
 
 ---
 
 ## ✅ 二、 完成寫入與無縫接回主任務
 
 完成上述設定後：
-1. 基於 [`../config/user_preferences.template.json`](../config/user_preferences.template.json)（Schema `14.0`），將新使用者的專屬色票、筆風路徑、Phase 2 決策確認偏好（含 `5_layout_and_delivery_details` 之 `default_delivery_cadence`、`default_delivery_queue` 與 `default_slide_qa_mode`）、本機識別（有 Git 者寫入 `"bound_git_user"`；無 Git 者寫入 `"bound_local_user"` 與 `"bound_git_user": null`）與 **`"onboarding_completed": true`** 完整寫入本機 `config/user_preferences.json`（並確保移除任何 `owner_only: true` 條目）。
+1. 基於 [`../config/user_preferences.template.json`](../config/user_preferences.template.json)（Schema `14.0`），將新使用者的專屬色票、筆風路徑、Phase 2 決策確認偏好（含 `5_layout_and_delivery_details` 之 `default_delivery_cadence`、`default_delivery_queue` 與 `default_slide_qa_mode`）、`web_deploy` 部署偏好、本機識別（有 Git 者寫入 `"bound_git_user"`；無 Git 者寫入 `"bound_local_user"` 與 `"bound_git_user": null`）與 **`"onboarding_completed": true`** 完整寫入本機 `config/user_preferences.json`（並確保移除任何 `owner_only: true` 條目）。
 2. 立即關閉本精靈，無縫接回使用者原本上傳的文章或資料集任務（依 [`../SKILL.md`](../SKILL.md) 進入 Phase 1 或 Phase 2）！

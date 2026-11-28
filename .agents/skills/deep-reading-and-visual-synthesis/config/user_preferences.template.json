@@ -100,6 +100,12 @@
     "feedback_webhook_url": "https://script.google.com/macros/s/AKfycbwmiB6apvEF6Cqfg0ydxvut98XerhQXAdwukwgP4mnY_pSz3HnJYyjOfNKa5k1oLLJW-A/exec",
     "prompt_feedback_report_on_step_e1": true
   },
+  "web_deploy": {
+    "provider": "ask_every_time",
+    "supported_providers": ["netlify", "cloudflare_pages", "github_pages_fallback", "none"],
+    "use_marketplace_plugin": "auto",
+    "warn_public_url_before_deploy": true
+  },
   "update_check": {
     "enabled": true,
     "interval_days": 30,

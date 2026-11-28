@@ -30,9 +30,18 @@
 1. **`Tier 1`（100% 原生幾何原語 ＋ 動態主題色票）**：
    - 搭配 [`thematic_palette_frame.md`](thematic_palette_frame.md) 之 `derive_slide_theme_from_topic()` 推導主題色票，並於 `pptx_slide_engine.py` 調用 **`draw_theme_geometric_accent()` 主題幾何原語**（斜切色面 `diagonal_wedge`、極細刻度尺線 `ruler_ticks`、階段進度台階 `step_blocks`、向量天平 `vector_scale`）與巨型淡序號無框分欄打造專屬雜誌幾何誌感；
    - **全物件 100% 為 PowerPoint 原生向量與文字**，後續改字彈性最高、生成成本最低。
-2. **`Tier 2`（`Tier 1` ＋ `generate_image` 無文字概念主視覺）**：
-   - 在 `Tier 1` 基礎上，僅於 **封面（`F1-A`）、過場（`F1-B`）或至多 1 頁核心破題頁** 置入經 `generate_image` 產出之 **零任何文字與數字、預留乾淨負空間** 概念藝術底圖；
+2. **`Tier 2`（`Tier 1` ＋ `image-generator` 無文字概念主視覺）**：
+   - 在 `Tier 1` 基礎上，僅於 **封面（`F1-A`）、過場（`F1-B`）或至多 1 頁核心破題頁** 置入呼叫 `image-generator` 子代理產出（存於 `02_outputs/assets/<topic>_concept_<nn>.png`）之 **零任何文字與數字、預留乾淨負空間** 概念藝術底圖；
    - 中文斷言標題與細線一律以 PowerPoint 原生文字疊加於乾淨負空間上；**嚴禁使用無關裝飾圖或商務握手／發光大腦圖庫風格照**；中段 70%～80% 頁維持 100% 原生可編輯。
+   - **`Tier 2` 彈性生圖提示詞最小骨架（保留最大主題自由度）**：呼叫 `image-generator` 子代理時僅需鎖定以下 6 項工程欄位，其餘構圖、藝術媒材與氛圍皆依每份報告主題 100% 自由發揮：
+     ```text
+     [Aspect] 16:9 widescreen background illustration
+     [Core Motif] <取自 Topic Art Direction DNA 卡之唯一核心母題>
+     [Palette HEX] <取自 Topic Art Direction DNA 卡之主題色票 HEX>
+     [Negative Space] Leave clean, uncluttered negative space on the <left / right / top / bottom — 依 F1-A/F1-B/F1-C 標題與文字區所在側填寫> for overlaid typography
+     [Shared Style] <同一份簡報之 1～3 張概念圖共用同一句媒材／風格描述以維持跨頁一致性>
+     [Negative Constraint] Strictly NO text, NO numbers, NO letters, NO watermark or logo text
+     ```
 3. **`Tier 3`（`Tier 1/2` ＋ 1～2 頁核心機制頁 HTML+SVG `300 DPI` 透明視覺底層嵌入）**：
    - 僅針對原生 PowerPoint 幾何難以精準承載的 **1～2 頁最核心因果／系統隱喻**（如平滑貝茲訊號濾網漏斗、失衡天平、冰山分層切面），以 HTML/CSS+SVG 精繪透明視覺底層，並呼叫 `pptx_slide_engine.render_svg_to_png_300dpi(html_or_svg_path, out_png_path, width_px, height_px)`（優先 Playwright + Chromium `device_scale_factor=3, omit_background=True` 寫入 `300 DPI`；未安裝時自動退回本機 Chrome/Edge CLI）無損嵌入 Zone 2；
    - **原生可編輯紅線**：頁頂 Zone 1 斷言大標與旁側無框導讀／註解必須維持 PowerPoint 原生可編輯文字，且底層色票與幾何性格必須與全檔其餘原生頁一體成型。

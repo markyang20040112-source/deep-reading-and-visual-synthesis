@@ -1,6 +1,6 @@
-# 公私雙倉庫 Git 同步、獨立儀表板發布與技能優化靈感進化協定（Git Sync, Web Deployment & Evolution Protocol）
+# 公私雙倉庫 Git 同步、Format E 雲端部署與技能優化靈感進化協定（Git Sync, Web Deployment & Evolution Protocol）
 
-> **單一職責定位（Single Responsibility）**：本檔由 [`../SKILL.md`](../SKILL.md) 按需拆出，專責處理 **① 作者公私雙倉庫自動同步與跨電腦一鍵還原**、**② Format E 數據儀表板獨立 Git 儲存庫綁定（含防嵌套 `.git` 子模組衝突）**、**③ Medium 每週一圖單檔連結推送與課堂繳交區塊**，以及 **④ 技能優化靈感之 Step E1～E3 查證、GitHub Issues 三通道自動回報與暫存檔歸零閉環**。**日常閱讀與畫圖階段不開啟本檔，唯有準備執行 Git 同步／網站發布／Step E1～E3 技能進化時才按需讀取**！
+> **單一職責定位（Single Responsibility）**：本檔由 [`../SKILL.md`](../SKILL.md) 按需拆出，專責處理 **① 作者公私雙倉庫自動同步與跨電腦一鍵還原**、**② Format E 數據儀表板雲端直推部署（Netlify / Cloudflare Pages 擇一，GitHub Pages subtree 備援）**、**③ Medium 每週一圖單檔連結推送與課堂繳交區塊**，以及 **④ 技能優化靈感之 Step E1～E3 查證、GitHub Issues 三通道自動回報與暫存檔歸零閉環**。**日常閱讀與畫圖階段不開啟本檔，唯有準備執行 Git 同步／網站發布／Step E1～E3 技能進化時才按需讀取**！
 
 ---
 
@@ -23,12 +23,12 @@
 
 ---
 
-## 二、 Format E（數據儀表板）獨立 Git 儲存庫綁定與網站發布規範
+## 二、 Format E（數據儀表板）雲端直推部署規範
 
 每當生成 Format E 互動式數據儀表板時，依 **[`../phase2_output/data_dashboard_spec.md`](../phase2_output/data_dashboard_spec.md)** 第四節執行：
-1. 確保已封裝完整 Git-Ready 靜態結構（純 `./` 相對路徑、`css/style.css`、`js/gephi_palette.js`、`js/dashboard.js`、`data/<dataset>_data.js` & `.json`、`.nojekyll`、`.gitignore`、`README.md`）。
-2. 驗收完畢後，主動詢問使用者是否立即綁定獨立遠端儲存庫或透過 `gh` CLI 自動建立公開倉庫並啟用 GitHub Pages。
-3. **【防嵌套 `.git` 子模組衝突鐵律（Nested Gitlink Prevention）】**：當儀表板目錄位於 `reading_sessions/` 內時，若於子目錄執行 `git init` 完成獨立推送後，**必須立即移除子目錄內的 `.git` 資料夾**（PowerShell：`Remove-Item -Recurse -Force .git`；Bash：`rm -rf .git`），或改採主倉庫 `git subtree split --prefix="..." -b dashboard-deploy` 推送，嚴防外層私人倉庫將該儀表板目錄誤判為空 `gitlink` 子模組！
+1. 確保已封裝完整 Deploy-Ready 靜態結構（純 `./` 相對路徑、`css/style.css`、`js/gephi_palette.js`、`js/dashboard.js`、`data/<dataset>_data.js` & `.json`、`.nojekyll`（僅備援用）、`.gitignore`（須含 `.netlify/`、`.wrangler/`）、`README.md`）。
+2. 驗收完畢後，依 `web_deploy.provider`（`netlify` / `cloudflare_pages` / `github_pages_fallback` / `ask_every_time` / `none`）**擇一平台**執行部署並回報正式網址，細節見 `data_dashboard_spec.md` 第 4.3 節。
+3. **【嚴禁內層 `git init` 鐵律】**：嚴禁於儀表板目錄內執行 `git init`；使用官方 CLI 直推不會產生 `.git`，若外部使用者採 GitHub Pages 備援，一律於外層主倉庫使用 `git subtree split` 推送，徹底避免嵌套 `.git` 子模組衝突。
 
 ---
 

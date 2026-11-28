@@ -17,9 +17,9 @@
 > **【底線 2：實證選型紅線 — 不為造型犧牲共用基線與全樣本密度（參考 `T25`）】**
 > 動工前先依 [`../advisors/layer2_advisor_de_chart.md`](../advisors/layer2_advisor_de_chart.md) 檢驗：(1) 若核心命題是「兩條序列的淨差距」，不可為追求鏡像造型而拆散共用基線；(2) 若核心命題是「多維全樣本結構分布（如數十個縣市／業別）」，不可為了畫具象造型而砍掉多數樣本只剩少數代表點。唯有**創意形式本身能放大數據反差或記憶點、且不損及核心讀取任務**時，才啟用模式 3。
 >
-> **【底線 3：生圖模型 (`image-generator` / `generate_image`) 與 Python 渲染引擎之絕對邊界】**
+> **【底線 3：生圖模型（`image-generator` 子代理）與 Python 渲染引擎之絕對邊界】**
 > - **絕對禁止**呼叫生圖模型直接生成含中文標題、數字標籤、百分比或座標軸的完整圖表或整頁投影片（必生亂碼文字且比例失真）！
-> - 生圖模型的**合法邊界**僅限兩類「零文字與零數字」視覺素材：① **Format D 統計圖表**僅產出「純白底 `#FFFFFF`（或正對稱圓盤）之高解析度材質紋理（Texture）或單一主題精靈圖標（Sprite）」，所有數學比例裁切（`clip_path` / `Wedge`）、$(X, Y)$ 座標錨定（`AnnotationBbox`）與繁中排版 100% 由 `hcl_color_engine.py` 精確執行；② **Format C 模式 3 `Tier 2` 簡報**僅於封面／過場／至多 1 頁破題頁產出「預留乾淨負空間、零任何文字與數字」之概念主視覺底圖，標題與細線 100% 由 `pptx_slide_engine.py` 原生文字疊加。
+> - 生圖模型的**合法邊界**僅限兩類「零文字與零數字」視覺素材：① **Format D 統計圖表**僅產出「純白底 `#FFFFFF`（或正對稱圓盤）之高解析度材質紋理（Texture）或單一主題精靈圖標（Sprite）」，所有數學比例裁切（`clip_path` / `Wedge`）、$(X, Y)$ 座標錨定（`AnnotationBbox`）與繁中排版 100% 由 `hcl_color_engine.py` 精確執行；② **Format C 模式 3 `Tier 2` 簡報**僅於封面／過場／至多 1 頁破題頁產出「預留乾淨負空間、零任何文字與數字」之概念主視覺底圖，標題與細線 100% 由 `pptx_slide_engine.py` 原生文字疊加。所有生圖素材一律存於 `reading_sessions/<YYYYMMDD_主題簡稱>/02_outputs/assets/`。
 >
 > **【底線 4：優先讓幾何結構本身說話，不硬塞浮動說明框】**
 > 模式 3 支援極簡無浮動文字框的「純幾何隱喻（Pure Form-as-Metaphor）」，無須為了營造設計感而堆砌多餘裝飾方框或圖內長段旁白。
@@ -40,7 +40,7 @@
 | **`01_texture_and_container/`**<br>*(材質、容器與精靈圖標)* | [`cases/01_texture_and_container/sprite_coord_scatter.md`](cases/01_texture_and_container/sprite_coord_scatter.md) | **點位／陣列編碼 → 單體精靈圖標座標散佈**（白底自動去背＋`AnnotationBbox` 精準釘座標；適用高辨識度實體散佈） | `image-generator` + `plot_sprite_scatter` |
 | **`02_structural_geometry/`**<br>*(純幾何物理結構隱喻)* | *(開放式成長目錄：[`cases/02_structural_geometry/.gitkeep`](cases/02_structural_geometry/.gitkeep))* | **純向量幾何 Form-as-Metaphor 預留庫**（零材質、零浮動框、且不損及讀取精度與樣本密度之未來原創純向量幾何隱喻；凡經使用者實戰驗收勝出者自動沉澱為單行原子卡；註：蝴蝶金字塔與雙向向量箭頭已升格常駐 [`../chart_family1_ranking_and_deviation.md`](../chart_family1_ranking_and_deviation.md)） | 原生 Matplotlib 向量幾何 |
 | **`03_spatial_and_thematic/`**<br>*(空間拓撲與主題色階裝幀)* | [`cases/03_spatial_and_thematic/thematic_palette_frame.md`](cases/03_spatial_and_thematic/thematic_palette_frame.md) | **色彩語義與跨格式裝幀 → CIELAB 主題色階＋Format C 動態主題色票**（5 大內建色階（9 別名）或單一 HEX 推導；Format C 支援開燈教室淺底安全組／可控深場＋WCAG AA $\ge 4.5:1$） | `derive_thematic_palette` / `derive_slide_theme_from_topic` / `deriveThematicPalette` + `add_inset_leaderboard` |
-| **`03_spatial_and_thematic/`**<br>*(空間拓撲與主題色階裝幀)* | [`cases/03_spatial_and_thematic/diagram_spatial_metaphors.md`](cases/03_spatial_and_thematic/diagram_spatial_metaphors.md) | **Format A / C 空間拓撲隱喻與 `Tier 1 / 2 / 3` 操作細則**（Format A 冰山／漏斗／天平；Format C 原生幾何原語、`generate_image` 無字概念主視覺、HTML+SVG `300 DPI` 透明底層、1 母題與 `20/80` 紅線） | `generate_mindmap.py` / `pptx_slide_engine.py` (`draw_theme_geometric_accent`, `render_svg_to_png_300dpi`) + `generate_image` |
+| **`03_spatial_and_thematic/`**<br>*(空間拓撲與主題色階裝幀)* | [`cases/03_spatial_and_thematic/diagram_spatial_metaphors.md`](cases/03_spatial_and_thematic/diagram_spatial_metaphors.md) | **Format A / C 空間拓撲隱喻與 `Tier 1 / 2 / 3` 操作細則**（Format A 冰山／漏斗／天平；Format C 原生幾何原語、`image-generator` 無字概念主視覺、HTML+SVG `300 DPI` 透明底層、1 母題與 `20/80` 紅線） | `generate_mindmap.py` / `pptx_slide_engine.py` (`draw_theme_geometric_accent`, `render_svg_to_png_300dpi`) + `image-generator` |
 
 ---
 

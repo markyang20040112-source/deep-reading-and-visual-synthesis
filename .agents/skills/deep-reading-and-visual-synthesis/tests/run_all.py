@@ -18,6 +18,7 @@ SUITES = [
     "test_pdf_pipeline.py",
     "test_mindmap_and_ingest.py",
     "test_pptx_pipeline.py",
+    "test_dashboard_bundle.py",
 ]
 
 
