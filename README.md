@@ -4,9 +4,12 @@
 
 ---
 
-## 🏗️ 全系統架構全景圖（System Architecture Overview）
+## 🏗️ 全系統架構總覽圖與完整介紹（System Architecture Overview）
 
-![Deep Reading & Visual Synthesis 全系統架構全景圖](assets/skill_architecture_overview.png)
+![Deep Reading & Visual Synthesis 核心架構圖](技能說明與架構圖/skill_architecture_overview.png)
+
+> 📖 **想由淺入深了解這個技能怎麼用、有哪些設計巧思，以及各 `.md` / `.py` 檔案的詳細分工？**
+> 請閱讀 👉 **[技能介紹與架構指南（白話功能解說 ＋ 完整架構流程與模組職責）](技能說明與架構圖/技能介紹與架構指南.md)**
 
 ---
 
@@ -16,9 +19,12 @@
 
 ```text
 deep-reading-and-visual-synthesis/
-├── README.md                                                 # [人類導覽] 倉庫全景架構圖、樹狀檔案地圖與執行階段邊界說明
-├── assets/
-│   └── skill_architecture_overview.png                       # [架構圖] 全系統架構全景圖（給人類閱覽之 PNG 導覽）
+├── README.md                                                 # [人類導覽] 倉庫總覽、樹狀檔案地圖與執行階段邊界說明
+├── 技能說明與架構圖/                                           # [給使用者看的白話介紹與架構圖]
+│   ├── skill_architecture_overview.png                       # [架構圖] 清爽白話版核心架構總覽圖（10 秒看懂技能功用）
+│   ├── 技能介紹與架構指南.md                                   # [完整介紹] 壹、白話功能與流程解說 ＋ 貳、詳細架構流程與各 .md/.py 定位
+│   ├── generate_architecture_diagram.py                      # [生圖腳本] 生成核心架構圖的 Python 腳本（含防撞檢查）
+│   └── architecture_diagram_spec.md                          # [規格提示詞] 架構圖構圖規格、色票與日後交給 AI 修改重繪之提示詞
 └── .agents/skills/deep-reading-and-visual-synthesis/         # 【核心技能定義區 — 採樹狀分枝與 O(1) 按需載入】
     ├── SKILL.md                                              # [總控台 <=8KB] Gate 0 身分驗證門神、五大運作鐵律、樹狀地圖與歸檔規範
     ├── THEORY_ARCHIVE.md                                     # [文獻庫] 認知心理學、視覺感知、投影光學與排版工學實證文獻封存庫 (T01~T26)
