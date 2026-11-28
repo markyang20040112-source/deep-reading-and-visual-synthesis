@@ -49,7 +49,7 @@
    - 依使用者提示詞自動切換三軌：
      - **軌道 A（使用者已有明確切入角度）**：以 `df_detail` 真實統計量驗證使用者的切角，挑出最具反差感的「黃金數字（Hook）」，並延伸推演第二層因果或交叉對比結構。
      - **軌道 B（使用者僅有初步了解與興趣，想一起從資料找故事）**：啟動 **「廣角數據雷達（EDA Story Menu）」**，由 AI 根據 Python 掃描結果主動端出 **3～4 個最具新聞感與故事張力的「候選切角選單」**（如：① **極端倍數落差與右偏平均幻覺型**、② **反直覺背離／剪刀差型**、③ **長尾資源集中型**、④ **結構拆解／背景基準分面比較型**），每個候選切角皆附上真實數據亮點供使用者挑選，再透過互動問答逐步深挖、篩選收束。
-     - **軌道 C（使用者要求逐步導學分配與密度圖形 `step_by_step_tutor`）**：直接銜接 [`../phase2_output/distribution_and_density_chart_spec.md`](../phase2_output/distribution_and_density_chart_spec.md)，依序每次生成 1 張圖（直方圖 $\rightarrow$ KDE $\rightarrow$ ECDF $\rightarrow$ Q-Q $\rightarrow$ 箱形 $\rightarrow$ 小提琴 $\rightarrow$ 山脊 $\rightarrow$ 2D 直方圖 $\rightarrow$ 2D KDE 等高線 $\rightarrow$ 背景基準疊加分面比較四大案例），每張圖提供五步完整解說並停下來等待使用者回應。
+     - **軌道 C（使用者要求逐步導學分配與密度圖形 `step_by_step_tutor`）**：直接銜接 [`../formats/format_d_charts/families/family4_distribution_and_density.md`](../formats/format_d_charts/families/family4_distribution_and_density.md)，依序每次生成 1 張圖（直方圖 $\rightarrow$ KDE $\rightarrow$ ECDF $\rightarrow$ Q-Q $\rightarrow$ 箱形 $\rightarrow$ 小提琴 $\rightarrow$ 山脊 $\rightarrow$ 2D 直方圖 $\rightarrow$ 2D KDE 等高線 $\rightarrow$ 背景基準疊加分面比較四大案例），每張圖提供五步完整解說並停下來等待使用者回應。
 2. **製圖前確認條件「全預填確認表」＋ 原表 `df_other`（「其他」列）與 `4+1` 灰色長尾（`#CBD5E1`）之雙重語義消歧**：
    - **製圖條件全預填表**：向使用者展示由《資料說明書》與 `df_detail` 自動帶入的預填表（含：① 欄位 Schema 與枚舉映射、② 單位、③ **純明細 `df_detail` `Min/Max` vs. 全檔 `Min/Max`**、④ 指標極性同質化檢核、⑤ 缺失值 `NA` `#D9D9D9` 筆數、⑥ 超界值／Winsorization 狀態），僅需使用者與 AI 討論拍板 **「故事切角與圖表模式（`editorial_storytelling` vs. `pure_dataviz`）」、「發散色階中心基準（`#F5F6F7`）」與「`4+1` 長尾聚焦策略」**。
    - **原表 `df_other` vs. `4+1` 長尾灰柱（`#CBD5E1`）消歧鐵律**：
@@ -61,4 +61,4 @@
    - **防超譯與三層指標護欄**：在討論過程中，自動拿《資料說明書》第 6 章列出的**「生態謬誤（Ecological Fallacy，嚴格區分村里總額 $\neq$ 每納稅單位平均所得 $\neq$ 個人所得分布）」、「抽樣／申報母體涵蓋偏差」、「跨年名目金額 vs. 實質購買力」**幫使用者的論點把關。
    - **單一故事線漏斗收斂（針對 Medium 每週一圖／輕量數據敘事專欄任務）**：**豁免**模式 1 的 Step 4 跨域類比與 Step 5 多分支零刪減擴張，最終收斂定案為：
      - **「1 個核心數據故事主軸 ＋ 1～2 張圖表的敘事分工（主色破題 $\rightarrow$ 次色深挖）＋ `<= 1,600` 字報導大綱（含說明書第 6 章的 1 項核心外推邊界反思）」**。
-   - 使用者確認收斂大綱後，完整定稿 `01_phase1_socratic_log.md`（保持為獨立自洽之 Phase 1 思辨與數據探索紀錄，不附掛 Phase 2 藍圖連結），隨即讀取 [`../phase2_output/phase2_output_router.md`](../phase2_output/phase2_output_router.md) 進入第二階段「三層漸進式決策漏斗（Layer 1 $\rightarrow$ Layer 2 $\rightarrow$ Layer 3）」，並按時機 A 逐層寫入 `02_phase2_generation_blueprint.md`！
+   - 使用者確認收斂大綱後，完整定稿 `01_phase1_socratic_log.md`（保持為獨立自洽之 Phase 1 思辨與數據探索紀錄，不附掛 Phase 2 藍圖連結），隨即讀取 [`../shared/router.md`](../shared/router.md) 進入第二階段「樹狀主幹分枝流程（主幹格式與全域預設 $\rightarrow$ 選定分枝 `01_plan.md`）」，並按時機 A 逐層寫入 `02_phase2_generation_blueprint.md`！

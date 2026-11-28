@@ -1,0 +1,77 @@
+# 圖表家族 2：時序趨勢、漏斗斷崖與同案雙維反差（Chart Family 2: Trend, Cliff & Contrast Spec）
+
+> **單一職責定位（Single Responsibility）**：本檔為 Format D ⇄ E **圖表家族 2 終端細分規範**，**僅當 [`../01_plan.md`](../01_plan.md) 選定跨階段留存斷崖、多期時間序列（含歷史事件標註）、同案配對雙柱剪刀差、面積軌跡或範圍甘特圖時按需載入**（須搭配核心契約 [`../02_build_core.md`](../02_build_core.md) 使用）。
+
+---
+
+## 一、 空間重力座標映射與跨階段單序列遞減：折線＋直柱複合斷崖圖（Spatial Gravity Combo）
+
+### 1. XY 軸空間重力對調法則（Spatial Gravity XY-Mapping）
+- **理論依據**：**空間重力與閱讀動線隱喻（Tversky 2011）** 與 **圖形感知精準度階層（Cleveland & McGill 1984）**。人類大腦天生將「高低強弱」映射於**垂直高度（Y 軸）**，並將「階段推進、漏斗篩選或成熟度演進」映射於**由左至右的水平動線（X 軸）**。
+- **強制對調規範**：當數據展現「跨階段留存率遞減、預期與現實的斷崖崩跌（Cliff Drop）、或由淺入深成熟度結構」時，**嚴禁使用水平長條圖（`barh`）將階段上下堆疊於 Y 軸**！必須將 **X 軸設為由左至右推進階段**，**Y 軸設為 `0% ~ 100%` 垂直高度**，讓高預期（如 `80%`）向低投產（如 `6%`）俯衝，創造直覺的物理斷崖感。
+
+### 2. 跨階段單序列遞減核心結構（Combo Column + Drop Line Trajectory）
+- **適用場景**：衡量單一指標跨多個階段的留存遞減或漏斗流失（如 `80% → 62% → 54% → ... → 6%`）。
+- **三大繪圖組件**：
+  1. **主視覺折線（Primary Drop Trajectory Line）**：粗實線（`linewidth=3.2`）搭配醒目實心圓點（`marker='o'`, `markersize=9~11`, 白邊環繞）串聯各階段頂點，刻劃陡峭滑落斜率。
+  2. **輔助漸層直柱（Supporting Vertical Bars）**：於折線下方繪製寬度適中（`width=0.52`）的垂直長條填滿至 `Y=0`（嚴格依 `get_sequential_color()` 由低至高上色），強化實體量感。
+  3. **斷崖落差標註帶與陡降標籤右偏避讓**：在起點高峰與終點低谷間繪製水平基準虛線與垂直雙向箭頭／陰影區間，標註總落差（如 `Δ = -74%`）及關鍵轉折流失率。中間陡降節點的數據標籤必須設定為**向右上微偏（`x + 0.14, y + 2.5, ha='left'`）**，嚴防斜線直接穿過數字中央！
+
+---
+
+## 二、 指標語意 100% 同質化轉化與底部雙層零旋轉 `【四字定位】` 標籤（Homogeneous Polarity）
+
+### 1. 指標極性 100% 同質化轉化（Homogeneous Metric Polarity Conversion）
+- **核心痛點防範**：報告常混雜「正向準備度指標（如 `80% 看好`、`6% 投產`）」與「反向阻礙指標（如 `46% 視數據品質不良為死穴`、`57% 至今未修改數據策略`）」。未經轉化直接畫在同一條序列會造成「高數值有時好、有時壞」的嚴重認知錯亂。
+- **強制轉換公式**：繪製同一條折線或 X 軸序列前，必須將所有點統一轉化為 **100% 同質的正向留存／過關率**（或全部統一為反向障礙率）：
+  $$\text{正向過關／行動率} = 100\% - \text{反向卡關／未行動率}$$
+- **實務範例**：將「`46%` 視數據品質不良為死穴」轉化為 **`54%`【品質過關】**；將「`57%` 未修改數據策略」轉化為 **`43%`【策略行動】**，使 X 軸形成 **`80% → 62% → 54% → 43% → 37% → 11% → 6%`** 邏輯同質、單調遞減之留存斷崖！同時於轉折處以幾何符號醒目膠囊標註反向流失原因（如 `▲ 46% 卡於品質不良`、`▲ 57% 策略原地踏步`）。
+
+### 2. 底部 X 軸雙層水平對齊標籤（Two-Tier Zero-Tilt Aligned Label Blocks）
+- **零旋轉鐵律**：X 軸中文標籤**絕對禁止傾斜 45° 或 90°**。
+- **雙層對齊結構**：
+  1. **第一層（Tier 1 — 四字粗體定位籤）**：統一採 `【四字定位】` 格式（如 `【商業預期】`、`【品質過關】`、`【核心投產】`），`10.5~11pt Bold`，**100% 水平對齊於同一 Y 座標基準線**。
+  2. **第二層（Tier 2 — 雙行平行短句說明）**：緊接定位籤正下方，以兩行對稱短句（每行嚴控 `6～7 個漢字`, `9~9.5pt`）交代該指標同質定義，建議保留 `bottom ≈ 0.185~0.195`。
+
+---
+
+## 三、 同案例雙維反差：共同基準線並排配對雙柱＋剪刀差標註圖（Paired Dual-Bar + Gap Callout）
+
+- **適用場景**：對比**每一個獨立案例內部的兩個對立指標**（如同一組織「表象信心 88%～95% vs. 實際效用 12%～32%」或「事前預期 vs. 事後表現」）。**嚴禁使用單一序列折線圖**。
+- **三大繪圖組件**：
+  1. **共同基準線並排雙柱**：於每個 X 軸位置並排繪製左柱（`x - width/2`，基準／預期，採鎖定色序 1 **主色 `GEPHI_QUALITATIVE_HEX[0]`** 或其深階 `GEPHI_SEQUENTIAL_SCALES["orange"][3]`）與右柱（`x + width/2`，對比／實際，採鎖定色序 2 **次色 `GEPHI_QUALITATIVE_HEX[1]`** 或其深階 `GEPHI_SEQUENTIAL_SCALES["blue"][3]`），Y 軸強制從 `0` 起算。
+  2. **顯式剪刀差垂直雙向箭頭與落差膠囊**：於左柱頂端延伸水平虛線至右柱上方，並在兩柱頂端高度之間繪製**垂直雙向箭頭（`<->`）與醒目差值膠囊（`Δ = -XX%`）**，消除讀者心算負擔。
+
+---
+
+## 四、 共用基線剪刀差折線圖 ＆ 時期背景色帶＋歷史事件引線標註折線圖（Shared-Baseline Scissors & Regime-Shaded Line Chart — 資料一、七、`T25`）
+
+```python
+# === Family 2 Black-Box API (scripts/hcl_color_engine.py) ===
+from hcl_color_engine import (
+    setup_chart_canvas,            # (orientation="vertical", dpi=300, figsize=None, wide_left=False, slide_mode=False, grid_axis=None, **subplots_kwargs) -> (fig, ax)
+    plot_scissors_line,            # (ax, x_vals, y_series_a, y_series_b, label_a="序列 A", label_b="序列 B", color_a=None, color_b=None, fill_gap=True, gap_color=None, gap_alpha=0.55, value_fmt="{:.1f}", show_end_labels=True, right_pad_ratio=0.22, category_color_map=None, **kwargs) -> Dict
+    plot_paired_dual_bar,          # (ax, labels, vals_a, vals_b, label_a="基準 / 預期", label_b="實際 / 對照", color_a=None, color_b=None, bar_width=0.34, show_delta=True, delta_fmt="{:+.1f}", value_fmt="{:.1f}", category_color_map=None, **kwargs) -> Dict
+    add_regime_shading_and_events, # (ax, regimes=None, events=None, **kwargs) -> Dict[str, List[Any]]
+)
+```
+
+1. **時間座標等距誠實原則（資料一）**：X 軸必須忠實對應真實時間間隔（如遇到 `2015, 2016, 2019, 2024` 等不等距年份，**必須以真實數值年份作為 X 座標繪製**，嚴禁直接用等距索引 `[0, 1, 2, 3]` 扭曲時間斜率；若有結構性缺漏年份須留白斷線，嚴禁補 0）。
+2. **雙序列時序差距必守「共用基線剪刀差折線＋面積帶」與右側直接標籤留白（`T25`）**：
+   - **共用基線鐵律**：當核心敘事為比較兩條時序曲線之間的淨缺口／剪刀差（如出國 vs. 來臺、收入 vs. 支出）時，**必須將兩條曲線同置於 `Y >= 0` 共用正向基線上**，並以極淺底色面積帶（`ax.fill_between(x, y_low, y_high, color=GEPHI_SEQUENTIAL_SCALES["orange"][0], alpha=0.85)`）直覺視覺化缺口面積；**切勿為追求造型而將兩序列拆至 `0` 軸上下兩側做鏡像倒影**（會破壞直接垂直距離比較並迫使讀者反覆心算）。
+   - **右側 X 軸留白對齊多線末端直接標籤**：當繪製 2～4 條折線並於最終期（如 `2025`）右側加上直接標籤時，必須適度擴張 `ax.set_xlim(x_min - pad_l, x_max + pad_r)`（例如預留約 `15%～18%` 右側純淨空間），將各線末端標籤於同一 `x = x_max + offset` 以 `ha="left", va="center"` 搭配白色描邊整齊垂直錯開對齊，杜絕標籤溢出圖框或互相撞擊。
+3. **時期色帶與事件轉折標註（資料七《臺灣數據百閱》模式）**：
+   - 當長時序受到重大政策、景氣循環或統計定義變更影響時，呼叫 `add_regime_shading_and_events(ax, regimes=[...], events=[...])`：
+     - `regimes`：傳入 `[{"start": 2016, "end": 2019, "label": "法規試行期"}, ...]`，在背景鋪設淡色塊區分時期。
+     - `events`：傳入 `[{"x": 2020, "y": 42.5, "label": "2020 口徑改制／補助上路", "dx_pts": 15, "dy_pts": 28}]`，於關鍵轉折點描繪實心點並拉出白底彩框說明方塊，防止讀者將統計改制誤讀為真實趨勢突變！
+
+---
+
+## 五、 堆疊／漸層面積圖（Area Chart）與範圍條形／甘特圖（Range Bar & Gantt — 資料二、三、六、七）
+
+1. **多序列／堆疊面積圖（Area Chart）**：
+   - 僅用於表現「隨連續時間推移之總量累積變化與各部組成貢獻」（類別上限建議 $\le 4$ 項，或採 `4+1` 聚合）。
+   - **視覺清潔守則**：堆疊邊界須加繪清晰白色分隔線（`edgecolor="#FFFFFF", lw=1.2`），或於單序列面積上方疊加高飽和實線（`lw=2.4`）搭配零 Alpha 極淺色階填充（優先採用對應循序色階 `[0]`/`[1]` 實心填充，避免半透明混色濁化）；Y 軸必須從 `0` 開始。
+2. **範圍條形圖與專案甘特圖（Range Bar & Gantt Chart — 未對齊基準線長度編碼）**：
+   - **適用場景**：表現各類別數值「最小值～最大值／IQR 區間跨度」或各階段專案任務「起始時間～結束時間」排程。
+   - **實作骨架**：使用 `ax.barh(y_pos, width=end_vals - start_vals, left=start_vals, height=0.55, color=...)`，於浮動條的左端與右端直接標註起訖時間或上下限數值，並對關鍵里程碑加上垂直現在日期參考線（`add_halo_vline`）。

@@ -1,66 +1,52 @@
 ---
 name: deep-reading-and-visual-synthesis
 description: >-
-  Facilitates deep reading comprehension via a theory-grounded 5-step Socratic scaffolding and analogical encoding protocol or a 3-loop Data Codebook funnel storytelling & 10-distribution-chart step-by-step tutor workflow (Phase 1),
-  followed by a 3-layer progressive diagnostic decision funnel (Layer 1 formats A-E -> Layer 2 classified structure & 30+ chart taxonomy advisors with empirical selection criteria -> Layer 3 decoupled Design Spectrum: Mode 1 rigorous, Mode 2 Editorial Narrative, Mode 3 open-ended Creative Armory, 8-slot writing style penetration, and layered CIELAB color palettes) and on-demand micro-spec execution across knowledge diagrams, PDF reports, Medium columns, Assertion-Evidence slides, 5 chart families (including Data 8 editorial dot plots, directional momentum vector arrows, vertical butterfly pyramids, and RE:LAB IDE cross-tool bespoke metaphor rendering), and dynamic web dashboards (Phase 2),
-  with post-session empirical skill evolution & GitHub Issues feedback mechanism.
+  Theory-grounded 5-step Socratic reading and 3-loop Data Codebook storytelling/10-distribution-chart tutor (Phase 1),
+  followed by a tree-structured Phase 2 workflow: thin trunk (format selection, self-sufficient embedded-diagram boundaries, hybrid global style/color defaults, trunk+branch blueprint) branching into 5 independent format folders (A diagrams, B PDF/Medium, C DISCAS slides, D 5-family 30+ charts, E zero-backend dashboards), each running `01_plan -> 02_build -> 03_qa` with per-format Subagent isolation or sequential fallback, plus empirical skill evolution & GitHub Issues feedback.
   Activate when a user uploads or discusses an article, business case, research paper, report, dataset + Data Codebook (資料說明書), or video transcript for deep reading, critical analysis, statistical distribution tutoring, data journalism, or visual synthesis.
 ---
 
-# 深度閱讀引導與視覺化知識統整 — 總路由指南與檔案地圖 (Master Router & File Map)
+# 深度閱讀引導與視覺化知識統整 — 樹狀總控台 (Master Router)
 
 > [!IMPORTANT]
-> **【第零關：公私雙倉庫架構、身分驗證、雙電腦自動還原、外部初始化與每月無損檢查更新】**
-> 本技能採**「公開範本倉庫（Public）＋ 作者私人資產倉庫（Private）」雙倉庫徹底隔離架構**：公開倉庫僅含核心規範、引擎與空白範本（[`config/user_preferences.template.json`](./config/user_preferences.template.json)、[`config/styles/_style_schema_template.md`](./config/styles/_style_schema_template.md)），不含任何作者私人色票、私人筆風（`config/owner_styles/`）與 `reading_sessions/`（皆由 `.gitignore` 隔離）。
-> 啟動時檢查本機 `config/user_preferences.json`（公開範本見 [`config/user_preferences.template.json`](./config/user_preferences.template.json)，或呼叫 `hcl_color_engine.check_user_identity_and_load_prefs()`）：
-> 1. **作者本人（`markyang20040112-source`）無縫還原與直通**：若本機尚未還原私人資產，自動從 `deep-reading-and-visual-synthesis-Private-` 還原至 `config/user_preferences.json` 與 `config/owner_styles/`，`"onboarding_completed"` 鎖定 `true`，**日常嚴禁讀取 [`setup/onboarding_wizard.md`](./setup/onboarding_wizard.md)**！
-> 2. **外部新使用者強制初始化**：非擁有者且無個人化 `user_preferences.json` 時，從空白範本啟動並**強制開啟 [`setup/onboarding_wizard.md`](./setup/onboarding_wizard.md)** 引導建置專屬色票與筆風（存於 `config/user_styles/`）。
-> 3. **每月一次官方技能無損檢查更新**：依 `update_check.interval_days: 30` 節流，呼叫 `check_skill_updates.py` 檢查更新並保護個人 `config/` 與 `reading_sessions/*` 絕不被覆蓋。
+> **【第零關：公私雙倉庫隔離、身分驗證、雙機還原、外部初始化與 30 天更新】**
+> 本技能採 **Public（規範／引擎／範本）＋ Private（私人資產與 `reading_sessions/`，`.gitignore` 隔離）** 雙倉庫架構。啟動時檢核 `config/user_preferences.json`（範本 [`user_preferences.template.json`](./config/user_preferences.template.json)，呼叫 `hcl_color_engine.check_user_identity_and_load_prefs()`）：
+> 1. **作者（`markyang20040112-source`）**：未還原時自動從 Private 還原 `config/user_preferences.json` 與 `config/owner_styles/`，`"onboarding_completed"` 鎖 `true`，**日常嚴禁讀 [`onboarding_wizard.md`](./setup/onboarding_wizard.md)**！
+> 2. **外部新用戶**：無個人設定時**強制開 [`onboarding_wizard.md`](./setup/onboarding_wizard.md)** 建專屬色票與 `config/user_styles/` 筆風。
+> 3. **30 天無損更新檢查**：依 `update_check.interval_days: 30` 呼叫 `check_skill_updates.py`，保護 `config/` 與 `reading_sessions/*`。
 
 > [!IMPORTANT]
 > **五大核心運作鐵律（Core Operational Laws）**：
-> 1. **雙階段隔離與按需微模組載入（Lazy Loading）**：傳入素材進入 Phase 1 時預設**只讀 [`phase1_reading/phase1_socratic_reading_guide.md`](./phase1_reading/phase1_socratic_reading_guide.md)**，再依模式**二擇一**讀取 [`mode1_article_socratic_protocol.md`](./phase1_reading/mode1_article_socratic_protocol.md) 或 [`mode2_dataset_codebook_protocol.md`](./phase1_reading/mode2_dataset_codebook_protocol.md)（唯模式 2 軌道 C「分配圖形逐步導學」連動讀取 [`phase2_output/distribution_and_density_chart_spec.md`](./phase2_output/distribution_and_density_chart_spec.md)）。Phase 1 進行中嚴禁提前讀取其他 `phase2_output/` 檔案。
-> 2. **Phase 2 三層漸進式討論決策（方案甲）與跨格式接力最小葉節點載入**：進入 Phase 2（含明確要求直接生成 Fast-Track 時，先將原文存 `00_source_article.md`、原始 CSV 原封不動存 `data/<原檔名>.csv`）先僅讀取 **[`phase2_output/phase2_output_router.md`](./phase2_output/phase2_output_router.md)**，依序分步推進：**Layer 1（決定 A/B/C/D/E 範圍）$\rightarrow$ Layer 2（僅開選定格式之 `advisors/layer2_*.md` 顧問決定具體圖型／文體／拓撲／Format C 視距定位）$\rightarrow$ Layer 3（開 `advisors/layer3_advisor_design_style_color.md` 全格式統一或混搭定裝：設計武器庫模式 1/2/3 × 筆風 × 配色）$\rightarrow$ 終端依 `sequential_confirm` 按 `D ➔ A ➔ B ➔ C ➔ E` 順序逐一按需開啟當前格式之最小葉節點規格檔生成並獲確認後，始進入下一個格式**（全部確認完成後再統一執行 Git 同步），絕不擅自代選或一次全讀！
-> 3. **表達三支柱 100% 全域穿透鐵律**：選定之筆風設定檔（`Slot 1～8`）、分層顏色設定集與第三層設計武器庫（`standard_rigorous` / `editorial_narrative` / `bespoke_metaphor`）**100% 穿透控制所有選定之 A/B/C/D/E 產出格式**。
-> 4. **底層引擎黑盒呼叫鐵律（Black-Box Engine API Rule）**：`scripts/*.py` 與 `scripts/*.js` 之 API 契約已記載於對應 `*_spec.md` 中。**正常執行直接 `import` 呼叫，嚴禁對 `scripts/` 原始碼呼叫 `read_file`（除非報錯除錯）**！
-> 5. **靈感生命週期鐵律（Capture $\rightarrow$ Apply / Report $\rightarrow$ Delete）**：過程中出現優化靈感時，僅暫存寫入 `reading_sessions/_pending_skill_inspirations.md` 並附註一句提示，**嚴禁中斷主流程或私自改檔**；待成果驗收後再按需開啟 [`setup/git_sync_and_evolution_protocol.md`](./setup/git_sync_and_evolution_protocol.md) 執行 Step E1～E3。
+> 1. **雙階段隔離與按需載入**：Phase 1 先讀 [`phase1_socratic_reading_guide.md`](./phase1_reading/phase1_socratic_reading_guide.md)，再二擇一開 [`mode1`](./phase1_reading/mode1_article_socratic_protocol.md) 或 [`mode2`](./phase1_reading/mode2_dataset_codebook_protocol.md)（僅模式 2 軌道 C 連動 [`family4`](./formats/format_d_charts/families/family4_distribution_and_density.md)）；Phase 1 嚴禁預讀其他 `shared/` 或 `formats/`。
+> 2. **Phase 2 樹狀主幹分枝 ＋ Subagent 隔離（單執行緒備援）**：進 Phase 2（Fast-Track 先存 `00_source_article.md` 與原始 `data/<原檔名>.csv`）先開 **[`shared/router.md`](./shared/router.md)** 拍板格式（A～E）與全域預設（[`style_and_color_core.md`](./shared/style_and_color_core.md)）➔ 僅開選定格式 `formats/format_*/01_plan.md` 寫樹狀藍圖 ➔ 各格式 `02_build*` ＋ `03_qa` 優先採 **Subagent 隔離**，或 **`D ➔ A ➔ B ➔ C ➔ E` 單執行緒逐項確認**（備援），未選格式 0 讀取！
+> 3. **混合式表達三支柱 100% 穿透**：主幹訂定「設計光譜（模式 1/2/3）× 筆風（`Slot 1～8`）× 分層配色」全域預設，各分枝 `01_plan.md` 可局部覆寫並 100% 穿透產出。
+> 4. **底層引擎黑盒鐵律**：`scripts/*.py` 與 `scripts/*.js` API 契約載於各 `02_build*.md`，**日常直接 `import` 呼叫，嚴禁對 `scripts/` 讀原始碼（除錯除外）**！
+> 5. **靈感生命週期**：優化靈感僅暫存 `reading_sessions/_pending_skill_inspirations.md` 並附一句提示，**嚴禁中斷主流程或私自改檔**；驗畢再按需開 [`git_sync_and_evolution_protocol.md`](./setup/git_sync_and_evolution_protocol.md) 跑 Step E1～E3。
 
 ---
 
-## 一、 全專案檔案地圖與單一職責分工表 (File Architecture & Single Responsibility Map)
+## 一、 樹狀檔案地圖（Tree File Map）
 
-本技能庫採 **「三層漏斗決策 ＋ 單一事實來源（SSOT）＋ 最小葉節點按需載入」** 架構，確保無論未來擴充多少新圖表或新格式，AI 單次任務負荷恆定維持極小值：
-
-| 檔案路徑 | 唯一職責說明（Single Responsibility） | 精準開啟時機（When to Read） |
+| 模組路徑 | 唯一職責 | 開啟時機 |
 | :--- | :--- | :--- |
-| **[`SKILL.md`](./SKILL.md)** *(本檔案)* | 總控台：第零關身分驗證門神、五大核心運作鐵律、全專案地圖與 `reading_sessions/` 基礎歸檔路徑。 | 技能啟動時預設載入。 |
-| **[`config/user_preferences.template.json`](./config/user_preferences.template.json)**<br>*(本機：`config/user_preferences.json`)* | 個人化總設定檔與公開範本（含 `confirmation_gate`、分層 `chart_palettes` / `document_themes`、筆風映射、`git_and_feedback` 與 `web_deploy`）。 | 啟動身分檢查與 Layer 3 定裝時。 |
-| **[`config/styles/_style_schema_template.md`](./config/styles/_style_schema_template.md)**<br>**`config/user_styles/*.md`** / **`config/owner_styles/*.md`** | **8 大全場景筆風控制契約（Slots 1～8）**：控制所有生成格式之語氣、錨點格式、圖譜謂詞、圖表微文案、講稿與禁用詞。 | 終端執行層僅讀取本次選定之單一筆風檔。 |
-| **[`setup/onboarding_wizard.md`](./setup/onboarding_wizard.md)** | 外部新使用者首次啟動強制初始化精靈（自建 CIELAB 色票與筆風）。 | **僅限外部未初始化新使用者首次啟動**（作者 100% 不讀）。 |
-| **[`setup/git_sync_and_evolution_protocol.md`](./setup/git_sync_and_evolution_protocol.md)** | 公私雙倉庫 Git 同步、跨裝置還原、Format E 雲端直推部署（Netlify／Cloudflare 擇一）、Medium 課堂繳交區塊與 Step E1～E3 靈感進化回報細節。 | **僅於結案準備同步 Git / 發布網站 / 執行 Step E1～E3 時開啟**。 |
-| **[`phase1_reading/phase1_socratic_reading_guide.md`](./phase1_reading/phase1_socratic_reading_guide.md)**<br>[`mode1_article_socratic_protocol.md`](./phase1_reading/mode1_article_socratic_protocol.md)<br>[`mode2_dataset_codebook_protocol.md`](./phase1_reading/mode2_dataset_codebook_protocol.md) | **Phase 1 輕量總路由與雙子協定**：Stage 0 四合一素材嗅探正規化（URL / YouTube / PDF / DOCX）、四大輸入分流、`01_phase1_socratic_log.md` 即時持久化、文獻 5 步蘇格拉底（Mode 1），以及 CSV＋《資料說明書》「讀取—分析—討論」三迴路（Mode 2）。 | **Phase 1**：先讀導覽頁，再依模式**二擇一**開啟子協定。 |
-| **[`phase2_output/phase2_output_router.md`](./phase2_output/phase2_output_router.md)** | **Phase 2 Layer 1 總路由與跨格式接力交付中心**：決定本次生成格式範圍（A / B / C / D / E）、A2 無損擴展 vs. Medium 輕量分流、`02_phase2_generation_blueprint.md` 時機 A 漸進持久化，以及三層拍板後依 `D ➔ A ➔ B ➔ C ➔ E` 逐格式接力確認（`sequential_confirm`）與最後統一 Git 同步規則。 | 進入 Phase 2 時首先開啟。 |
-| **[`phase2_output/advisors/layer2_advisor_a_diagram.md`](./phase2_output/advisors/layer2_advisor_a_diagram.md)**<br>[`layer2_advisor_b_report.md`](./phase2_output/advisors/layer2_advisor_b_report.md)<br>[`layer2_advisor_c_slide.md`](./phase2_output/advisors/layer2_advisor_c_slide.md)<br>[`layer2_advisor_de_chart.md`](./phase2_output/advisors/layer2_advisor_de_chart.md) | **Phase 2 Layer 2 分類結構顧問大腦**：依第一層選定格式按需開啟——診斷 A（分圖與 T1～T5 拓撲）、B（文體 1～4 PDF＋直向簡圖切點 vs. 文體 5 Medium）、**C（Format C Step 1 定位：北極星主線、視距 $D/H$ 反推 DISCAS `min_font_pt` 地板與單一議題章節清單，不提前鎖版型）**、**D/E（4D 資料快篩 × 8 大溝通意圖 30+ 圖表決策樹與 Format D 內部推進節奏）**。 | **Layer 2**：僅開第一層有勾選的格式顧問檔（未選者 0 讀取）。 |
-| **[`phase2_output/advisors/layer3_advisor_design_style_color.md`](./phase2_output/advisors/layer3_advisor_design_style_color.md)** | **Phase 2 Layer 3（最後決策層）定裝顧問**：在第二層結構拍板後，為所有選定檔案決定「表達三支柱」（設計武器庫模式 1/2/3 開關 × 筆風 × 配色／主題色階）。 | **Layer 3**：第二層骨架拍板後開啟。 |
-| **[`phase2_output/visual_cognition_principles.md`](./phase2_output/visual_cognition_principles.md)** | **五格式共通底層定律（純跨格式解耦版）**：工作記憶保護與無損擴展、表達三支柱穿透法則、事實與因果保真底線、正黑體與漢字避頭尾保護、75-20-5 雙層色票架構（各格式字級、留白與組塊階層均歸還專檔）。 | 終端執行層必讀共通底盤。 |
-| **[`phase2_output/editorial_narrative_spec.md`](./phase2_output/editorial_narrative_spec.md)** | **模式 2 編輯室敘事專檔 (`editorial_narrative`)**：資料八編輯室 5 大技法（聚光燈、雙基準膠囊、時期色帶、角落排行卡、四層底註）、Format B 報告社論組件與 A/C/E 敘事延伸。 | **僅當第三層開啟模式 2 時開啟**（模式 1 ＆ 純模式 3 不讀）。 |
-| **[`phase2_output/creative_armory/INDEX.md`](./phase2_output/creative_armory/INDEX.md)**<br>*(原子案例卡：`creative_armory/cases/`)* | **模式 3 開放式創意隱喻武器庫總索引 (`bespoke_metaphor`)**：開放式 Form-as-Metaphor 創意底線與單行原子案例索引表（按需單開 `01_texture_and_container/`、`02_structural_geometry/`、`03_spatial_and_thematic/` 對應單卡）。 | **僅當第三層開啟模式 3 時開啟**（先讀索引表，再按需單開 1 份案例卡）。 |
-| **[`phase2_output/quantitative_chart_spec.md`](./phase2_output/quantitative_chart_spec.md)** | **Format D ⇄ E 圖表共通核心契約（SSOT）**：視覺編碼誠實三鐵律、圖表 8 大元件檢核、配色 SSOT、三層分流 `assert`、`300 DPI` 黃金畫布、零斷裂箭頭與黑盒 API 總表。 | 執行 Format D 或 E 時必讀。 |
-| **[`phase2_output/chart_family1_ranking_and_deviation.md`](./phase2_output/chart_family1_ranking_and_deviation.md)**<br>[`chart_family2_trend_and_comparison.md`](./phase2_output/chart_family2_trend_and_comparison.md)<br>[`chart_family3_composition_and_flow.md`](./phase2_output/chart_family3_composition_and_flow.md)<br>[`distribution_and_density_chart_spec.md`](./phase2_output/distribution_and_density_chart_spec.md)<br>[`chart_family5_multivariate_and_spatial.md`](./phase2_output/chart_family5_multivariate_and_spatial.md) | **五大圖表家族葉節點微規格檔**：<br>• 家族 1：克里夫蘭點陣圖（資料八）、棒棒糖、啞鈴 ＆ **雙向動量向量箭頭圖 (`directed=True`)**、斜坡、子彈、**垂直對稱蝴蝶金字塔**、柏拉圖<br>• 家族 2：**共用基線剪刀差折線＋面積帶**、空間重力斷崖複合、極性同質化、時期事件折線、配對雙柱剪刀差、面積、範圍甘特<br>• 家族 3：`4+1` 堆疊與環形、馬賽克雙維佔比（Marimekko）、瀑布圖、樹圖、巢狀環/旭日、桑基/弦圖<br>• 家族 4：10 大分配與密度圖形 ＋ 背景基準分面（Context Overlay）8 大鐵律<br>• 家族 5：**全樣本波士頓四象限氣泡矩陣（類別深色箭頭指引線）**、突出顯示熱力表、雷達圖、主圖＋排行副卡 | 依 Layer 2 拍板結果**按需只開對應的 1～2 個家族檔**。 |
-| **[`phase2_output/visual_diagram_matplotlib_spec.md`](./phase2_output/visual_diagram_matplotlib_spec.md)**<br>[`document_report_spec.md`](./phase2_output/document_report_spec.md)<br>[`medium_column_spec.md`](./phase2_output/medium_column_spec.md)<br>[`presentation_slide_spec.md`](./phase2_output/presentation_slide_spec.md)<br>[`data_dashboard_spec.md`](./phase2_output/data_dashboard_spec.md) | **Format A / B / C / E 終端規格檔**：<br>• `visual_diagram_matplotlib_spec.md`：Format A 知識圖譜（`23.8"×15.4"` T1～T5 ＋ Format B `7.44"` 直向簡圖）<br>• `document_report_spec.md`：Format B 文體 1～4 A4 自適應分頁印刷 PDF 報告<br>• `medium_column_spec.md`：Format B 文體 5 Medium `<=1,600` 字原生專欄（禁 HTML/表格，免 PDF）<br>• `presentation_slide_spec.md`：Format C 16:9 視距自適應簡報（DISCAS `min_font_pt` 地板、五步內容優先流程含 `Step 3` 文案凍結至 `02c_slide_spec_lock.json` 與 `Step 4A` 配置對齊表、五大簡報版型家族 `F1～F5` 13 精煉版型（1 首尾定錨 `F1-A` ＋ 12 內容與衝擊版型 `F1-B`/`F1-C`、`F2-A`/`F2-B`/`F2-C`、`F3-A`/`F3-B`、`F4-A`/`F4-B`、`F5-A`/`F5-B`/`F5-C`）、去方塊語彙、方案 C 三階內部品管與模式 3 `Tier 1/2/3`）<br>• `data_dashboard_spec.md`：Format E 零後端互動工作台／標準 CSS 骨架／Bento／Netlify・Cloudflare 直推發布 | 終端執行層**僅開啟有選定之格式檔**（文體 1～4 與文體 5 互斥單開）。 |
-| [`scripts/ingest_source_material.py`](./scripts/ingest_source_material.py)、[`hcl_color_engine.py`](./scripts/hcl_color_engine.py)（相容入口門面，底層拆分為 `color_core.py`、`color_registry.py`、`owner_sync.py`、`chart_data.py`、`chart_common.py`、`chart_editorial.py`、`chart_family1_ranking.py`、`chart_family2_trend.py`、`chart_family3_composition.py`、`chart_family4_distribution.py`、`chart_family5_multivariate.py`、`chart_creative_armory.py`）、[`gephi_palette.js`](./scripts/gephi_palette.js)、[`generate_mindmap.py`](./scripts/generate_mindmap.py)、[`pdf_report_engine.py`](./scripts/pdf_report_engine.py)、[`pptx_slide_engine.py`](./scripts/pptx_slide_engine.py) ＆ [`verify_visual_outputs.py`](./scripts/verify_visual_outputs.py)（相容入口門面，Format C 版型引擎與方案 C QA 拆分為 `scripts/pptx_engine/`：`tokens.py`、`text_layout.py`、`media_omml.py`、`primitives.py`、`layouts_data.py`、`layouts_narrative.py`、`spec_pipeline.py`、`qa.py`）、[`report_skill_feedback.py`](./scripts/report_skill_feedback.py)、[`check_skill_updates.py`](./scripts/check_skill_updates.py) | **底層黑盒擷取、渲染、色彩、圖表、驗收、回報與更新引擎**：統一由原入口（如 `hcl_color_engine`、`pptx_slide_engine`、`verify_visual_outputs`）直接 `import` 或 CLI 呼叫，**日常免讀原始碼**。 | 執行各階段素材擷取、腳本生成、視覺驗收、更新或回報時調用。 |
-| **[`THEORY_ARCHIVE.md`](./THEORY_ARCHIVE.md)** | 實證科學理論封存庫（T01～T26）。 | 僅於詢問理論出處或 Step E3 進化時開啟。 |
+| **[`SKILL.md`](./SKILL.md)** | 總控台：Gate 0、五大鐵律、樹狀地圖與歸檔規則。 | 啟動預設載入。 |
+| `config/` ([範本](./config/user_preferences.template.json) · [筆風契約](./config/styles/_style_schema_template.md)) | 個人化範本與 8 插槽筆風契約（私人資產隔離於 `owner_styles/`、`user_styles/`）。 | 驗身與定裝讀單一筆風檔。 |
+| `setup/` ([初始化](./setup/onboarding_wizard.md) · [同步進化](./setup/git_sync_and_evolution_protocol.md)) | 外部初始化；雙倉庫同步、Format E 部署、Medium 繳交與 Step E1～E3。 | 外部首次／結案進化按需。 |
+| `phase1_reading/` ([總路由](./phase1_reading/phase1_socratic_reading_guide.md) · [Mode 1](./phase1_reading/mode1_article_socratic_protocol.md) · [Mode 2](./phase1_reading/mode2_dataset_codebook_protocol.md)) | **Phase 1**：Stage 0 素材擷取、四大分流、`01` 落盤、五步思辨、CSV 三迴路。 | 先總路由，再二擇一。 |
+| `shared/` (**[router](./shared/router.md)** · [blueprint](./shared/blueprint_template.md) · [style/color](./shared/style_and_color_core.md) · [cognition](./shared/visual_cognition_core.md) · [模式 2](./shared/editorial_narrative_spec.md) · [模式 3](./shared/creative_armory/INDEX.md)) | **Phase 2 主幹與共用核心**：格式路由與自給自足邊界、樹狀藍圖、混合式風格色票預設、跨格式認知底盤、解耦模式 2/3。 | 進 Phase 2 開 `router.md`；執行讀 `cognition`，開模式 2/3 才讀專檔。 |
+| `formats/` (**[A](./formats/format_a_diagram/01_plan.md)** · **[B](./formats/format_b_document/01_plan.md)** · **[C](./formats/format_c_slides/01_plan.md)** · **[D](./formats/format_d_charts/01_plan.md)** · **[E](./formats/format_e_dashboard/01_plan.md)**) | **五大獨立格式分枝**：各含 `01_plan ➔ 02_build* ➔ 03_qa`（A 圖譜；B PDF 含內建 A4 簡圖／Medium 互斥；C DISCAS＋Step 3/4A＋方案 C QA；D 5 家族 30+ 圖；E 零後端儀表板＋直推部署）。 | **僅開選定格式分枝**（未選 0 讀取）。 |
+| [`scripts/`](./scripts/hcl_color_engine.py) | **黑盒引擎**：`ingest_source_material`、`hcl_color_engine`、`gephi_palette.js`、`generate_mindmap`、`pdf_report_engine`、`pptx_slide_engine`、`verify_visual_outputs`、`report_skill_feedback`、`check_skill_updates`。 | 擷取、繪圖、編譯、驗收或同步直接呼叫。 |
+| **[`THEORY_ARCHIVE.md`](./THEORY_ARCHIVE.md)** | 實證科學理論封存庫（T01～T26）。 | 查理論出處或 Step E3。 |
 
 ---
 
-## 二、 閱讀專案歸檔與靈感收斂規則（`reading_sessions/` & Evolution）
+## 二、 專案歸檔與結案規則（`reading_sessions/`）
 
-1. **專案歸檔結構（嚴禁存入 `.agents/skills/` 內）**：
-   - `reading_sessions/<YYYYMMDD_主題簡稱>/data/<原檔名>.csv`：**【原始 CSV 零改動鐵律】** 原始檔原封不動存入，嚴禁覆寫。
-   - `reading_sessions/<YYYYMMDD_主題簡稱>/00_source_article.md`（或多檔目錄 `00_drive_source_files/`）：一收到原文或《資料說明書》立即原封不動存檔。
-   - `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`：即時記錄 Phase 1 深度閱讀思辨或數據探索軌跡（維持獨立自洽，不回寫 Phase 2 規格，亦不附掛 `02` 連結）。
-   - `reading_sessions/<YYYYMMDD_主題簡稱>/02_phase2_generation_blueprint.md`：進入 Phase 2 後依**時機 A（Layer 1 $\rightarrow$ Layer 2 $\rightarrow$ Layer 3）**漸進持久化生成選項、討論取捨理由、使用者客製細節覆寫與跨格式接力／交付清單（若選定 Format C，另於同根目錄存放凍結文案與配置之 `02c_slide_spec_lock.json`；若選定 Format D / E，另於同根目錄存放跨圖鎖定類別色彩之 `02_color_registry.json`）。
-   - `reading_sessions/<YYYYMMDD_主題簡稱>/02_outputs/`：僅存放正式交付成果（`.png`、`.pdf`、`.md`、`.pptx`、正式生成腳本 `.py` 或獨立網站結構）；驗收完畢立即調用 `verify_visual_outputs.py --cleanup` 清除臨時預覽檔。
-   - `reading_sessions/_pending_skill_inspirations.md`：過程中若產生任何技能優化靈感（功能、視覺、筆風、文件去重或腳本改良），按格式 `[編號] | [來源] | [類別] | [目標檔案] | [觀察痛點與具體改良構想]` 暫存於此，絕不中斷主流程。
-2. **Git 同步、網站發布與 Step E1～E3 技能升級閉環**：
-   - 凡涉及 **作者公私雙倉庫同步（`--restore-private` / `--sync-private`）、Format E 雲端直推部署、Medium 課堂作業繳交區塊**，或 **成果交付後執行 Step E1～E3 靈感查證、GitHub Issues 三通道回報與暫存檔刪除歸零**，請立即開啟 **[`setup/git_sync_and_evolution_protocol.md`](./setup/git_sync_and_evolution_protocol.md)** 依章執行！
+1. **嚴禁存入 `.agents/skills/`**，專案統一歸於 `reading_sessions/<YYYYMMDD_主題簡稱>/`：
+   - `data/<原檔名>.csv`：**原始 CSV 原封不動存入，嚴禁改動**。
+   - `00_source_article.md`（或 `00_drive_source_files/`）：收到原文或《資料說明書》立即存檔。
+   - `01_phase1_socratic_log.md`：Phase 1 獨立紀錄（不回寫 Phase 2，不附 `02` 連結）。
+   - `02_phase2_generation_blueprint.md`：樹狀單檔藍圖（`## 0` ＋ 選定之 `## Format X 分枝藍圖`）；選 C 另存 `02c_slide_spec_lock.json`，選 D/E 另存 `02_color_registry.json`。
+   - `02_outputs/`：僅存正式交付物與正式腳本；驗畢立刻執行 `verify_visual_outputs.py --cleanup` 清除暫存檔。
+   - `reading_sessions/_pending_skill_inspirations.md`：`[編號] | [來源] | [類別] | [目標檔案] | [觀察痛點與具體改良構想]`。
+2. **雙倉庫同步、網站發布與 Step E1～E3**：全格式確認後，按需開 [`setup/git_sync_and_evolution_protocol.md`](./setup/git_sync_and_evolution_protocol.md)。

@@ -3,9 +3,9 @@
 > [!CAUTION]
 > **階段鐵律**：
 > 1. 只要使用者未明確要求「跳過第一階段／直接生成」，**絕對禁止**在使用者表達個人初步觀點前輸出全文罐頭摘要、重點條列或最終批次圖表！
-> 2. **按需載入（Zero-Waste Lazy Loading）**：本檔為 Phase 1 輕量總路由。收到輸入後，**僅依下方分流表按需讀取對應之單一子協定檔**（文獻讀 [`mode1_article_socratic_protocol.md`](./mode1_article_socratic_protocol.md)；CSV＋資料說明書讀 [`mode2_dataset_codebook_protocol.md`](./mode2_dataset_codebook_protocol.md)），**嚴禁同時載入無關模式的子檔或提前讀取 `../phase2_output/`**（唯獨模式 2 軌道 C「分配圖形逐步導學」可按需連動讀取 [`../phase2_output/distribution_and_density_chart_spec.md`](../phase2_output/distribution_and_density_chart_spec.md)）。
-> 3. 若使用者**明確下令跳過引導直接生成（Fast-Track）**，先將原文存入 `00_source_article.md`（若含原始 CSV 則原封不動存入 `data/<原檔名>.csv`），直接切換讀取 [`../phase2_output/phase2_output_router.md`](../phase2_output/phase2_output_router.md) 並依**「三層漸進式決策漏斗（Layer 1 $\rightarrow$ Layer 2 $\rightarrow$ Layer 3）」**推進確認，同步逐層寫入 `02_phase2_generation_blueprint.md`。
-> 4. **靈感暫存守則**：互動中若產生任何技能優化靈感，嚴格遵循 [`../SKILL.md`](../SKILL.md) 第三節規定，僅寫入 `reading_sessions/_pending_skill_inspirations.md` 暫存，嚴禁中斷閱讀流程或私自改檔。
+> 2. **按需載入（Zero-Waste Lazy Loading）**：本檔為 Phase 1 輕量總路由。收到輸入後，**僅依下方分流表按需讀取對應之單一子協定檔**（文獻讀 [`mode1_article_socratic_protocol.md`](./mode1_article_socratic_protocol.md)；CSV＋資料說明書讀 [`mode2_dataset_codebook_protocol.md`](./mode2_dataset_codebook_protocol.md)），**嚴禁同時載入無關模式的子檔或提前讀取 `../shared/`、`../formats/`**（唯獨模式 2 軌道 C「分配圖形逐步導學」可按需連動讀取 [`../formats/format_d_charts/families/family4_distribution_and_density.md`](../formats/format_d_charts/families/family4_distribution_and_density.md)）。
+> 3. 若使用者**明確下令跳過引導直接生成（Fast-Track）**，先將原文存入 `00_source_article.md`（若含原始 CSV 則原封不動存入 `data/<原檔名>.csv`），直接切換讀取 [`../shared/router.md`](../shared/router.md) 並依**「樹狀主幹（格式選擇＋全域預設）$\rightarrow$ 選定格式分枝 `01_plan.md`」**推進確認，同步按時機 A 寫入 `02_phase2_generation_blueprint.md`。
+> 4. **靈感暫存守則**：互動中若產生任何技能優化靈感，嚴格遵循 [`../SKILL.md`](../SKILL.md) 核心鐵律第 5 條與第二節規定，僅寫入 `reading_sessions/_pending_skill_inspirations.md` 暫存，嚴禁中斷閱讀流程或私自改檔。
 
 ---
 
@@ -49,7 +49,7 @@ from ingest_source_material import (
 ## 二、 每輪對話後即時持久化與跨裝置中繼同步 (`01_phase1_socratic_log.md`)
 
 - 在每輪互動後，同步更新 `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`（純粹記錄 Phase 1 本文思辨、數據故事探索或分配圖形逐步導學軌跡；**嚴禁混雜系統靈感，亦無需寫入 Phase 2 生成規格或附掛 `02_phase2_generation_blueprint.md` 連結**）。
-- 若為「Medium 每週一圖／輕量數據敘事專欄」任務，該 `01_phase1_socratic_log.md` 將作為獨立自洽的 Phase 1 思辨紀錄供課堂作業 `{AI 對話 2}` 單檔連結檢視，因此**必須完整、詳實記錄從「三層分流驗算 $\rightarrow$ 廣角候選切角選單（或 Track A/C 驗證）$\rightarrow$ 互動問答推演 $\rightarrow$ 製圖 6 條件預填與消歧拍板 $\rightarrow$ 單一故事線收斂」的全過程**（Phase 2 三層生成藍圖則獨立存於同目錄 `02_phase2_generation_blueprint.md`，無需於 `01` 內附連結）。
+- 若為「Medium 每週一圖／輕量數據敘事專欄」任務，該 `01_phase1_socratic_log.md` 將作為獨立自洽的 Phase 1 思辨紀錄供課堂作業 `{AI 對話 2}` 單檔連結檢視，因此**必須完整、詳實記錄從「三層分流驗算 $\rightarrow$ 廣角候選切角選單（或 Track A/C 驗證）$\rightarrow$ 互動問答推演 $\rightarrow$ 製圖 6 條件預填與消歧拍板 $\rightarrow$ 單一故事線收斂」的全過程**（Phase 2 樹狀生成藍圖則獨立存於同目錄 `02_phase2_generation_blueprint.md`，無需於 `01` 內附連結）。
 - 若使用者要求「先同步到 Git／我要換裝置」，更新 `01_phase1_socratic_log.md` 後立即執行 `git add -A && git commit -m "wip(phase1): checkpoint at Step X" && git push origin main`。
 
 ```markdown

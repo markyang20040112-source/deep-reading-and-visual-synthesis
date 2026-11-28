@@ -70,7 +70,7 @@
 
 ---
 
-### Step 3：設定「Phase 2 三層決策確認關卡」之詢問偏好（`confirmation_gate`）
+### Step 3：設定「Phase 2 樹狀主幹與分枝確認關卡」之詢問偏好（`confirmation_gate`）
 詢問使用者在每次進入 Phase 2 生成成果前，針對 **確認關卡各設定維度（1. 產出格式範圍、2. 筆風檔、3. 顏色集、4. 圖表設計光譜／Format D 內部批次或逐步導學節奏、5. 版面與交付細節：PDF 字體、跨格式 `D ➔ A ➔ B ➔ C ➔ E` 逐項接力確認 `sequential_confirm`、Format C 方案 C 品管 `option_c_2x2_and_high_risk` 與 Git 同步）**：
 - **預設推薦（`"ask_every_time"`）**：每次生成前由 AI 列出建議清單向您確認後再動工（最靈活、零誤判）。
 - **鎖定預設免問（`"auto_apply_default": true`）**：若某幾個維度（例如顏色集或筆風檔）固定不變，可設為自動套用免問以加快速度。

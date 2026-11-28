@@ -74,7 +74,7 @@ def setup_chart_canvas(
     **subplots_kwargs,
 ) -> Tuple[object, object]:
     """
-    Create a standardized 300 DPI Matplotlib canvas following `quantitative_chart_spec.md`:
+    Create a standardized 300 DPI Matplotlib canvas following `formats/format_d_charts/02_build_core.md`:
     - orientation='vertical'   -> (12.0, 6.4) default; (9.6, 5.2) when slide_mode=True
     - orientation='horizontal' -> (12.8, 6.7) default; (10.0, 5.4) when slide_mode=True
     Applies CJK fonts, golden-ratio `subplots_adjust`, and `despine_axes()`.

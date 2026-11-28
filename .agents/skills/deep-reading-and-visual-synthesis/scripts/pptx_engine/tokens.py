@@ -207,7 +207,7 @@ def resolve_typography_scale(target_body_pt: float) -> dict[str, float]:
         raise ValueError(f"target_body_pt must be a finite number; got {target_body_pt!r}.")
     body = _round_half_pt(max(MIN_CONTENT_FONT_PT, raw_body))
 
-    # Piecewise linear anchor points (body_pt, headline_pt) matching presentation_slide_spec.md
+    # Piecewise linear anchor points (body_pt, headline_pt) matching formats/format_c_slides/02_build.md
     anchors: list[tuple[float, float]] = [
         (12.0, 20.0),
         (13.0, 21.0),

@@ -25,17 +25,17 @@
 
 ## 二、 Format E（數據儀表板）雲端直推部署規範
 
-每當生成 Format E 互動式數據儀表板時，依 **[`../phase2_output/data_dashboard_spec.md`](../phase2_output/data_dashboard_spec.md)** 第四節執行：
+每當生成 Format E 互動式數據儀表板時，依 **[`../formats/format_e_dashboard/02_build.md`](../formats/format_e_dashboard/02_build.md)** 第四節執行：
 1. 確保已封裝完整 Deploy-Ready 靜態結構（純 `./` 相對路徑、`css/style.css`、`js/gephi_palette.js`、`js/dashboard.js`、`data/<dataset>_data.js` & `.json`、`.nojekyll`（僅備援用）、`.gitignore`（須含 `.netlify/`、`.wrangler/`）、`README.md`）。
-2. 驗收完畢後，依 `web_deploy.provider`（`netlify` / `cloudflare_pages` / `github_pages_fallback` / `ask_every_time` / `none`）**擇一平台**執行部署並回報正式網址，細節見 `data_dashboard_spec.md` 第 4.3 節。
+2. 驗收完畢後，依 `web_deploy.provider`（`netlify` / `cloudflare_pages` / `github_pages_fallback` / `ask_every_time` / `none`）**擇一平台**執行部署並回報正式網址，細節見 `formats/format_e_dashboard/02_build.md` 第 4.2 節。
 3. **【嚴禁內層 `git init` 鐵律】**：嚴禁於儀表板目錄內執行 `git init`；使用官方 CLI 直推不會產生 `.git`，若外部使用者採 GitHub Pages 備援，一律於外層主倉庫使用 `git subtree split` 推送，徹底避免嵌套 `.git` 子模組衝突。
 
 ---
 
 ## 三、 Medium 每週一圖專欄之 GitHub 單一檔案推送與課堂繳交區塊
 
-執行 **[`../phase2_output/medium_column_spec.md`](../phase2_output/medium_column_spec.md)** 工作流時：
-1. 將 Phase 1 完整討論與收斂軌跡詳實寫入 `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`；Phase 2 三層決策與取捨理由則依時機 A 記錄於同目錄 `02_phase2_generation_blueprint.md`（無需於 `01_phase1_socratic_log.md` 或下方課堂繳交區塊額外附掛 `02` 連結）。
+執行 **[`../formats/format_b_document/02_build_medium.md`](../formats/format_b_document/02_build_medium.md)** 工作流時：
+1. 將 Phase 1 完整討論與收斂軌跡詳實寫入 `reading_sessions/<YYYYMMDD_主題簡稱>/01_phase1_socratic_log.md`；Phase 2 樹狀主幹與分枝決策理由則依時機 A 記錄於同目錄 `02_phase2_generation_blueprint.md`（無需於 `01_phase1_socratic_log.md` 或下方課堂繳交區塊額外附掛 `02` 連結）。
 2. 依使用者倉庫設定同步（注意：作者私人倉庫預設不對外公開；若課堂繳交需公開檢視連結，請另以 Secret Gist 或獨立公開倉庫頁分享該單一檔案）。
 3. 在回覆結尾輸出符合課堂 Google Doc（[每週一圖：作業範例](https://docs.google.com/document/d/1ZQUB9kwHqW162xjAFyPbVNEs-kJQteMvxohhGVhCad0/edit?usp=sharing)）格式的一鍵複製繳交區塊：
    ```text
@@ -55,8 +55,8 @@
      列出暫存靈感，詢問使用者：(1) 是否同意檢索文獻評估升級本機技能庫？(2) 是否呼叫 [`../scripts/report_skill_feedback.py`](../scripts/report_skill_feedback.py) 以固定代號格式（`[FR-FLOW]` / `[FR-VIS]` / `[FR-STYLE]` / `[FR-CODE]` / `[FR-DOC]` / `[FR-BUG]`）回報至原作者公開倉庫（**`https://github.com/markyang20040112-source/deep-reading-and-visual-synthesis/issues`**）？（支援通道 A `gh issue create`、通道 B Google Apps Script Webhook、通道 C 預填網址）。
    - **Step E2（查證文獻與修改方案確認）**：檢索實證研究或工程標準，回報「(1) 實證依據、(2) 預計修改檔案與具體條文」待使用者拍板。
    - **Step E3（無損寫入 ＋ 跨檔連動同步 ＋ 模式 3 成功創意案例回饋入庫閉環）**：將理論補入 [`../THEORY_ARCHIVE.md`](../THEORY_ARCHIVE.md)，將精煉規則寫入對應單一職責檔。
-     - **【格式 D ⇄ 格式 E ⇄ 分配圖形 ⇄ 顧問大腦強制連動條款】**：若更新涉及圖表配色、編碼鐵律或選型邏輯，必須同步更新 `quantitative_chart_spec.md`、`data_dashboard_spec.md`、`advisors/layer2_advisor_de_chart.md`、對應之 `chart_family*.md`、`scripts/hcl_color_engine.py` 與 `scripts/gephi_palette.js`！
+     - **【格式 D ⇄ 格式 E ⇄ 分配圖形 ⇄ 規劃大腦強制連動條款】**：若更新涉及圖表配色、編碼鐵律或選型邏輯，必須同步更新 `formats/format_d_charts/02_build_core.md`、`formats/format_e_dashboard/02_build.md`、`formats/format_d_charts/01_plan.md`、對應之 `formats/format_d_charts/families/family*.md`、`scripts/hcl_color_engine.py` 與 `scripts/gephi_palette.js`！
      - **【模式 3 成功創意案例回饋入庫閉環（Creative Armory Case Feedback-to-Library Loop）】**：當某次 **模式 3 (`bespoke_metaphor`)** 專案原創出全新的具象材質、純幾何物理結構（Form-as-Metaphor）或空間隱喻視覺方案，並經使用者實戰驗收勝出後，於 Step E3 依下列兩步沉澱入庫：
-       1. **建立單一原子案例卡**：將去專案化之適用時機、防誤導邊界、核心 API／原生實作骨架寫成 1 份獨立 `.md` 檔案，放入 [`../phase2_output/creative_armory/cases/`](../phase2_output/creative_armory/cases/) 下對應之視覺編碼分類目錄（`01_texture_and_container/`、`02_structural_geometry/` 或 `03_spatial_and_thematic/`）。
-       2. **僅追加 1 行單行索引**：於 [`../phase2_output/creative_armory/INDEX.md`](../phase2_output/creative_armory/INDEX.md) 索引表追加**恰好 1 行摘要與連結**，嚴禁將長篇實作細節複製進 `INDEX.md`、`SKILL.md` 或 `layer3_advisor_design_style_color.md`，確保案例庫隨實戰持續擴充時仍維持 $O(1)$ 注意力與極低 Token 負擔。
+       1. **建立單一原子案例卡**：將去專案化之適用時機、防誤導邊界、核心 API／原生實作骨架寫成 1 份獨立 `.md` 檔案，放入 [`../shared/creative_armory/cases/`](../shared/creative_armory/cases/) 下對應之視覺編碼分類目錄（`01_texture_and_container/`、`02_structural_geometry/` 或 `03_spatial_and_thematic/`）。
+       2. **僅追加 1 行單行索引**：於 [`../shared/creative_armory/INDEX.md`](../shared/creative_armory/INDEX.md) 索引表追加**恰好 1 行摘要與連結**，嚴禁將長篇實作細節複製進 `INDEX.md`、`SKILL.md` 或 `shared/style_and_color_core.md`，確保案例庫隨實戰持續擴充時仍維持 $O(1)$ 注意力與極低 Token 負擔。
 3. **🗑️ 暫存檔清理與歸零刪除時機**：於 Step E1/E2 遭使用者否決或於 Step E3 寫入完成後，**當下立即從 `reading_sessions/_pending_skill_inspirations.md` 移除該筆已完成／已否決之靈感**；若清單中僅剩 `[LOCKED / DEFERRED]` 封存靈感則保留檔案供日後解鎖，若已無任何剩餘條目則**當下立即刪除 `reading_sessions/_pending_skill_inspirations.md`** 確保暫存區歸零！
